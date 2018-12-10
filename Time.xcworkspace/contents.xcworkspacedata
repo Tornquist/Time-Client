@@ -2,12 +2,12 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:iOS/iOS.xcodeproj">
+      location = "container:iOS/iOS.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:/Users/nathan/Development/Time/Client/macOS/macOS.xcodeproj">
+      location = "container:macOS/macOS.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:Shared/Shared.xcodeproj">
+      location = "container:Shared/Shared.xcodeproj">
    </FileRef>
 </Workspace>
