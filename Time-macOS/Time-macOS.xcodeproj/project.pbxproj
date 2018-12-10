@@ -1,0 +1,369 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D855814421BDEA2400DCB577 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D855814321BDEA2400DCB577 /* AppDelegate.swift */; };
+		D855814621BDEA2400DCB577 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D855814521BDEA2400DCB577 /* ViewController.swift */; };
+		D855814921BDEA2400DCB577 /* Time_macOS.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D855814721BDEA2400DCB577 /* Time_macOS.xcdatamodeld */; };
+		D855814B21BDEA2400DCB577 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D855814A21BDEA2400DCB577 /* Assets.xcassets */; };
+		D855814E21BDEA2400DCB577 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D855814C21BDEA2400DCB577 /* Main.storyboard */; };
+		D855819D21BDEC6800DCB577 /* Time_Shared_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D855819C21BDEC6800DCB577 /* Time_Shared_macOS.framework */; };
+		D855819E21BDEC6800DCB577 /* Time_Shared_macOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D855819C21BDEC6800DCB577 /* Time_Shared_macOS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D855819F21BDEC6800DCB577 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				D855819E21BDEC6800DCB577 /* Time_Shared_macOS.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		D855814021BDEA2400DCB577 /* Time-macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Time-macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D855814321BDEA2400DCB577 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		D855814521BDEA2400DCB577 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		D855814821BDEA2400DCB577 /* Time_macOS.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Time_macOS.xcdatamodel; sourceTree = "<group>"; };
+		D855814A21BDEA2400DCB577 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D855814D21BDEA2400DCB577 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		D855814F21BDEA2400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D855815021BDEA2400DCB577 /* Time_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Time_macOS.entitlements; sourceTree = "<group>"; };
+		D855819C21BDEC6800DCB577 /* Time_Shared_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Time_Shared_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D855813D21BDEA2400DCB577 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D855819D21BDEC6800DCB577 /* Time_Shared_macOS.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D855813721BDEA2400DCB577 = {
+			isa = PBXGroup;
+			children = (
+				D855819C21BDEC6800DCB577 /* Time_Shared_macOS.framework */,
+				D855814221BDEA2400DCB577 /* Time-macOS */,
+				D855814121BDEA2400DCB577 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D855814121BDEA2400DCB577 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D855814021BDEA2400DCB577 /* Time-macOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D855814221BDEA2400DCB577 /* Time-macOS */ = {
+			isa = PBXGroup;
+			children = (
+				D855814321BDEA2400DCB577 /* AppDelegate.swift */,
+				D855814521BDEA2400DCB577 /* ViewController.swift */,
+				D855814A21BDEA2400DCB577 /* Assets.xcassets */,
+				D855814C21BDEA2400DCB577 /* Main.storyboard */,
+				D855814F21BDEA2400DCB577 /* Info.plist */,
+				D855815021BDEA2400DCB577 /* Time_macOS.entitlements */,
+				D855814721BDEA2400DCB577 /* Time_macOS.xcdatamodeld */,
+			);
+			path = "Time-macOS";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D855813F21BDEA2400DCB577 /* Time-macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D855815321BDEA2400DCB577 /* Build configuration list for PBXNativeTarget "Time-macOS" */;
+			buildPhases = (
+				D855813C21BDEA2400DCB577 /* Sources */,
+				D855813D21BDEA2400DCB577 /* Frameworks */,
+				D855813E21BDEA2400DCB577 /* Resources */,
+				D855819F21BDEC6800DCB577 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Time-macOS";
+			productName = "Time-macOS";
+			productReference = D855814021BDEA2400DCB577 /* Time-macOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D855813821BDEA2400DCB577 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1010;
+				LastUpgradeCheck = 1010;
+				ORGANIZATIONNAME = nathantornquist;
+				TargetAttributes = {
+					D855813F21BDEA2400DCB577 = {
+						CreatedOnToolsVersion = 10.1;
+					};
+				};
+			};
+			buildConfigurationList = D855813B21BDEA2400DCB577 /* Build configuration list for PBXProject "Time-macOS" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D855813721BDEA2400DCB577;
+			productRefGroup = D855814121BDEA2400DCB577 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D855813F21BDEA2400DCB577 /* Time-macOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D855813E21BDEA2400DCB577 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D855814B21BDEA2400DCB577 /* Assets.xcassets in Resources */,
+				D855814E21BDEA2400DCB577 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D855813C21BDEA2400DCB577 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D855814921BDEA2400DCB577 /* Time_macOS.xcdatamodeld in Sources */,
+				D855814621BDEA2400DCB577 /* ViewController.swift in Sources */,
+				D855814421BDEA2400DCB577 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		D855814C21BDEA2400DCB577 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				D855814D21BDEA2400DCB577 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		D855815121BDEA2400DCB577 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		D855815221BDEA2400DCB577 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		D855815421BDEA2400DCB577 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Time-macOS/Time_macOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 99AECXNBFU;
+				INFOPLIST_FILE = "Time-macOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nathantornquist.Time-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+			};
+			name = Debug;
+		};
+		D855815521BDEA2400DCB577 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Time-macOS/Time_macOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 99AECXNBFU;
+				INFOPLIST_FILE = "Time-macOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nathantornquist.Time-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D855813B21BDEA2400DCB577 /* Build configuration list for PBXProject "Time-macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D855815121BDEA2400DCB577 /* Debug */,
+				D855815221BDEA2400DCB577 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D855815321BDEA2400DCB577 /* Build configuration list for PBXNativeTarget "Time-macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D855815421BDEA2400DCB577 /* Debug */,
+				D855815521BDEA2400DCB577 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		D855814721BDEA2400DCB577 /* Time_macOS.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				D855814821BDEA2400DCB577 /* Time_macOS.xcdatamodel */,
+			);
+			currentVersion = D855814821BDEA2400DCB577 /* Time_macOS.xcdatamodel */;
+			path = Time_macOS.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = D855813821BDEA2400DCB577 /* Project object */;
+}
