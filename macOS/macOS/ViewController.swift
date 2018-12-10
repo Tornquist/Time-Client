@@ -7,6 +7,7 @@
 //
 
 import Cocoa
+import Shared_macOS
 
 class ViewController: NSViewController {
 
@@ -22,6 +23,10 @@ class ViewController: NSViewController {
         }
     }
 
-
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        
+        print(EntryType.range.rawValue)
+    }
 }
 

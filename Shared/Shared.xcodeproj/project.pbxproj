@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		D855816521BDEA4E00DCB577 /* Time_Shared_iOS.h in Headers */ = {isa = PBXBuildFile; fileRef = D855816321BDEA4E00DCB577 /* Time_Shared_iOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D855818421BDEB6400DCB577 /* Time_Shared_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = D855818221BDEB6400DCB577 /* Time_Shared_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D85581AC21BEABC300DCB577 /* EntryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85581AB21BEABC300DCB577 /* EntryType.swift */; };
+		D85581AD21BEABC300DCB577 /* EntryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85581AB21BEABC300DCB577 /* EntryType.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,6 +20,7 @@
 		D855818021BDEB6400DCB577 /* Shared_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Shared_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D855818221BDEB6400DCB577 /* Time_Shared_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Time_Shared_macOS.h; sourceTree = "<group>"; };
 		D855818321BDEB6400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D85581AB21BEABC300DCB577 /* EntryType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryType.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -43,6 +46,7 @@
 			children = (
 				D855816221BDEA4E00DCB577 /* iOS */,
 				D855818121BDEB6400DCB577 /* macOS */,
+				D85581AA21BEAB8800DCB577 /* Models */,
 				D855816121BDEA4E00DCB577 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -72,6 +76,14 @@
 				D855818321BDEB6400DCB577 /* Info.plist */,
 			);
 			path = macOS;
+			sourceTree = "<group>";
+		};
+		D85581AA21BEAB8800DCB577 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				D85581AB21BEABC300DCB577 /* EntryType.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -143,9 +155,11 @@
 				TargetAttributes = {
 					D855815F21BDEA4E00DCB577 = {
 						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1010;
 					};
 					D855817F21BDEB6400DCB577 = {
 						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1010;
 					};
 				};
 			};
@@ -189,6 +203,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D85581AC21BEABC300DCB577 /* EntryType.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -196,6 +211,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D85581AD21BEABC300DCB577 /* EntryType.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -327,6 +343,7 @@
 		D855816921BDEA4E00DCB577 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
@@ -344,6 +361,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nathantornquist.Time-Shared-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -352,6 +370,7 @@
 		D855816A21BDEA4E00DCB577 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
@@ -377,6 +396,7 @@
 		D855818621BDEB6400DCB577 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -398,6 +418,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
@@ -405,6 +426,7 @@
 		D855818721BDEB6400DCB577 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;

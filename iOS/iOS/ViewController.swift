@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Shared_iOS
 
 class ViewController: UIViewController {
 
@@ -15,6 +16,10 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
 
+        print(EntryType.range.rawValue)
+    }
 }
 
