@@ -7,15 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D855816521BDEA4E00DCB577 /* Time_Shared.h in Headers */ = {isa = PBXBuildFile; fileRef = D855816321BDEA4E00DCB577 /* Time_Shared.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D855816521BDEA4E00DCB577 /* Time_Shared_iOS.h in Headers */ = {isa = PBXBuildFile; fileRef = D855816321BDEA4E00DCB577 /* Time_Shared_iOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D855818421BDEB6400DCB577 /* Time_Shared_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = D855818221BDEB6400DCB577 /* Time_Shared_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		D855816021BDEA4E00DCB577 /* Time_Shared_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Time_Shared_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D855816321BDEA4E00DCB577 /* Time_Shared.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Time_Shared.h; sourceTree = "<group>"; };
+		D855816021BDEA4E00DCB577 /* Shared_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Shared_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D855816321BDEA4E00DCB577 /* Time_Shared_iOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Time_Shared_iOS.h; sourceTree = "<group>"; };
 		D855816421BDEA4E00DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D855818021BDEB6400DCB577 /* Time_Shared_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Time_Shared_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D855818021BDEB6400DCB577 /* Shared_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Shared_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D855818221BDEB6400DCB577 /* Time_Shared_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Time_Shared_macOS.h; sourceTree = "<group>"; };
 		D855818321BDEB6400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -41,8 +41,8 @@
 		D855815621BDEA4E00DCB577 = {
 			isa = PBXGroup;
 			children = (
-				D855816221BDEA4E00DCB577 /* Time-Shared */,
-				D855818121BDEB6400DCB577 /* Time-Shared-macOS */,
+				D855816221BDEA4E00DCB577 /* iOS */,
+				D855818121BDEB6400DCB577 /* macOS */,
 				D855816121BDEA4E00DCB577 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -50,28 +50,28 @@
 		D855816121BDEA4E00DCB577 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D855816021BDEA4E00DCB577 /* Time_Shared_iOS.framework */,
-				D855818021BDEB6400DCB577 /* Time_Shared_macOS.framework */,
+				D855816021BDEA4E00DCB577 /* Shared_iOS.framework */,
+				D855818021BDEB6400DCB577 /* Shared_macOS.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		D855816221BDEA4E00DCB577 /* Time-Shared */ = {
+		D855816221BDEA4E00DCB577 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
-				D855816321BDEA4E00DCB577 /* Time_Shared.h */,
+				D855816321BDEA4E00DCB577 /* Time_Shared_iOS.h */,
 				D855816421BDEA4E00DCB577 /* Info.plist */,
 			);
-			path = "Time-Shared";
+			path = iOS;
 			sourceTree = "<group>";
 		};
-		D855818121BDEB6400DCB577 /* Time-Shared-macOS */ = {
+		D855818121BDEB6400DCB577 /* macOS */ = {
 			isa = PBXGroup;
 			children = (
 				D855818221BDEB6400DCB577 /* Time_Shared_macOS.h */,
 				D855818321BDEB6400DCB577 /* Info.plist */,
 			);
-			path = "Time-Shared-macOS";
+			path = macOS;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -81,7 +81,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D855816521BDEA4E00DCB577 /* Time_Shared.h in Headers */,
+				D855816521BDEA4E00DCB577 /* Time_Shared_iOS.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,9 +96,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		D855815F21BDEA4E00DCB577 /* Time-Shared-iOS */ = {
+		D855815F21BDEA4E00DCB577 /* Shared-iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D855816821BDEA4E00DCB577 /* Build configuration list for PBXNativeTarget "Time-Shared-iOS" */;
+			buildConfigurationList = D855816821BDEA4E00DCB577 /* Build configuration list for PBXNativeTarget "Shared-iOS" */;
 			buildPhases = (
 				D855815B21BDEA4E00DCB577 /* Headers */,
 				D855815C21BDEA4E00DCB577 /* Sources */,
@@ -109,14 +109,14 @@
 			);
 			dependencies = (
 			);
-			name = "Time-Shared-iOS";
+			name = "Shared-iOS";
 			productName = "Time-Shared";
-			productReference = D855816021BDEA4E00DCB577 /* Time_Shared_iOS.framework */;
+			productReference = D855816021BDEA4E00DCB577 /* Shared_iOS.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		D855817F21BDEB6400DCB577 /* Time-Shared-macOS */ = {
+		D855817F21BDEB6400DCB577 /* Shared-macOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D855818521BDEB6400DCB577 /* Build configuration list for PBXNativeTarget "Time-Shared-macOS" */;
+			buildConfigurationList = D855818521BDEB6400DCB577 /* Build configuration list for PBXNativeTarget "Shared-macOS" */;
 			buildPhases = (
 				D855817B21BDEB6400DCB577 /* Headers */,
 				D855817C21BDEB6400DCB577 /* Sources */,
@@ -127,9 +127,9 @@
 			);
 			dependencies = (
 			);
-			name = "Time-Shared-macOS";
+			name = "Shared-macOS";
 			productName = "Time-Shared-macOS";
-			productReference = D855818021BDEB6400DCB577 /* Time_Shared_macOS.framework */;
+			productReference = D855818021BDEB6400DCB577 /* Shared_macOS.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -149,7 +149,7 @@
 					};
 				};
 			};
-			buildConfigurationList = D855815A21BDEA4E00DCB577 /* Build configuration list for PBXProject "Time-Shared" */;
+			buildConfigurationList = D855815A21BDEA4E00DCB577 /* Build configuration list for PBXProject "Shared" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -161,8 +161,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D855815F21BDEA4E00DCB577 /* Time-Shared-iOS */,
-				D855817F21BDEB6400DCB577 /* Time-Shared-macOS */,
+				D855815F21BDEA4E00DCB577 /* Shared-iOS */,
+				D855817F21BDEB6400DCB577 /* Shared-macOS */,
 			);
 		};
 /* End PBXProject section */
@@ -334,7 +334,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "Time-Shared/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/iOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -359,7 +359,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "Time-Shared/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/iOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -386,7 +386,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = "Time-Shared-macOS/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/macOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -414,7 +414,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = "Time-Shared-macOS/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/macOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -433,7 +433,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D855815A21BDEA4E00DCB577 /* Build configuration list for PBXProject "Time-Shared" */ = {
+		D855815A21BDEA4E00DCB577 /* Build configuration list for PBXProject "Shared" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D855816621BDEA4E00DCB577 /* Debug */,
@@ -442,7 +442,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D855816821BDEA4E00DCB577 /* Build configuration list for PBXNativeTarget "Time-Shared-iOS" */ = {
+		D855816821BDEA4E00DCB577 /* Build configuration list for PBXNativeTarget "Shared-iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D855816921BDEA4E00DCB577 /* Debug */,
@@ -451,7 +451,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D855818521BDEB6400DCB577 /* Build configuration list for PBXNativeTarget "Time-Shared-macOS" */ = {
+		D855818521BDEB6400DCB577 /* Build configuration list for PBXNativeTarget "Shared-macOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D855818621BDEB6400DCB577 /* Debug */,

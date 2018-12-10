@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D855815F21BDEA4E00DCB577"
-               BuildableName = "Time_Shared_iOS.framework"
-               BlueprintName = "Time-Shared-iOS"
-               ReferencedContainer = "container:Time-Shared.xcodeproj">
+               BuildableName = "Shared_iOS.framework"
+               BlueprintName = "Shared-iOS"
+               ReferencedContainer = "container:Shared.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,9 +46,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D855815F21BDEA4E00DCB577"
-            BuildableName = "Time_Shared_iOS.framework"
-            BlueprintName = "Time-Shared-iOS"
-            ReferencedContainer = "container:Time-Shared.xcodeproj">
+            BuildableName = "Shared_iOS.framework"
+            BlueprintName = "Shared-iOS"
+            ReferencedContainer = "container:Shared.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -64,9 +64,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D855815F21BDEA4E00DCB577"
-            BuildableName = "Time_Shared_iOS.framework"
-            BlueprintName = "Time-Shared-iOS"
-            ReferencedContainer = "container:Time-Shared.xcodeproj">
+            BuildableName = "Shared_iOS.framework"
+            BlueprintName = "Shared-iOS"
+            ReferencedContainer = "container:Shared.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

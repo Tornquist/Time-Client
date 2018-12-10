@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D855813F21BDEA2400DCB577"
-               BuildableName = "Time-macOS.app"
-               BlueprintName = "Time-macOS"
-               ReferencedContainer = "container:Time-macOS.xcodeproj">
+               BuildableName = "macOS.app"
+               BlueprintName = "macOS"
+               ReferencedContainer = "container:macOS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D855813F21BDEA2400DCB577"
-            BuildableName = "Time-macOS.app"
-            BlueprintName = "Time-macOS"
-            ReferencedContainer = "container:Time-macOS.xcodeproj">
+            BuildableName = "macOS.app"
+            BlueprintName = "macOS"
+            ReferencedContainer = "container:macOS.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -56,9 +56,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D855813F21BDEA2400DCB577"
-            BuildableName = "Time-macOS.app"
-            BlueprintName = "Time-macOS"
-            ReferencedContainer = "container:Time-macOS.xcodeproj">
+            BuildableName = "macOS.app"
+            BlueprintName = "macOS"
+            ReferencedContainer = "container:macOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -75,9 +75,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D855813F21BDEA2400DCB577"
-            BuildableName = "Time-macOS.app"
-            BlueprintName = "Time-macOS"
-            ReferencedContainer = "container:Time-macOS.xcodeproj">
+            BuildableName = "macOS.app"
+            BlueprintName = "macOS"
+            ReferencedContainer = "container:macOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

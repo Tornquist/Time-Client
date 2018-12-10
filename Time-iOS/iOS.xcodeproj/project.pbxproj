@@ -7,23 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D855814421BDEA2400DCB577 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D855814321BDEA2400DCB577 /* AppDelegate.swift */; };
-		D855814621BDEA2400DCB577 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D855814521BDEA2400DCB577 /* ViewController.swift */; };
-		D855814921BDEA2400DCB577 /* Time_macOS.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D855814721BDEA2400DCB577 /* Time_macOS.xcdatamodeld */; };
-		D855814B21BDEA2400DCB577 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D855814A21BDEA2400DCB577 /* Assets.xcassets */; };
-		D855814E21BDEA2400DCB577 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D855814C21BDEA2400DCB577 /* Main.storyboard */; };
-		D855819D21BDEC6800DCB577 /* Time_Shared_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D855819C21BDEC6800DCB577 /* Time_Shared_macOS.framework */; };
-		D855819E21BDEC6800DCB577 /* Time_Shared_macOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D855819C21BDEC6800DCB577 /* Time_Shared_macOS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D855812321BDE9A200DCB577 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D855812221BDE9A200DCB577 /* AppDelegate.swift */; };
+		D855812521BDE9A200DCB577 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D855812421BDE9A200DCB577 /* ViewController.swift */; };
+		D855812821BDE9A200DCB577 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D855812621BDE9A200DCB577 /* Main.storyboard */; };
+		D855812B21BDE9A200DCB577 /* Time_iOS.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D855812921BDE9A200DCB577 /* Time_iOS.xcdatamodeld */; };
+		D855812D21BDE9A400DCB577 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D855812C21BDE9A400DCB577 /* Assets.xcassets */; };
+		D855813021BDE9A400DCB577 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D855812E21BDE9A400DCB577 /* LaunchScreen.storyboard */; };
+		D85581A521BDEFAF00DCB577 /* Shared_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D85581A421BDEFAF00DCB577 /* Shared_iOS.framework */; };
+		D85581A621BDEFAF00DCB577 /* Shared_iOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D85581A421BDEFAF00DCB577 /* Shared_iOS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		D855819F21BDEC6800DCB577 /* Embed Frameworks */ = {
+		D855819721BDEC3500DCB577 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				D855819E21BDEC6800DCB577 /* Time_Shared_macOS.framework in Embed Frameworks */,
+				D85581A621BDEFAF00DCB577 /* Shared_iOS.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -31,97 +32,97 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		D855814021BDEA2400DCB577 /* Time-macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Time-macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		D855814321BDEA2400DCB577 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		D855814521BDEA2400DCB577 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		D855814821BDEA2400DCB577 /* Time_macOS.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Time_macOS.xcdatamodel; sourceTree = "<group>"; };
-		D855814A21BDEA2400DCB577 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		D855814D21BDEA2400DCB577 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		D855814F21BDEA2400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D855815021BDEA2400DCB577 /* Time_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Time_macOS.entitlements; sourceTree = "<group>"; };
-		D855819C21BDEC6800DCB577 /* Time_Shared_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Time_Shared_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D855811F21BDE9A200DCB577 /* iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D855812221BDE9A200DCB577 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		D855812421BDE9A200DCB577 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		D855812721BDE9A200DCB577 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		D855812A21BDE9A200DCB577 /* Time_iOS.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Time_iOS.xcdatamodel; sourceTree = "<group>"; };
+		D855812C21BDE9A400DCB577 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D855812F21BDE9A400DCB577 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		D855813121BDE9A400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D85581A421BDEFAF00DCB577 /* Shared_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Shared_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		D855813D21BDEA2400DCB577 /* Frameworks */ = {
+		D855811C21BDE9A200DCB577 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D855819D21BDEC6800DCB577 /* Time_Shared_macOS.framework in Frameworks */,
+				D85581A521BDEFAF00DCB577 /* Shared_iOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		D855813721BDEA2400DCB577 = {
+		D855811621BDE9A200DCB577 = {
 			isa = PBXGroup;
 			children = (
-				D855819C21BDEC6800DCB577 /* Time_Shared_macOS.framework */,
-				D855814221BDEA2400DCB577 /* Time-macOS */,
-				D855814121BDEA2400DCB577 /* Products */,
+				D85581A421BDEFAF00DCB577 /* Shared_iOS.framework */,
+				D855812121BDE9A200DCB577 /* iOS */,
+				D855812021BDE9A200DCB577 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		D855814121BDEA2400DCB577 /* Products */ = {
+		D855812021BDE9A200DCB577 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D855814021BDEA2400DCB577 /* Time-macOS.app */,
+				D855811F21BDE9A200DCB577 /* iOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		D855814221BDEA2400DCB577 /* Time-macOS */ = {
+		D855812121BDE9A200DCB577 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
-				D855814321BDEA2400DCB577 /* AppDelegate.swift */,
-				D855814521BDEA2400DCB577 /* ViewController.swift */,
-				D855814A21BDEA2400DCB577 /* Assets.xcassets */,
-				D855814C21BDEA2400DCB577 /* Main.storyboard */,
-				D855814F21BDEA2400DCB577 /* Info.plist */,
-				D855815021BDEA2400DCB577 /* Time_macOS.entitlements */,
-				D855814721BDEA2400DCB577 /* Time_macOS.xcdatamodeld */,
+				D855812221BDE9A200DCB577 /* AppDelegate.swift */,
+				D855812421BDE9A200DCB577 /* ViewController.swift */,
+				D855812621BDE9A200DCB577 /* Main.storyboard */,
+				D855812C21BDE9A400DCB577 /* Assets.xcassets */,
+				D855812E21BDE9A400DCB577 /* LaunchScreen.storyboard */,
+				D855813121BDE9A400DCB577 /* Info.plist */,
+				D855812921BDE9A200DCB577 /* Time_iOS.xcdatamodeld */,
 			);
-			path = "Time-macOS";
+			path = iOS;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D855813F21BDEA2400DCB577 /* Time-macOS */ = {
+		D855811E21BDE9A200DCB577 /* iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D855815321BDEA2400DCB577 /* Build configuration list for PBXNativeTarget "Time-macOS" */;
+			buildConfigurationList = D855813421BDE9A400DCB577 /* Build configuration list for PBXNativeTarget "iOS" */;
 			buildPhases = (
-				D855813C21BDEA2400DCB577 /* Sources */,
-				D855813D21BDEA2400DCB577 /* Frameworks */,
-				D855813E21BDEA2400DCB577 /* Resources */,
-				D855819F21BDEC6800DCB577 /* Embed Frameworks */,
+				D855811B21BDE9A200DCB577 /* Sources */,
+				D855811C21BDE9A200DCB577 /* Frameworks */,
+				D855811D21BDE9A200DCB577 /* Resources */,
+				D855819721BDEC3500DCB577 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = "Time-macOS";
-			productName = "Time-macOS";
-			productReference = D855814021BDEA2400DCB577 /* Time-macOS.app */;
+			name = iOS;
+			productName = "Time-iOS";
+			productReference = D855811F21BDE9A200DCB577 /* iOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		D855813821BDEA2400DCB577 /* Project object */ = {
+		D855811721BDE9A200DCB577 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1010;
 				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = nathantornquist;
 				TargetAttributes = {
-					D855813F21BDEA2400DCB577 = {
+					D855811E21BDE9A200DCB577 = {
 						CreatedOnToolsVersion = 10.1;
 					};
 				};
 			};
-			buildConfigurationList = D855813B21BDEA2400DCB577 /* Build configuration list for PBXProject "Time-macOS" */;
+			buildConfigurationList = D855811A21BDE9A200DCB577 /* Build configuration list for PBXProject "iOS" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -129,54 +130,63 @@
 				en,
 				Base,
 			);
-			mainGroup = D855813721BDEA2400DCB577;
-			productRefGroup = D855814121BDEA2400DCB577 /* Products */;
+			mainGroup = D855811621BDE9A200DCB577;
+			productRefGroup = D855812021BDE9A200DCB577 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D855813F21BDEA2400DCB577 /* Time-macOS */,
+				D855811E21BDE9A200DCB577 /* iOS */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		D855813E21BDEA2400DCB577 /* Resources */ = {
+		D855811D21BDE9A200DCB577 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D855814B21BDEA2400DCB577 /* Assets.xcassets in Resources */,
-				D855814E21BDEA2400DCB577 /* Main.storyboard in Resources */,
+				D855813021BDE9A400DCB577 /* LaunchScreen.storyboard in Resources */,
+				D855812D21BDE9A400DCB577 /* Assets.xcassets in Resources */,
+				D855812821BDE9A200DCB577 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		D855813C21BDEA2400DCB577 /* Sources */ = {
+		D855811B21BDE9A200DCB577 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D855814921BDEA2400DCB577 /* Time_macOS.xcdatamodeld in Sources */,
-				D855814621BDEA2400DCB577 /* ViewController.swift in Sources */,
-				D855814421BDEA2400DCB577 /* AppDelegate.swift in Sources */,
+				D855812521BDE9A200DCB577 /* ViewController.swift in Sources */,
+				D855812B21BDE9A200DCB577 /* Time_iOS.xcdatamodeld in Sources */,
+				D855812321BDE9A200DCB577 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		D855814C21BDEA2400DCB577 /* Main.storyboard */ = {
+		D855812621BDE9A200DCB577 /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				D855814D21BDEA2400DCB577 /* Base */,
+				D855812721BDE9A200DCB577 /* Base */,
 			);
 			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		D855812E21BDE9A400DCB577 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				D855812F21BDE9A400DCB577 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		D855815121BDEA2400DCB577 /* Debug */ = {
+		D855813221BDE9A400DCB577 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -208,7 +218,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -227,17 +237,17 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx;
+				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
-		D855815221BDEA2400DCB577 /* Release */ = {
+		D855813321BDE9A400DCB577 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -269,7 +279,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -282,70 +292,69 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				SDKROOT = macosx;
+				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
-		D855815421BDEA2400DCB577 /* Debug */ = {
+		D855813521BDE9A400DCB577 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = "Time-macOS/Time_macOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 99AECXNBFU;
-				INFOPLIST_FILE = "Time-macOS/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
-					"@executable_path/../Frameworks",
+					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.nathantornquist.Time-macOS";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nathantornquist.Time-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
-		D855815521BDEA2400DCB577 /* Release */ = {
+		D855813621BDE9A400DCB577 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = "Time-macOS/Time_macOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 99AECXNBFU;
-				INFOPLIST_FILE = "Time-macOS/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
-					"@executable_path/../Frameworks",
+					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.nathantornquist.Time-macOS";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nathantornquist.Time-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D855813B21BDEA2400DCB577 /* Build configuration list for PBXProject "Time-macOS" */ = {
+		D855811A21BDE9A200DCB577 /* Build configuration list for PBXProject "iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D855815121BDEA2400DCB577 /* Debug */,
-				D855815221BDEA2400DCB577 /* Release */,
+				D855813221BDE9A400DCB577 /* Debug */,
+				D855813321BDE9A400DCB577 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D855815321BDEA2400DCB577 /* Build configuration list for PBXNativeTarget "Time-macOS" */ = {
+		D855813421BDE9A400DCB577 /* Build configuration list for PBXNativeTarget "iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D855815421BDEA2400DCB577 /* Debug */,
-				D855815521BDEA2400DCB577 /* Release */,
+				D855813521BDE9A400DCB577 /* Debug */,
+				D855813621BDE9A400DCB577 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -353,17 +362,17 @@
 /* End XCConfigurationList section */
 
 /* Begin XCVersionGroup section */
-		D855814721BDEA2400DCB577 /* Time_macOS.xcdatamodeld */ = {
+		D855812921BDE9A200DCB577 /* Time_iOS.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				D855814821BDEA2400DCB577 /* Time_macOS.xcdatamodel */,
+				D855812A21BDE9A200DCB577 /* Time_iOS.xcdatamodel */,
 			);
-			currentVersion = D855814821BDEA2400DCB577 /* Time_macOS.xcdatamodel */;
-			path = Time_macOS.xcdatamodeld;
+			currentVersion = D855812A21BDE9A200DCB577 /* Time_iOS.xcdatamodel */;
+			path = Time_iOS.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};
 /* End XCVersionGroup section */
 	};
-	rootObject = D855813821BDEA2400DCB577 /* Project object */;
+	rootObject = D855811721BDE9A200DCB577 /* Project object */;
 }
