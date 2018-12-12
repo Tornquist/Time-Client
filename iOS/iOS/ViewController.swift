@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Shared_iOS
+import Time
 
 class ViewController: UIViewController {
 
@@ -22,4 +22,3 @@ class ViewController: UIViewController {
         print(EntryType.range.rawValue)
     }
 }
-

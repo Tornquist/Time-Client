@@ -14,10 +14,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		D855816021BDEA4E00DCB577 /* Shared_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Shared_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D855816021BDEA4E00DCB577 /* Time.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Time.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D855816321BDEA4E00DCB577 /* Time_Shared_iOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Time_Shared_iOS.h; sourceTree = "<group>"; };
 		D855816421BDEA4E00DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D855818021BDEB6400DCB577 /* Shared_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Shared_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D855818021BDEB6400DCB577 /* Time.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Time.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D855818221BDEB6400DCB577 /* Time_Shared_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Time_Shared_macOS.h; sourceTree = "<group>"; };
 		D855818321BDEB6400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D85581AB21BEABC300DCB577 /* EntryType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryType.swift; sourceTree = "<group>"; };
@@ -54,8 +54,8 @@
 		D855816121BDEA4E00DCB577 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D855816021BDEA4E00DCB577 /* Shared_iOS.framework */,
-				D855818021BDEB6400DCB577 /* Shared_macOS.framework */,
+				D855816021BDEA4E00DCB577 /* Time.framework */,
+				D855818021BDEB6400DCB577 /* Time.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -123,7 +123,7 @@
 			);
 			name = "Shared-iOS";
 			productName = "Time-Shared";
-			productReference = D855816021BDEA4E00DCB577 /* Shared_iOS.framework */;
+			productReference = D855816021BDEA4E00DCB577 /* Time.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		D855817F21BDEB6400DCB577 /* Shared-macOS */ = {
@@ -141,7 +141,7 @@
 			);
 			name = "Shared-macOS";
 			productName = "Time-Shared-macOS";
-			productReference = D855818021BDEB6400DCB577 /* Shared_macOS.framework */;
+			productReference = D855818021BDEB6400DCB577 /* Time.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -359,7 +359,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nathantornquist.Time-Shared-iOS";
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = Time;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.2;
@@ -386,7 +386,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nathantornquist.Time-Shared-iOS";
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = Time;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -415,7 +415,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nathantornquist.Time-Shared-macOS";
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = Time;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -445,7 +445,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nathantornquist.Time-Shared-macOS";
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = Time;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 4.2;

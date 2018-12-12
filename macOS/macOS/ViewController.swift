@@ -7,7 +7,7 @@
 //
 
 import Cocoa
-import Shared_macOS
+import Time
 
 class ViewController: NSViewController {
 
