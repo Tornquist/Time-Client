@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D855815F21BDEA4E00DCB577"
-               BuildableName = "Shared_iOS.framework"
-               BlueprintName = "Shared-iOS"
+               BlueprintIdentifier = "D855817F21BDEB6400DCB577"
+               BuildableName = "Time.framework"
+               BlueprintName = "Shared"
                ReferencedContainer = "container:Shared.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +45,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D855815F21BDEA4E00DCB577"
-            BuildableName = "Shared_iOS.framework"
-            BlueprintName = "Shared-iOS"
+            BlueprintIdentifier = "D855817F21BDEB6400DCB577"
+            BuildableName = "Time.framework"
+            BlueprintName = "Shared"
             ReferencedContainer = "container:Shared.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -63,9 +63,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D855815F21BDEA4E00DCB577"
-            BuildableName = "Shared_iOS.framework"
-            BlueprintName = "Shared-iOS"
+            BlueprintIdentifier = "D855817F21BDEB6400DCB577"
+            BuildableName = "Time.framework"
+            BlueprintName = "Shared"
             ReferencedContainer = "container:Shared.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

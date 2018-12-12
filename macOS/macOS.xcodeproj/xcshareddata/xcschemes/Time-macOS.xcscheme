@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D855813F21BDEA2400DCB577"
-               BuildableName = "macOS.app"
+               BuildableName = "Time-macOS.app"
                BlueprintName = "macOS"
                ReferencedContainer = "container:macOS.xcodeproj">
             </BuildableReference>
@@ -33,7 +33,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D855813F21BDEA2400DCB577"
-            BuildableName = "macOS.app"
+            BuildableName = "Time-macOS.app"
             BlueprintName = "macOS"
             ReferencedContainer = "container:macOS.xcodeproj">
          </BuildableReference>
@@ -56,7 +56,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D855813F21BDEA2400DCB577"
-            BuildableName = "macOS.app"
+            BuildableName = "Time-macOS.app"
             BlueprintName = "macOS"
             ReferencedContainer = "container:macOS.xcodeproj">
          </BuildableReference>
@@ -75,7 +75,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D855813F21BDEA2400DCB577"
-            BuildableName = "macOS.app"
+            BuildableName = "Time-macOS.app"
             BlueprintName = "macOS"
             ReferencedContainer = "container:macOS.xcodeproj">
          </BuildableReference>
