@@ -20,5 +20,6 @@ class ViewController: UIViewController {
         super.viewDidAppear(animated)
 
         print(EntryType.range.rawValue)
+        Time.shared.authenticate(email: "mail@test.com", password: "password")
     }
 }
