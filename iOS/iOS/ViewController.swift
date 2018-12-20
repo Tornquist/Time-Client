@@ -19,7 +19,6 @@ class ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        print(EntryType.range.rawValue)
-        Time.shared.authenticate(email: "mail@test.com", password: "password")
+        Time.shared.authenticate(email: "test@test.com", password: "defaultPassword")
     }
 }
