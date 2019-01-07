@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D811B17721E38D76009F6C8E /* Test_Authentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = D811B17521E38CD3009F6C8E /* Test_Authentication.swift */; };
 		D837025421CA7EAB0095B19F /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = D837025321CA7EAB0095B19F /* Token.swift */; };
 		D837025721CA82E20095B19F /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = D837025621CA82E20095B19F /* API.swift */; };
 		D837025921CA83050095B19F /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = D837025821CA83050095B19F /* User.swift */; };
 		D837025C21CA846A0095B19F /* Time.swift in Sources */ = {isa = PBXBuildFile; fileRef = D837025B21CA846A0095B19F /* Time.swift */; };
 		D855818421BDEB6400DCB577 /* Time_Shared.h in Headers */ = {isa = PBXBuildFile; fileRef = D855818221BDEB6400DCB577 /* Time_Shared.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D85581AD21BEABC300DCB577 /* EntryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85581AB21BEABC300DCB577 /* EntryType.swift */; };
-		D85581D621C14D6700DCB577 /* Time_Shared_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85581D521C14D6700DCB577 /* Time_Shared_Tests.swift */; };
 		D85581D821C14D6700DCB577 /* Time.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D855818021BDEB6400DCB577 /* Time.framework */; };
 /* End PBXBuildFile section */
 
@@ -28,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D811B17521E38CD3009F6C8E /* Test_Authentication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_Authentication.swift; sourceTree = "<group>"; };
 		D837025321CA7EAB0095B19F /* Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
 		D837025621CA82E20095B19F /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
 		D837025821CA83050095B19F /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
@@ -37,7 +38,6 @@
 		D855818321BDEB6400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D85581AB21BEABC300DCB577 /* EntryType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryType.swift; sourceTree = "<group>"; };
 		D85581D321C14D6700DCB577 /* Shared-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Shared-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		D85581D521C14D6700DCB577 /* Time_Shared_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Time_Shared_Tests.swift; sourceTree = "<group>"; };
 		D85581D721C14D6700DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -119,8 +119,8 @@
 		D85581D421C14D6700DCB577 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				D85581D521C14D6700DCB577 /* Time_Shared_Tests.swift */,
 				D85581D721C14D6700DCB577 /* Info.plist */,
+				D811B17521E38CD3009F6C8E /* Test_Authentication.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -246,7 +246,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D85581D621C14D6700DCB577 /* Time_Shared_Tests.swift in Sources */,
+				D811B17721E38D76009F6C8E /* Test_Authentication.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

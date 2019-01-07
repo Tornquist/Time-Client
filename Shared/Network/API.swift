@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum TimeError: Error {
+public enum TimeError: Error {
     case unableToSendRequest(String)
     case unableToDecodeResponse()
     case requestFailed(String)

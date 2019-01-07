@@ -9,16 +9,21 @@
 import Foundation
 
 public class Time {
+    
     public static let shared = Time()
     
-    public func authenticate(email: String, password: String) {
+    var token: Token? = nil
+    
+    public func isAuthenticated() -> Bool {
+        return token != nil
+    }
+    
+    public func authenticate(email: String, password: String, completionHandler: ((Error?) -> ())? = nil) {
         API.shared.getToken(with: email, and: password) { (token, error) in
-            guard error == nil else {
-                print(error.debugDescription)
-                return
+            if error == nil && token != nil {
+                self.token = token
             }
-            
-            print(token?.userID.description)
+            completionHandler?(error)
         }
     }
 }
