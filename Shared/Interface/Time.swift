@@ -14,7 +14,16 @@ public class Time {
     
     var token: Token? = nil
     
+    public init() { }
+    
     public func isAuthenticated() -> Bool {
+        guard token != nil else { return false }
+        let now = Date()
+        guard now < token!.expiration else { return false }
+        return true
+    }
+    
+    public func canRefresh() -> Bool {
         return token != nil
     }
     

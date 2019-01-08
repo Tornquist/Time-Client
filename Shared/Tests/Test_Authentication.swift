@@ -11,19 +11,26 @@ import Time
 
 class Test_Authentication: XCTestCase {
     
-    override func setUp() { }
+    var time: Time!
+    
+    override func setUp() {
+        self.time = Time()
+    }
     
     override func tearDown() { }
     
-    func test_1_uauthenticated() {
-        let isAuthenticated = Time.shared.isAuthenticated()
+    func test_initialAuthentication() {
+        let isAuthenticated = time.isAuthenticated()
         XCTAssertFalse(isAuthenticated)
     }
     
-    func test_2_authenticateWithInvalidCredentials() {
+    func test_unauthenticatedWithInvalidCredentials() {
+        let startsUnauthenticated = time.isAuthenticated()
+        XCTAssertFalse(startsUnauthenticated)
+        
         let expectation = self.expectation(description: "getToken")
         
-        Time.shared.authenticate(email: "test@test.com", password: "madeUpPassword") { (error) in
+        time.authenticate(email: "test@test.com", password: "madeUpPassword") { (error) in
             XCTAssertNotNil(error)
             
             switch error! {
@@ -38,26 +45,25 @@ class Test_Authentication: XCTestCase {
         }
         
         waitForExpectations(timeout: 5, handler: nil)
+        
+        let endsUnauthenticated = time.isAuthenticated()
+        XCTAssertFalse(endsUnauthenticated)
     }
     
-    func test_3_stillUnauthenticated() {
-        let isAuthenticated = Time.shared.isAuthenticated()
-        XCTAssertFalse(isAuthenticated)
-    }
-    
-    func test_4_authenticateWithValidCredentials() {
+    func test_authenticateWithValidCredentials() {
+        let startsUnauthenticated = time.isAuthenticated()
+        XCTAssertFalse(startsUnauthenticated)
+        
         let expectation = self.expectation(description: "getToken")
         
-        Time.shared.authenticate(email: "test@test.com", password: "defaultPassword") { (error) in
+        time.authenticate(email: "test@test.com", password: "defaultPassword") { (error) in
             XCTAssertNil(error)
             expectation.fulfill()
         }
         
         waitForExpectations(timeout: 5, handler: nil)
-    }
-    
-    func test_5_authenticated() {
-        let isAuthenticated = Time.shared.isAuthenticated()
-        XCTAssertTrue(isAuthenticated)
+        
+        let endsAuthenticated = time.isAuthenticated()
+        XCTAssertTrue(endsAuthenticated)
     }
 }

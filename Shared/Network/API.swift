@@ -18,7 +18,7 @@ public enum TimeError: Error {
 class API {
     static let shared = API()
     
-    let baseURL = "http://Nathans-iMac.local:8000"
+    let baseURL = "http://localhost:8000"
     
     func getToken(with username: String, and password: String, completionHandler: @escaping (Token?, Error?) -> ()) {
         guard var path = URL(string: baseURL) else {
