@@ -30,7 +30,7 @@ class Test_Authentication: XCTestCase {
         
         let expectation = self.expectation(description: "getToken")
         
-        time.authenticate(email: "test@test.com", password: "madeUpPassword") { (error) in
+        time.authenticate(username: "test@test.com", password: "madeUpPassword") { (error) in
             XCTAssertNotNil(error)
             
             switch error! {
@@ -56,7 +56,7 @@ class Test_Authentication: XCTestCase {
         
         let expectation = self.expectation(description: "getToken")
         
-        time.authenticate(email: "test@test.com", password: "defaultPassword") { (error) in
+        time.authenticate(username: "test@test.com", password: "defaultPassword") { (error) in
             XCTAssertNil(error)
             expectation.fulfill()
         }

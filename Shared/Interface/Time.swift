@@ -27,8 +27,8 @@ public class Time {
         return token != nil
     }
     
-    public func authenticate(email: String, password: String, completionHandler: ((Error?) -> ())? = nil) {
-        API.shared.getToken(with: email, and: password) { (token, error) in
+    public func authenticate(username: String, password: String, completionHandler: ((Error?) -> ())? = nil) {
+        API.shared.getToken(withUsername: username, andPassword: password) { (token, error) in
             if error == nil && token != nil {
                 self.token = token
             }

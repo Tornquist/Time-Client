@@ -20,7 +20,7 @@ class Test_API: XCTestCase {
     func test_getToken_validCredentials() {
         let expectation = self.expectation(description: "getToken")
         
-        API.shared.getToken(with: "test@test.com", and: "defaultPassword") { (token, error) in
+        API.shared.getToken(withUsername: "test@test.com", andPassword: "defaultPassword") { (token, error) in
             XCTAssertNotNil(token)
             XCTAssertNil(error)
             
@@ -33,7 +33,7 @@ class Test_API: XCTestCase {
     func test_getToken_invalidCredentials() {
         let expectation = self.expectation(description: "getToken")
         
-        API.shared.getToken(with: "test@test.com", and: "madeUpPassword") { (token, error) in
+        API.shared.getToken(withUsername: "test@test.com", andPassword: "madeUpPassword") { (token, error) in
             XCTAssertNil(token)
             XCTAssertNotNil(error)
             
@@ -54,7 +54,7 @@ class Test_API: XCTestCase {
     func test_refreshToken_validRefresh() {
         let expectation = self.expectation(description: "refreshToken")
         
-        API.shared.getToken(with: "test@test.com", and: "defaultPassword") { (token, error) in
+        API.shared.getToken(withUsername: "test@test.com", andPassword: "defaultPassword") { (token, error) in
             XCTAssertNotNil(token)
             
             API.shared.refreshToken(with: token!) { (token, error) in

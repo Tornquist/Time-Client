@@ -20,7 +20,7 @@ class API {
     
     let baseURL = "http://localhost:8000"
     
-    func getToken(with username: String, and password: String, completionHandler: @escaping (Token?, Error?) -> ()) {
+    func getToken(withUsername username: String, andPassword password: String, completionHandler: @escaping (Token?, Error?) -> ()) {
         guard var path = URL(string: baseURL) else {
             completionHandler(nil, TimeError.unableToSendRequest("Cannot build URL"))
             return
