@@ -1,5 +1,5 @@
 //
-//  Test_API.swift
+//  Test_API_Tokens.swift
 //  Shared-Tests
 //
 //  Created by Nathan Tornquist on 1/9/19.
@@ -11,7 +11,7 @@ import Foundation
 import XCTest
 @testable import Time
 
-class Test_API: XCTestCase {
+class Test_API_Tokens: XCTestCase {
     
     override func setUp() { }
     

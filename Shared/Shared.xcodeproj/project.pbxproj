@@ -8,7 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		D811B17721E38D76009F6C8E /* Test_Authentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = D811B17521E38CD3009F6C8E /* Test_Authentication.swift */; };
-		D811B17921E62B81009F6C8E /* Test_API.swift in Sources */ = {isa = PBXBuildFile; fileRef = D811B17821E62B81009F6C8E /* Test_API.swift */; };
+		D811B17921E62B81009F6C8E /* Test_API_Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = D811B17821E62B81009F6C8E /* Test_API_Tokens.swift */; };
+		D811B17B21E77ECF009F6C8E /* Test_API_Users.swift in Sources */ = {isa = PBXBuildFile; fileRef = D811B17A21E77ECF009F6C8E /* Test_API_Users.swift */; };
 		D837025421CA7EAB0095B19F /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = D837025321CA7EAB0095B19F /* Token.swift */; };
 		D837025721CA82E20095B19F /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = D837025621CA82E20095B19F /* API.swift */; };
 		D837025921CA83050095B19F /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = D837025821CA83050095B19F /* User.swift */; };
@@ -30,7 +31,8 @@
 
 /* Begin PBXFileReference section */
 		D811B17521E38CD3009F6C8E /* Test_Authentication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_Authentication.swift; sourceTree = "<group>"; };
-		D811B17821E62B81009F6C8E /* Test_API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_API.swift; sourceTree = "<group>"; };
+		D811B17821E62B81009F6C8E /* Test_API_Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_API_Tokens.swift; sourceTree = "<group>"; };
+		D811B17A21E77ECF009F6C8E /* Test_API_Users.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_API_Users.swift; sourceTree = "<group>"; };
 		D837025321CA7EAB0095B19F /* Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
 		D837025621CA82E20095B19F /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
 		D837025821CA83050095B19F /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
@@ -123,7 +125,8 @@
 			children = (
 				D85581D721C14D6700DCB577 /* Info.plist */,
 				D811B17521E38CD3009F6C8E /* Test_Authentication.swift */,
-				D811B17821E62B81009F6C8E /* Test_API.swift */,
+				D811B17821E62B81009F6C8E /* Test_API_Tokens.swift */,
+				D811B17A21E77ECF009F6C8E /* Test_API_Users.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -249,7 +252,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D811B17921E62B81009F6C8E /* Test_API.swift in Sources */,
+				D811B17921E62B81009F6C8E /* Test_API_Tokens.swift in Sources */,
+				D811B17B21E77ECF009F6C8E /* Test_API_Users.swift in Sources */,
 				D811B17721E38D76009F6C8E /* Test_Authentication.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

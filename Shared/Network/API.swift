@@ -120,4 +120,48 @@ class API {
         
         task.resume()
     }
+    
+    func createUser(withEmail email: String, andPassword password: String, completionHandler: @escaping (User?, Error?) -> ()) {
+        guard var path = URL(string: baseURL) else {
+            completionHandler(nil, TimeError.unableToSendRequest("Cannot build URL"))
+            return
+        }
+        
+        path.appendPathComponent("/users")
+        var request = URLRequest(url: path)
+        request.httpMethod = "POST"
+        
+        let rawBody: [String: String] = [
+            "email": email,
+            "password": password
+        ]
+        guard let body = try? JSONSerialization.data(withJSONObject: rawBody, options: JSONSerialization.WritingOptions.prettyPrinted) else {
+            completionHandler(nil, TimeError.unableToSendRequest("Cannot encode body"))
+            return
+        }
+        request.httpBody = body
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                let message = error as? String ?? ""
+                completionHandler(nil, TimeError.requestFailed(message))
+                return
+            }
+            
+            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
+                completionHandler(nil, TimeError.httpFailure(httpStatus.statusCode.description))
+                return
+            }
+            
+            do {
+                let user = try JSONDecoder().decode(User.self, from: data)
+                completionHandler(user, nil)
+            } catch {
+                completionHandler(nil, TimeError.unableToDecodeResponse())
+            }
+        }
+        
+        task.resume()
+    }
 }
