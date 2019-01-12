@@ -164,4 +164,72 @@ class API {
         
         task.resume()
     }
+    
+    func getAccounts(with token: String, completionHandler: @escaping ([Account]?, Error?) -> ()) {
+        guard var path = URL(string: baseURL) else {
+            completionHandler(nil, TimeError.unableToSendRequest("Cannot build URL"))
+            return
+        }
+        
+        path.appendPathComponent("/accounts")
+        var request = URLRequest(url: path)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                let message = error as? String ?? ""
+                completionHandler(nil, TimeError.requestFailed(message))
+                return
+            }
+            
+            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
+                completionHandler(nil, TimeError.httpFailure(httpStatus.statusCode.description))
+                return
+            }
+            
+            do {
+                let accounts = try JSONDecoder().decode([Account].self, from: data)
+                completionHandler(accounts, nil)
+            } catch {
+                completionHandler(nil, TimeError.unableToDecodeResponse())
+            }
+        }
+        
+        task.resume()
+    }
+    
+    func createAccount(with token: String, completionHandler: @escaping (Account?, Error?) -> ()) {
+        guard var path = URL(string: baseURL) else {
+            completionHandler(nil, TimeError.unableToSendRequest("Cannot build URL"))
+            return
+        }
+        
+        path.appendPathComponent("/accounts")
+        var request = URLRequest(url: path)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                let message = error as? String ?? ""
+                completionHandler(nil, TimeError.requestFailed(message))
+                return
+            }
+            
+            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
+                completionHandler(nil, TimeError.httpFailure(httpStatus.statusCode.description))
+                return
+            }
+            
+            do {
+                let account = try JSONDecoder().decode(Account.self, from: data)
+                completionHandler(account, nil)
+            } catch {
+                completionHandler(nil, TimeError.unableToDecodeResponse())
+            }
+        }
+        
+        task.resume()
+    }
 }
