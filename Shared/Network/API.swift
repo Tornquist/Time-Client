@@ -22,24 +22,26 @@ class API {
     var baseURL: String = "http://localhost:8000"
     var token: Token? = nil
     
-    private enum HttpMethod: String {
+    enum HttpMethod: String {
         case GET = "GET"
         case POST = "POST"
     }
-    
-    private enum HttpEncoding {
+
+    enum HttpEncoding {
         case json
         case formUrlEncoded
     }
-    
-    private func GET(_ pathComponent: String, auth: Bool = true, completionHandler: @escaping (Data?, TimeError?) -> ()) {
+
+    func GET(_ pathComponent: String, auth: Bool = true, completionHandler: @escaping (Data?, TimeError?) -> ()) {
         self.timeRequest(path: pathComponent, method: .GET, body: nil, encoding: nil, authorized: auth, completionHandler: completionHandler)
     }
-    private func POST(_ pathComponent: String, _ body: [String: Any]? = nil, auth: Bool = true, encoding: HttpEncoding? = nil, completionHandler: @escaping (Data?, TimeError?) -> ()) {
+
+    func POST(_ pathComponent: String, _ body: [String: Any]? = nil, auth: Bool = true, encoding: HttpEncoding? = nil, completionHandler: @escaping (Data?, TimeError?) -> ()) {
         let requestEncoding = body != nil && encoding == nil ? .json : encoding
         self.timeRequest(path: pathComponent, method: .POST, body: body, encoding: requestEncoding, authorized: auth, completionHandler: completionHandler)
     }
-    private func timeRequest(path pathComponent: String, method: HttpMethod, body: [String: Any]?, encoding: HttpEncoding?, authorized: Bool, completionHandler: @escaping (Data?, TimeError?) -> ()) {
+
+    func timeRequest(path pathComponent: String, method: HttpMethod, body: [String: Any]?, encoding: HttpEncoding?, authorized: Bool, completionHandler: @escaping (Data?, TimeError?) -> ()) {
         guard var path = URL(string: self.baseURL) else {
             completionHandler(nil, TimeError.unableToSendRequest("Cannot build URL"))
             return
@@ -123,106 +125,5 @@ class API {
         }
         
         task.resume()
-    }
-    
-    func getToken(withUsername username: String, andPassword password: String, completionHandler: @escaping (Token?, Error?) -> ()) {
-        let body = [
-            "grant_type" : "password",
-            "username": username,
-            "password": password
-        ]
-        POST("/oauth/token", body, auth: false, encoding: .formUrlEncoded) { (data, error) in
-            guard let data = data, error == nil else {
-                let returnError = error ?? TimeError.requestFailed("Missing response data")
-                completionHandler(nil, returnError)
-                return
-            }
-            
-            do {
-                let token = try JSONDecoder().decode(Token.self, from: data)
-                self.token = token
-                completionHandler(token, nil)
-            } catch {
-                completionHandler(nil, TimeError.unableToDecodeResponse())
-            }
-        }
-    }
-    
-    func refreshToken(completionHandler: @escaping (Token?, Error?) -> ()) {
-        guard let token = self.token else {
-            completionHandler(nil, TimeError.unableToSendRequest("Missing token"))
-            return
-        }
-        
-        let body = [
-            "grant_type" : "refresh_token",
-            "refresh_token": token.refresh
-        ]
-        POST("/oauth/token", body, auth: false, encoding: .formUrlEncoded) { (data, error) in
-            guard let data = data, error == nil else {
-                let returnError = error ?? TimeError.requestFailed("Missing response data")
-                completionHandler(nil, returnError)
-                return
-            }
-            
-            do {
-                let token = try JSONDecoder().decode(Token.self, from: data)
-                self.token = token
-                completionHandler(token, nil)
-            } catch {
-                completionHandler(nil, TimeError.unableToDecodeResponse())
-            }
-        }
-    }
-    
-    func createUser(withEmail email: String, andPassword password: String, completionHandler: @escaping (User?, Error?) -> ()) {
-        POST("/users", ["email": email, "password": password], auth: false) { (data, error) in
-            guard let data = data, error == nil else {
-                let returnError = error ?? TimeError.requestFailed("Missing response data")
-                completionHandler(nil, returnError)
-                return
-            }
-            
-            do {
-                let user = try JSONDecoder().decode(User.self, from: data)
-                completionHandler(user, nil)
-            } catch {
-                completionHandler(nil, TimeError.unableToDecodeResponse())
-            }
-        }
-    }
-    
-    func getAccounts(completionHandler: @escaping ([Account]?, Error?) -> ()) {
-        GET("/accounts") { (data, error) in
-            guard let data = data, error == nil else {
-                let returnError = error ?? TimeError.requestFailed("Missing response data")
-                completionHandler(nil, returnError)
-                return
-            }
-            
-            do {
-                let accounts = try JSONDecoder().decode([Account].self, from: data)
-                completionHandler(accounts, nil)
-            } catch {
-                completionHandler(nil, TimeError.unableToDecodeResponse())
-            }
-        }
-    }
-    
-    func createAccount(completionHandler: @escaping (Account?, Error?) -> ()) {
-        POST("/accounts") { (data, error) in
-            guard let data = data, error == nil else {
-                let returnError = error ?? TimeError.requestFailed("Missing response data")
-                completionHandler(nil, returnError)
-                return
-            }
-            
-            do {
-                let account = try JSONDecoder().decode(Account.self, from: data)
-                completionHandler(account, nil)
-            } catch {
-                completionHandler(nil, TimeError.unableToDecodeResponse())
-            }
-        }
     }
 }
