@@ -54,12 +54,14 @@ class Test_API_Tokens: XCTestCase {
     func test_refreshToken_validRefresh() {
         let expectation = self.expectation(description: "refreshToken")
         
-        API.shared.getToken(withUsername: "test@test.com", andPassword: "defaultPassword") { (token, error) in
-            XCTAssertNotNil(token)
+        API.shared.getToken(withUsername: "test@test.com", andPassword: "defaultPassword") { (authToken, error) in
+            XCTAssertNotNil(authToken)
             
-            API.shared.refreshToken(with: token!) { (token, error) in
-                XCTAssertNotNil(token)
+            API.shared.refreshToken() { (refreshedToken, error) in
+                XCTAssertNotNil(refreshedToken)
                 XCTAssertNil(error)
+                
+                XCTAssertNotEqual(authToken!.token, refreshedToken!.token)
                 
                 expectation.fulfill()
             }
@@ -78,8 +80,9 @@ class Test_API_Tokens: XCTestCase {
             token: "abcd",
             refresh: "notReal"
         )
+        API.shared.token = token
         
-        API.shared.refreshToken(with: token) { (token, error) in
+        API.shared.refreshToken() { (token, error) in
             XCTAssertNil(token)
             XCTAssertNotNil(error)
             

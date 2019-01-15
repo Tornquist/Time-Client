@@ -13,40 +13,99 @@ public enum TimeError: Error {
     case unableToDecodeResponse()
     case requestFailed(String)
     case httpFailure(String)
+    case authenticationFailure(String)
 }
 
 class API {
     static let shared = API()
     
-    let baseURL = "http://localhost:8000"
+    var baseURL: String = "http://localhost:8000"
+    var token: Token? = nil
     
-    func getToken(withUsername username: String, andPassword password: String, completionHandler: @escaping (Token?, Error?) -> ()) {
-        guard var path = URL(string: baseURL) else {
+    private enum HttpMethod: String {
+        case GET = "GET"
+        case POST = "POST"
+    }
+    
+    private enum HttpEncoding {
+        case json
+        case formUrlEncoded
+    }
+    
+    private func GET(_ pathComponent: String, auth: Bool = true, completionHandler: @escaping (Data?, TimeError?) -> ()) {
+        self.timeRequest(path: pathComponent, method: .GET, body: nil, encoding: nil, authorized: auth, completionHandler: completionHandler)
+    }
+    private func POST(_ pathComponent: String, _ body: [String: Any]? = nil, auth: Bool = true, encoding: HttpEncoding? = nil, completionHandler: @escaping (Data?, TimeError?) -> ()) {
+        let requestEncoding = body != nil && encoding == nil ? .json : encoding
+        self.timeRequest(path: pathComponent, method: .POST, body: body, encoding: requestEncoding, authorized: auth, completionHandler: completionHandler)
+    }
+    private func timeRequest(path pathComponent: String, method: HttpMethod, body: [String: Any]?, encoding: HttpEncoding?, authorized: Bool, completionHandler: @escaping (Data?, TimeError?) -> ()) {
+        guard var path = URL(string: self.baseURL) else {
             completionHandler(nil, TimeError.unableToSendRequest("Cannot build URL"))
             return
         }
         
-        path.appendPathComponent("/oauth/token")
+        path.appendPathComponent(pathComponent)
         var request = URLRequest(url: path)
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        request.httpMethod = "POST"
+        request.httpMethod = method.rawValue
         
-        let rfc3986Reserved = CharacterSet(charactersIn: " %!*'();:@+$,/?#[]&=")
-        guard
-            let encodedUsername: String = username.addingPercentEncoding(withAllowedCharacters: rfc3986Reserved.inverted),
-            let encodedPassword: String = password.addingPercentEncoding(withAllowedCharacters: rfc3986Reserved.inverted)
-            else {
-                completionHandler(nil, TimeError.unableToSendRequest("Cannot encode credentials"))
-                return
-        }
-        
-        let bodyString = "grant_type=password&username=\(encodedUsername)&password=\(encodedPassword)"
-        guard let bodyData = bodyString.data(using: String.Encoding.utf8) else {
-            completionHandler(nil, TimeError.unableToSendRequest("Cannot encode credentials"))
+        guard encoding == nil && body == nil || encoding != nil && body != nil else {
+            completionHandler(nil, TimeError.unableToSendRequest("Mismatched body and encoding"))
             return
         }
-
-        request.httpBody = bodyData
+        
+        if encoding != nil {
+            switch (method, encoding!) {
+            case (HttpMethod.POST, HttpEncoding.json):
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                guard let httpBody = try? JSONSerialization.data(withJSONObject: body!, options: JSONSerialization.WritingOptions.prettyPrinted) else {
+                    completionHandler(nil, TimeError.unableToSendRequest("Cannot encode body"))
+                    return
+                }
+                request.httpBody = httpBody
+                
+            case (HttpMethod.POST, HttpEncoding.formUrlEncoded):
+                request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+                let rfc3986Reserved = CharacterSet(charactersIn: " %!*'();:@+$,/?#[]&=")
+                var safeData: [(String, String)] = []
+                body!.keys.forEach { (key) in
+                    guard let value = body![key] else {
+                        completionHandler(nil, TimeError.unableToSendRequest("Cannot encode null for x-www-form-urlencoded"))
+                        return
+                    }
+                    guard let stringValue = value as? String else {
+                        completionHandler(nil, TimeError.unableToSendRequest("x-www-form-urlencoded requires string values"))
+                        return
+                    }
+                    guard
+                        let encodedKey: String = key.addingPercentEncoding(withAllowedCharacters: rfc3986Reserved.inverted),
+                        let encodedValue: String = stringValue.addingPercentEncoding(withAllowedCharacters: rfc3986Reserved.inverted)
+                        else {
+                            completionHandler(nil, TimeError.unableToSendRequest("Cannot key or value for x-www-form-urlencoded"))
+                            return
+                    }
+                    safeData.append((encodedKey, encodedValue))
+                }
+                let bodyString = safeData.map({ "\($0.0)=\($0.1)"}).joined(separator: "&")
+                guard let bodyData = bodyString.data(using: String.Encoding.utf8) else {
+                    completionHandler(nil, TimeError.unableToSendRequest("Cannot encode rfc3986 safe data"))
+                    return
+                }
+                request.httpBody = bodyData
+                
+            default:
+                completionHandler(nil, TimeError.unableToSendRequest("Encoding not supported for method type"))
+                return
+            }
+        }
+        
+        if authorized {
+            guard let tokenValue = self.token?.token else {
+                completionHandler(nil, TimeError.authenticationFailure("Missing authentication token"))
+                return
+            }
+            request.setValue("Bearer \(tokenValue)", forHTTPHeaderField: "Authorization")
+        }
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {
@@ -60,97 +119,67 @@ class API {
                 return
             }
             
-            do {
-                let token = try JSONDecoder().decode(Token.self, from: data)
-                completionHandler(token, nil)
-            } catch {
-                completionHandler(nil, TimeError.unableToDecodeResponse())
-            }
+            completionHandler(data, nil)
         }
         
         task.resume()
     }
     
-    func refreshToken(with token: Token, completionHandler: @escaping (Token?, Error?) -> ()) {
-        guard var path = URL(string: baseURL) else {
-            completionHandler(nil, TimeError.unableToSendRequest("Cannot build URL"))
-            return
-        }
-        
-        path.appendPathComponent("/oauth/token")
-        var request = URLRequest(url: path)
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        request.httpMethod = "POST"
-        
-        let rfc3986Reserved = CharacterSet(charactersIn: " %!*'();:@+$,/?#[]&=")
-        guard
-            let encodedToken: String = token.refresh.addingPercentEncoding(withAllowedCharacters: rfc3986Reserved.inverted)
-            else {
-                completionHandler(nil, TimeError.unableToSendRequest("Cannot encode credentials"))
-                return
-        }
-        
-        let bodyString = "grant_type=refresh_token&refresh_token=\(encodedToken)"
-        guard let bodyData = bodyString.data(using: String.Encoding.utf8) else {
-            completionHandler(nil, TimeError.unableToSendRequest("Cannot encode credentials"))
-            return
-        }
-        
-        request.httpBody = bodyData
-        
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+    func getToken(withUsername username: String, andPassword password: String, completionHandler: @escaping (Token?, Error?) -> ()) {
+        let body = [
+            "grant_type" : "password",
+            "username": username,
+            "password": password
+        ]
+        POST("/oauth/token", body, auth: false, encoding: .formUrlEncoded) { (data, error) in
             guard let data = data, error == nil else {
-                let message = error as? String ?? ""
-                completionHandler(nil, TimeError.requestFailed(message))
-                return
-            }
-            
-            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
-                completionHandler(nil, TimeError.httpFailure(httpStatus.statusCode.description))
+                let returnError = error ?? TimeError.requestFailed("Missing response data")
+                completionHandler(nil, returnError)
                 return
             }
             
             do {
                 let token = try JSONDecoder().decode(Token.self, from: data)
+                self.token = token
                 completionHandler(token, nil)
             } catch {
                 completionHandler(nil, TimeError.unableToDecodeResponse())
             }
         }
+    }
+    
+    func refreshToken(completionHandler: @escaping (Token?, Error?) -> ()) {
+        guard let token = self.token else {
+            completionHandler(nil, TimeError.unableToSendRequest("Missing token"))
+            return
+        }
         
-        task.resume()
+        let body = [
+            "grant_type" : "refresh_token",
+            "refresh_token": token.refresh
+        ]
+        POST("/oauth/token", body, auth: false, encoding: .formUrlEncoded) { (data, error) in
+            guard let data = data, error == nil else {
+                let returnError = error ?? TimeError.requestFailed("Missing response data")
+                completionHandler(nil, returnError)
+                return
+            }
+            
+            do {
+                let token = try JSONDecoder().decode(Token.self, from: data)
+                self.token = token
+                completionHandler(token, nil)
+            } catch {
+                completionHandler(nil, TimeError.unableToDecodeResponse())
+            }
+        }
     }
     
     func createUser(withEmail email: String, andPassword password: String, completionHandler: @escaping (User?, Error?) -> ()) {
-        guard var path = URL(string: baseURL) else {
-            completionHandler(nil, TimeError.unableToSendRequest("Cannot build URL"))
-            return
-        }
-        
-        path.appendPathComponent("/users")
-        var request = URLRequest(url: path)
-        request.httpMethod = "POST"
-        
-        let rawBody: [String: String] = [
-            "email": email,
-            "password": password
-        ]
-        guard let body = try? JSONSerialization.data(withJSONObject: rawBody, options: JSONSerialization.WritingOptions.prettyPrinted) else {
-            completionHandler(nil, TimeError.unableToSendRequest("Cannot encode body"))
-            return
-        }
-        request.httpBody = body
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        POST("/users", ["email": email, "password": password], auth: false) { (data, error) in
             guard let data = data, error == nil else {
-                let message = error as? String ?? ""
-                completionHandler(nil, TimeError.requestFailed(message))
-                return
-            }
-            
-            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
-                completionHandler(nil, TimeError.httpFailure(httpStatus.statusCode.description))
+                let returnError = error ?? TimeError.requestFailed("Missing response data")
+                completionHandler(nil, returnError)
                 return
             }
             
@@ -161,30 +190,13 @@ class API {
                 completionHandler(nil, TimeError.unableToDecodeResponse())
             }
         }
-        
-        task.resume()
     }
     
-    func getAccounts(with token: String, completionHandler: @escaping ([Account]?, Error?) -> ()) {
-        guard var path = URL(string: baseURL) else {
-            completionHandler(nil, TimeError.unableToSendRequest("Cannot build URL"))
-            return
-        }
-        
-        path.appendPathComponent("/accounts")
-        var request = URLRequest(url: path)
-        request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+    func getAccounts(completionHandler: @escaping ([Account]?, Error?) -> ()) {
+        GET("/accounts") { (data, error) in
             guard let data = data, error == nil else {
-                let message = error as? String ?? ""
-                completionHandler(nil, TimeError.requestFailed(message))
-                return
-            }
-            
-            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
-                completionHandler(nil, TimeError.httpFailure(httpStatus.statusCode.description))
+                let returnError = error ?? TimeError.requestFailed("Missing response data")
+                completionHandler(nil, returnError)
                 return
             }
             
@@ -195,30 +207,13 @@ class API {
                 completionHandler(nil, TimeError.unableToDecodeResponse())
             }
         }
-        
-        task.resume()
     }
     
-    func createAccount(with token: String, completionHandler: @escaping (Account?, Error?) -> ()) {
-        guard var path = URL(string: baseURL) else {
-            completionHandler(nil, TimeError.unableToSendRequest("Cannot build URL"))
-            return
-        }
-        
-        path.appendPathComponent("/accounts")
-        var request = URLRequest(url: path)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+    func createAccount(completionHandler: @escaping (Account?, Error?) -> ()) {
+        POST("/accounts") { (data, error) in
             guard let data = data, error == nil else {
-                let message = error as? String ?? ""
-                completionHandler(nil, TimeError.requestFailed(message))
-                return
-            }
-            
-            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
-                completionHandler(nil, TimeError.httpFailure(httpStatus.statusCode.description))
+                let returnError = error ?? TimeError.requestFailed("Missing response data")
+                completionHandler(nil, returnError)
                 return
             }
             
@@ -229,7 +224,5 @@ class API {
                 completionHandler(nil, TimeError.unableToDecodeResponse())
             }
         }
-        
-        task.resume()
     }
 }

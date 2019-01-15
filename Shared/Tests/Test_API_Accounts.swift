@@ -24,12 +24,12 @@ class Test_API_Accounts: XCTestCase {
 
             XCTAssertNotNil(token)
             
-            API.shared.createAccount(with: token!.token, completionHandler: { (account, error) in
+            API.shared.createAccount() { (account, error) in
                 XCTAssertNotNil(account)
                 XCTAssertNil(error)
                 
                 expectation.fulfill()
-            })
+            }
         }
         
         waitForExpectations(timeout: 5, handler: nil)
@@ -42,12 +42,12 @@ class Test_API_Accounts: XCTestCase {
             
             XCTAssertNotNil(token)
             
-            API.shared.getAccounts(with: token!.token, completionHandler: { (accounts, error) in
+            API.shared.getAccounts() { (accounts, error) in
                 XCTAssertNotNil(accounts)
                 XCTAssertNil(error)
                 
                 expectation.fulfill()
-            })
+            }
         }
         
         waitForExpectations(timeout: 5, handler: nil)
