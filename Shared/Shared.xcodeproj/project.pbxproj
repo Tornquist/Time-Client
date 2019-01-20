@@ -20,6 +20,8 @@
 		D837025921CA83050095B19F /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = D837025821CA83050095B19F /* User.swift */; };
 		D837025C21CA846A0095B19F /* Time.swift in Sources */ = {isa = PBXBuildFile; fileRef = D837025B21CA846A0095B19F /* Time.swift */; };
 		D8437C5B21F3B04700974B03 /* Test_Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8437C5A21F3B04700974B03 /* Test_Token.swift */; };
+		D8437C5E21F4C6C300974B03 /* TokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8437C5D21F4C6C300974B03 /* TokenStore.swift */; };
+		D8437C6021F4C8C800974B03 /* Test_TokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8437C5F21F4C8C800974B03 /* Test_TokenStore.swift */; };
 		D855818421BDEB6400DCB577 /* Time_Shared.h in Headers */ = {isa = PBXBuildFile; fileRef = D855818221BDEB6400DCB577 /* Time_Shared.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D85581AD21BEABC300DCB577 /* EntryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85581AB21BEABC300DCB577 /* EntryType.swift */; };
 		D85581D821C14D6700DCB577 /* Time.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D855818021BDEB6400DCB577 /* Time.framework */; };
@@ -49,6 +51,8 @@
 		D837025821CA83050095B19F /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		D837025B21CA846A0095B19F /* Time.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Time.swift; sourceTree = "<group>"; };
 		D8437C5A21F3B04700974B03 /* Test_Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_Token.swift; sourceTree = "<group>"; };
+		D8437C5D21F4C6C300974B03 /* TokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenStore.swift; sourceTree = "<group>"; };
+		D8437C5F21F4C8C800974B03 /* Test_TokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_TokenStore.swift; sourceTree = "<group>"; };
 		D855818021BDEB6400DCB577 /* Time.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Time.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D855818221BDEB6400DCB577 /* Time_Shared.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Time_Shared.h; sourceTree = "<group>"; };
 		D855818321BDEB6400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -95,12 +99,21 @@
 			path = Interface;
 			sourceTree = "<group>";
 		};
+		D8437C5C21F4C6AD00974B03 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				D8437C5D21F4C6C300974B03 /* TokenStore.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
 		D855815621BDEA4E00DCB577 = {
 			isa = PBXGroup;
 			children = (
 				D855818121BDEB6400DCB577 /* Config */,
 				D837025A21CA845D0095B19F /* Interface */,
 				D85581AA21BEAB8800DCB577 /* Models */,
+				D8437C5C21F4C6AD00974B03 /* Helpers */,
 				D837025521CA802B0095B19F /* Network */,
 				D85581D421C14D6700DCB577 /* Tests */,
 				D855816121BDEA4E00DCB577 /* Products */,
@@ -142,6 +155,7 @@
 				D85581D721C14D6700DCB577 /* Info.plist */,
 				D811B17521E38CD3009F6C8E /* Test_Authentication.swift */,
 				D8437C5A21F3B04700974B03 /* Test_Token.swift */,
+				D8437C5F21F4C8C800974B03 /* Test_TokenStore.swift */,
 				D811B17821E62B81009F6C8E /* Test_API_Tokens.swift */,
 				D811B17A21E77ECF009F6C8E /* Test_API_Users.swift */,
 				D811B17E21EA451E009F6C8E /* Test_API_Accounts.swift */,
@@ -263,6 +277,7 @@
 				D85581AD21BEABC300DCB577 /* EntryType.swift in Sources */,
 				D837025C21CA846A0095B19F /* Time.swift in Sources */,
 				D811B18521ED84A9009F6C8E /* API+Accounts.swift in Sources */,
+				D8437C5E21F4C6C300974B03 /* TokenStore.swift in Sources */,
 				D811B18121ED8451009F6C8E /* API+Tokens.swift in Sources */,
 				D837025721CA82E20095B19F /* API.swift in Sources */,
 				D837025421CA7EAB0095B19F /* Token.swift in Sources */,
@@ -277,6 +292,7 @@
 				D8437C5B21F3B04700974B03 /* Test_Token.swift in Sources */,
 				D811B17921E62B81009F6C8E /* Test_API_Tokens.swift in Sources */,
 				D811B17F21EA451E009F6C8E /* Test_API_Accounts.swift in Sources */,
+				D8437C6021F4C8C800974B03 /* Test_TokenStore.swift in Sources */,
 				D811B17B21E77ECF009F6C8E /* Test_API_Users.swift in Sources */,
 				D811B17721E38D76009F6C8E /* Test_Authentication.swift in Sources */,
 			);
