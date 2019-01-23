@@ -58,7 +58,7 @@ struct Token: Codable {
         let creationTimeMilliseconds = round(creationTimeSeconds * 1000)
         try container.encodeIfPresent(creationTimeMilliseconds, forKey: .creation)
         
-        let expirationTimeSeconds: Double = self.creation.timeIntervalSince1970
+        let expirationTimeSeconds: Double = self.expiration.timeIntervalSince1970
         let expirationTimeMilliseconds = round(expirationTimeSeconds * 1000)
         try container.encodeIfPresent(expirationTimeMilliseconds, forKey: .expiration)
     }
