@@ -9,30 +9,69 @@
 import Foundation
 
 public class Time {
-    
-    public static let shared = Time()
-    
-    var token: Token? = nil
-    
-    public init() { }
-    
-    public func isAuthenticated() -> Bool {
-        guard token != nil else { return false }
-        let now = Date()
-        guard now < token!.expiration else { return false }
-        return true
+
+    static var _shared: Time? = nil
+    public static var shared: Time {
+        if Time._shared == nil {
+            Time._shared = Time(withAPI: API.shared)
+        }
+        return Time._shared!
     }
     
-    public func canRefresh() -> Bool {
-        return token != nil
+    let api: API
+    let tokenIdentifier: String
+    
+    init(withAPI apiClient: API, andTokenIdentifier tokenIdentifier: String = "token") {
+        self.api = apiClient
+        self.tokenIdentifier = tokenIdentifier
+    }
+    
+    public func initialize(completionHandler: ((Error?) -> ())? = nil) {
+        guard self.api.token == nil else {
+            completionHandler?(nil)
+            return
+        }
+        
+        guard let fetchedToken = TokenStore.getToken(withTag: self.tokenIdentifier) else {
+            completionHandler?(TimeError.tokenNotFound())
+            return
+        }
+        
+        self.api.token = fetchedToken
+        guard fetchedToken.expiration < Date() else {
+            completionHandler?(nil)
+            return
+        }
+        
+        self.api.refreshToken { (newToken, error) in
+            guard error == nil && newToken != nil else {
+                completionHandler?(TimeError.unableToRefreshToken())
+                return
+            }
+            
+            self.handleTokenSuccess(token: newToken!, completionHandler: completionHandler)
+        }
     }
     
     public func authenticate(username: String, password: String, completionHandler: ((Error?) -> ())? = nil) {
-        API.shared.getToken(withUsername: username, andPassword: password) { (token, error) in
-            if error == nil && token != nil {
-                self.token = token
+        self.api.getToken(withUsername: username, andPassword: password) { (token, error) in
+            guard error == nil else {
+                completionHandler?(error)
+                return
             }
-            completionHandler?(error)
+            
+            guard token != nil else {
+                completionHandler?(TimeError.tokenNotFound())
+                return
+            }
+            
+            self.handleTokenSuccess(token: token!, completionHandler: completionHandler)
         }
+    }
+    
+    func handleTokenSuccess(token: Token, completionHandler: ((Error?) -> ())? = nil) {
+        _ = TokenStore.storeToken(token, withTag: self.tokenIdentifier)
+        self.api.token = token
+        completionHandler?(nil)
     }
 }

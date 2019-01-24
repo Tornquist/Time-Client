@@ -8,14 +8,6 @@
 
 import Foundation
 
-public enum TimeError: Error {
-    case unableToSendRequest(String)
-    case unableToDecodeResponse()
-    case requestFailed(String)
-    case httpFailure(String)
-    case authenticationFailure(String)
-}
-
 class API {
     static let shared = API()
     
