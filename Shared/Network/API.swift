@@ -11,8 +11,12 @@ import Foundation
 class API {
     static let shared = API()
     
+    var isRefreshingToken = false
     var baseURL: String = "http://localhost:8000"
     var token: Token? = nil
+    
+    let maximumFailures = 2
+    var activeRequests: [String: APIRequest] = [:]
     
     enum HttpMethod: String {
         case GET = "GET"
@@ -34,13 +38,14 @@ class API {
     }
 
     func timeRequest(path pathComponent: String, method: HttpMethod, body: [String: Any]?, encoding: HttpEncoding?, authorized: Bool, completionHandler: @escaping (Data?, TimeError?) -> ()) {
+        // Build URL
         guard var url = URL(string: self.baseURL) else {
             completionHandler(nil, TimeError.unableToSendRequest("Cannot build URL"))
             return
         }
-        
         url.appendPathComponent(pathComponent)
         
+        // Build Body and Headers
         guard encoding == nil && body == nil || encoding != nil && body != nil else {
             completionHandler(nil, TimeError.unableToSendRequest("Mismatched body and encoding"))
             return
@@ -61,6 +66,7 @@ class API {
             }
         }
         
+        // Build Request
         let apiRequest = APIRequest.init(
             url: url,
             method: method.rawValue,
@@ -70,6 +76,10 @@ class API {
             completion: completionHandler
         )
         
+        self.sendRequest(apiRequest, completionHandler: completionHandler)
+    }
+    
+    func sendRequest(_ apiRequest: APIRequest, completionHandler: @escaping (Data?, TimeError?) -> ()) {
         var request: URLRequest!
         do {
             request = try apiRequest.buildRequest(for: self)
@@ -85,24 +95,98 @@ class API {
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {
                 let message = error as? String ?? ""
+                self.remove(request: apiRequest)
                 completionHandler(nil, TimeError.requestFailed(message))
                 return
             }
             
             if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
+                if (httpStatus.statusCode == 401) {
+                    if let responseObject = try? JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject],
+                        let message = responseObject["message"] as? String {
+                     
+                        let isFailedRefresh = message == "Refresh expired"
+                        let isFailedAccess = message == "Token expired"
+                        
+                        if isFailedRefresh {
+                            // Return failure on self
+                        } else if isFailedAccess {
+                            self.markRequestAsFailed(id: apiRequest.id)
+                            self.refreshToken()
+                            return
+                        } else {
+                            // Non-token related error. Use generic error callback
+                        }
+                    }
+                }
+
+                self.remove(request: apiRequest)
                 completionHandler(nil, TimeError.httpFailure(httpStatus.statusCode.description))
                 return
             }
             
+            self.remove(request: apiRequest)
             completionHandler(data, nil)
         }
         
         apiRequest.task = task
+        self.activeRequests[apiRequest.id] = apiRequest
         
         task.resume()
     }
     
-    // MARK: - Internal Methods
+    // MARK: - Token Refresh
+    
+    private func markRequestAsFailed(id: String) {
+        guard let request = self.activeRequests[id] else { return }
+        
+        request.reportFailure()
+        
+        if (request.failureCount >= self.maximumFailures) {
+            request.completion(nil, TimeError.authenticationFailure("Maximum number of access failures"))
+            self.remove(request: request)
+            return
+        }
+    }
+    
+    private func refreshToken() {
+        guard self.isRefreshingToken == false else { return }
+        
+        self.isRefreshingToken = true
+        
+        self.refreshToken { (newToken, error) in
+            guard error == nil else {
+                self.failAllFailedRequests()
+                return
+            }
+            
+            self.isRefreshingToken = false
+            self.retryAllFailedRequests()
+        }
+    }
+    
+    private func retryAllFailedRequests() {
+        let requests = self.activeRequests.values.filter{( $0.failed )}
+        requests.forEach { (request) in
+            request.failed = false
+            self.sendRequest(request, completionHandler: request.completion)
+        }
+    }
+    
+    private func failAllFailedRequests() {
+        let requests = self.activeRequests.values.filter{( $0.failed )}
+        requests.forEach { (request) in
+            request.completion(nil, TimeError.authenticationFailure("Unable to acquire active access token"))
+            self.remove(request: request)
+        }
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func remove(request: APIRequest) {
+        request.removeReferences()
+        self.activeRequests.removeValue(forKey: request.id)
+    }
     
     private func buildBody(method: HttpMethod, body: [String: Any], encoding: HttpEncoding) throws -> (Data?, [String: String]) {
         var data: Data?

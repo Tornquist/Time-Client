@@ -9,15 +9,21 @@
 import Foundation
 
 class APIRequest {
+    var id: String
     var url: URL
     var method: String
     var authorized: Bool
     var headers: [String: String]
     var body: Data?
-    var completion: (Data?, TimeError?) -> ()
+    var completion: ((Data?, TimeError?) -> ())!
+    
     var task: URLSessionDataTask? = nil
     
+    var failed: Bool = false
+    var failureCount = 0
+    
     init(url: URL, method: String, authorized: Bool, headers: [String: String], body: Data?, completion: @escaping (Data?, TimeError?) -> ()) {
+        self.id = UUID().uuidString
         self.url = url
         self.method = method
         self.authorized = authorized
@@ -43,5 +49,16 @@ class APIRequest {
         }
         
         return request
+    }
+    
+    func reportFailure() {
+        self.failed = true
+        self.failureCount = self.failureCount + 1
+    }
+    
+    func removeReferences() {
+        self.body = nil
+        self.completion = nil
+        self.task = nil
     }
 }
