@@ -34,71 +34,52 @@ class API {
     }
 
     func timeRequest(path pathComponent: String, method: HttpMethod, body: [String: Any]?, encoding: HttpEncoding?, authorized: Bool, completionHandler: @escaping (Data?, TimeError?) -> ()) {
-        guard var path = URL(string: self.baseURL) else {
+        guard var url = URL(string: self.baseURL) else {
             completionHandler(nil, TimeError.unableToSendRequest("Cannot build URL"))
             return
         }
         
-        path.appendPathComponent(pathComponent)
-        var request = URLRequest(url: path)
-        request.httpMethod = method.rawValue
+        url.appendPathComponent(pathComponent)
         
         guard encoding == nil && body == nil || encoding != nil && body != nil else {
             completionHandler(nil, TimeError.unableToSendRequest("Mismatched body and encoding"))
             return
         }
         
-        if encoding != nil {
-            switch (method, encoding!) {
-            case (HttpMethod.POST, HttpEncoding.json):
-                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                guard let httpBody = try? JSONSerialization.data(withJSONObject: body!, options: JSONSerialization.WritingOptions.prettyPrinted) else {
-                    completionHandler(nil, TimeError.unableToSendRequest("Cannot encode body"))
-                    return
-                }
-                request.httpBody = httpBody
-                
-            case (HttpMethod.POST, HttpEncoding.formUrlEncoded):
-                request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-                let rfc3986Reserved = CharacterSet(charactersIn: " %!*'();:@+$,/?#[]&=")
-                var safeData: [(String, String)] = []
-                body!.keys.forEach { (key) in
-                    guard let value = body![key] else {
-                        completionHandler(nil, TimeError.unableToSendRequest("Cannot encode null for x-www-form-urlencoded"))
-                        return
-                    }
-                    guard let stringValue = value as? String else {
-                        completionHandler(nil, TimeError.unableToSendRequest("x-www-form-urlencoded requires string values"))
-                        return
-                    }
-                    guard
-                        let encodedKey: String = key.addingPercentEncoding(withAllowedCharacters: rfc3986Reserved.inverted),
-                        let encodedValue: String = stringValue.addingPercentEncoding(withAllowedCharacters: rfc3986Reserved.inverted)
-                        else {
-                            completionHandler(nil, TimeError.unableToSendRequest("Cannot key or value for x-www-form-urlencoded"))
-                            return
-                    }
-                    safeData.append((encodedKey, encodedValue))
-                }
-                let bodyString = safeData.map({ "\($0.0)=\($0.1)"}).joined(separator: "&")
-                guard let bodyData = bodyString.data(using: String.Encoding.utf8) else {
-                    completionHandler(nil, TimeError.unableToSendRequest("Cannot encode rfc3986 safe data"))
-                    return
-                }
-                request.httpBody = bodyData
-                
-            default:
-                completionHandler(nil, TimeError.unableToSendRequest("Encoding not supported for method type"))
+        var httpBody: Data?
+        var headers: [String: String] = [:]
+        if body != nil && encoding != nil {
+            do {
+                (httpBody, headers) = try self.buildBody(method: method, body: body!, encoding: encoding!)
+            } catch let error as TimeError {
+                completionHandler(nil, error)
+                return
+            } catch {
+                let returnError = TimeError.requestFailed(error.localizedDescription)
+                completionHandler(nil, returnError)
                 return
             }
         }
         
-        if authorized {
-            guard let tokenValue = self.token?.token else {
-                completionHandler(nil, TimeError.authenticationFailure("Missing authentication token"))
-                return
-            }
-            request.setValue("Bearer \(tokenValue)", forHTTPHeaderField: "Authorization")
+        let apiRequest = APIRequest.init(
+            url: url,
+            method: method.rawValue,
+            authorized: authorized,
+            headers: headers,
+            body: httpBody,
+            completion: completionHandler
+        )
+        
+        var request: URLRequest!
+        do {
+            request = try apiRequest.buildRequest(for: self)
+        } catch let error as TimeError {
+            completionHandler(nil, error)
+            return
+        } catch {
+            let returnError = TimeError.requestFailed(error.localizedDescription)
+            completionHandler(nil, returnError)
+            return
         }
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
@@ -116,6 +97,54 @@ class API {
             completionHandler(data, nil)
         }
         
+        apiRequest.task = task
+        
         task.resume()
+    }
+    
+    // MARK: - Internal Methods
+    
+    private func buildBody(method: HttpMethod, body: [String: Any], encoding: HttpEncoding) throws -> (Data?, [String: String]) {
+        var data: Data?
+        var headers: [String: String] = [:]
+        
+        switch (method, encoding) {
+        case (HttpMethod.POST, HttpEncoding.json):
+            headers["Content-Type"] = "application/json"
+            guard let httpBody = try? JSONSerialization.data(withJSONObject: body, options: JSONSerialization.WritingOptions.prettyPrinted) else {
+                throw TimeError.unableToSendRequest("Cannot encode body")
+            }
+            data = httpBody
+            
+        case (HttpMethod.POST, HttpEncoding.formUrlEncoded):
+            headers["Content-Type"] = "application/x-www-form-urlencoded"
+            let rfc3986Reserved = CharacterSet(charactersIn: " %!*'();:@+$,/?#[]&=")
+            var safeData: [(String, String)] = []
+            try body.keys.forEach { (key) in
+                guard let value = body[key] else {
+                    throw TimeError.unableToSendRequest("Cannot encode null for x-www-form-urlencoded")
+                }
+                guard let stringValue = value as? String else {
+                    throw TimeError.unableToSendRequest("x-www-form-urlencoded requires string values")
+                }
+                guard
+                    let encodedKey: String = key.addingPercentEncoding(withAllowedCharacters: rfc3986Reserved.inverted),
+                    let encodedValue: String = stringValue.addingPercentEncoding(withAllowedCharacters: rfc3986Reserved.inverted)
+                    else {
+                        throw TimeError.unableToSendRequest("Cannot key or value for x-www-form-urlencoded")
+                }
+                safeData.append((encodedKey, encodedValue))
+            }
+            let bodyString = safeData.map({ "\($0.0)=\($0.1)"}).joined(separator: "&")
+            guard let bodyData = bodyString.data(using: String.Encoding.utf8) else {
+                throw TimeError.unableToSendRequest("Cannot encode rfc3986 safe data")
+            }
+            data = bodyData
+            
+        default:
+            throw TimeError.unableToSendRequest("Encoding not supported for method type")
+        }
+        
+        return (data, headers)
     }
 }

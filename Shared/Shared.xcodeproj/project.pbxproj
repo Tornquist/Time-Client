@@ -23,6 +23,7 @@
 		D8437C5E21F4C6C300974B03 /* TokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8437C5D21F4C6C300974B03 /* TokenStore.swift */; };
 		D8437C6021F4C8C800974B03 /* Test_TokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8437C5F21F4C8C800974B03 /* Test_TokenStore.swift */; };
 		D8437C6221F9EB5D00974B03 /* TimeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8437C6121F9EB5D00974B03 /* TimeError.swift */; };
+		D8437C6421FCF3D400974B03 /* APIRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8437C6321FCF3D400974B03 /* APIRequest.swift */; };
 		D855818421BDEB6400DCB577 /* Time_Shared.h in Headers */ = {isa = PBXBuildFile; fileRef = D855818221BDEB6400DCB577 /* Time_Shared.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D85581AD21BEABC300DCB577 /* EntryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85581AB21BEABC300DCB577 /* EntryType.swift */; };
 		D85581D821C14D6700DCB577 /* Time.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D855818021BDEB6400DCB577 /* Time.framework */; };
@@ -55,6 +56,7 @@
 		D8437C5D21F4C6C300974B03 /* TokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenStore.swift; sourceTree = "<group>"; };
 		D8437C5F21F4C8C800974B03 /* Test_TokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_TokenStore.swift; sourceTree = "<group>"; };
 		D8437C6121F9EB5D00974B03 /* TimeError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeError.swift; sourceTree = "<group>"; };
+		D8437C6321FCF3D400974B03 /* APIRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRequest.swift; sourceTree = "<group>"; };
 		D855818021BDEB6400DCB577 /* Time.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Time.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D855818221BDEB6400DCB577 /* Time_Shared.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Time_Shared.h; sourceTree = "<group>"; };
 		D855818321BDEB6400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -86,6 +88,7 @@
 			isa = PBXGroup;
 			children = (
 				D837025621CA82E20095B19F /* API.swift */,
+				D8437C6321FCF3D400974B03 /* APIRequest.swift */,
 				D811B18421ED84A9009F6C8E /* API+Accounts.swift */,
 				D811B18021ED8451009F6C8E /* API+Tokens.swift */,
 				D811B18221ED8491009F6C8E /* API+Users.swift */,
@@ -276,6 +279,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D837025921CA83050095B19F /* User.swift in Sources */,
+				D8437C6421FCF3D400974B03 /* APIRequest.swift in Sources */,
 				D811B18321ED8491009F6C8E /* API+Users.swift in Sources */,
 				D85581AD21BEABC300DCB577 /* EntryType.swift in Sources */,
 				D837025C21CA846A0095B19F /* Time.swift in Sources */,
