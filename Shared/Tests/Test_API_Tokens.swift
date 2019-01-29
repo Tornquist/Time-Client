@@ -35,14 +35,10 @@ class Test_API_Tokens: XCTestCase {
         
         API.shared.getToken(withUsername: "test@test.com", andPassword: "madeUpPassword") { (token, error) in
             XCTAssertNil(token)
-            XCTAssertNotNil(error)
-            
-            switch error! {
-            case TimeError.httpFailure("401"):
-                XCTAssertTrue(true)
-            default:
-                XCTAssertFalse(true, "Unexpected error returned")
-                break
+            if let trueError = error as? TimeError {
+                XCTAssertEqual(trueError, TimeError.httpFailure("401"))
+            } else {
+                XCTAssert(false, "Unexpected error returned")
             }
             
             expectation.fulfill()
@@ -84,14 +80,10 @@ class Test_API_Tokens: XCTestCase {
         
         API.shared.refreshToken() { (token, error) in
             XCTAssertNil(token)
-            XCTAssertNotNil(error)
-            
-            switch error! {
-            case TimeError.httpFailure("400"): // Made up token not found
-                XCTAssertTrue(true)
-            default:
-                XCTAssertFalse(true, "Unexpected error returned")
-                break
+            if let trueError = error as? TimeError {
+                XCTAssertEqual(trueError, TimeError.httpFailure("400")) // Made up token not found
+            } else {
+                XCTAssert(false, "Unexpected error returned")
             }
             
             expectation.fulfill()

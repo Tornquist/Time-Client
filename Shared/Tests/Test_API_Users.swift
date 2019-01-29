@@ -42,14 +42,10 @@ class Test_API_Users: XCTestCase {
         
         API.shared.createUser(withEmail: email, andPassword: password) { (user, error) in
             XCTAssertNil(user)
-            XCTAssertNotNil(error)
-            
-            switch error! {
-            case TimeError.httpFailure("409"):
-                XCTAssertTrue(true)
-            default:
-                XCTAssertFalse(true, "Unexpected error returned")
-                break
+            if let trueError = error as? TimeError {
+                XCTAssertEqual(trueError, TimeError.httpFailure("400"))
+            } else {
+                XCTAssert(false, "Unexpected error returned")
             }
             
             expectation.fulfill()
@@ -66,14 +62,10 @@ class Test_API_Users: XCTestCase {
         
         API.shared.createUser(withEmail: email, andPassword: password) { (user, error) in
             XCTAssertNil(user)
-            XCTAssertNotNil(error)
-            
-            switch error! {
-            case TimeError.httpFailure("400"):
-                XCTAssertTrue(true)
-            default:
-                XCTAssertFalse(true, "Unexpected error returned")
-                break
+            if let trueError = error as? TimeError {
+                XCTAssertEqual(trueError, TimeError.httpFailure("400"))
+            } else {
+                XCTAssert(false, "Unexpected error returned")
             }
             
             expectation.fulfill()
@@ -90,14 +82,10 @@ class Test_API_Users: XCTestCase {
         
         API.shared.createUser(withEmail: email, andPassword: password) { (user, error) in
             XCTAssertNil(user)
-            XCTAssertNotNil(error)
-            
-            switch error! {
-            case TimeError.httpFailure("400"):
-                XCTAssertTrue(true)
-            default:
-                XCTAssertFalse(true, "Unexpected error returned")
-                break
+            if let trueError = error as? TimeError {
+                XCTAssertEqual(trueError, TimeError.httpFailure("400"))
+            } else {
+                XCTAssert(false, "Unexpected error returned")
             }
             
             expectation.fulfill()
