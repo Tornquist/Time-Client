@@ -26,7 +26,7 @@ class ViewController: NSViewController {
     override func viewDidAppear() {
         super.viewDidAppear()
         
-        print(EntryType.range.rawValue)
+        Time.shared.authenticate(username: "test@test.com", password: "defaultPassword")
     }
 }
 
