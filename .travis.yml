@@ -1,0 +1,16 @@
+language: swift
+os: osx
+osx_image: xcode10.1
+
+notifications:
+  email: false
+
+script:
+  - |
+    set -o pipefail && xcodebuild test \
+      -workspace Time.xcworkspace \
+      -scheme Shared-Tests \
+      -sdk macosx10.14 \
+      CODE_SIGN_IDENTITY="" \
+      CODE_SIGNING_REQUIRED=NO \
+      | xcpretty
