@@ -11,14 +11,25 @@ env:
     - DB_PASS=
     - DB_NAME=timetest
 
+cache:
+  directories:
+    - Time-API/node_modules
+
 before_install:
   - brew install mysql@5.7
   - brew tap homebrew/services
   - brew services start mysql@5.7
   - brew link mysql@5.7 --force
-  - git clone --depth 1 git://github.com/Tornquist/Time-API.git
+
+install:
+  # Clone API and merge current source with cached node_modules.
+  - git clone --depth 1 git://github.com/Tornquist/Time-API.git api
+  - cp -a api/. Time-API/
+  - rm -rf api
+  # Install API dependencies. Create and migrate database.
   - (cd Time-API && npm install)
   - (cd Time-API && scripts/setup-travis.sh)
+  - (cd Time-API && npm start &) && sleep 2
 
 script:
   - |
