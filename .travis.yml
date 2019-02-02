@@ -1,0 +1,54 @@
+language: swift
+os: osx
+osx_image: xcode10.1
+
+notifications:
+  email: false
+
+env:
+  global:
+    - DB_USER=root
+    - DB_PASS=
+    - DB_NAME=timetest
+
+cache:
+  directories:
+    - Time-API/node_modules
+
+before_install:
+  - brew install mysql@5.7
+  - brew tap homebrew/services
+  - brew services start mysql@5.7
+  - brew link mysql@5.7 --force
+  - gem install xcov
+
+install:
+  # Clone API and merge current source with cached node_modules.
+  - git clone --depth 1 git://github.com/Tornquist/Time-API.git api
+  - cp -a api/. Time-API/
+  - rm -rf api
+  # Install API dependencies. Create and migrate database.
+  - (cd Time-API && npm install)
+  - (cd Time-API && scripts/setup-travis.sh)
+  - (cd Time-API && npm start &) && sleep 2
+
+script:
+  - |
+    set -o pipefail && xcodebuild test \
+      -workspace Time.xcworkspace \
+      -scheme Shared-Tests \
+      -sdk macosx10.14 \
+      CODE_SIGN_IDENTITY="" \
+      CODE_SIGNING_REQUIRED=NO \
+      | xcpretty
+
+after_success:
+  - |
+    xcov \
+    -w Time.xcworkspace \
+    -s Shared-Tests \
+    --json_report \
+    --skip_slack \
+    -o xcov_output \
+    --coveralls_service_name travis-ci \
+    --coveralls_service_job_id $TRAVIS_JOB_ID

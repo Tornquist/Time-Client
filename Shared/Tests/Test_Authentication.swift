@@ -60,7 +60,11 @@ class Test_Authentication: XCTestCase {
     }
     
     func test_3_authenticatedTokenExpiresInFuture() {
-        let expiration = self.api.token!.expiration
+        guard let expiration = self.api.token?.expiration else {
+            XCTFail("Token expiration not found")
+            return
+        }
+        
         let now = Date()
         
         XCTAssertLessThan(now, expiration)
