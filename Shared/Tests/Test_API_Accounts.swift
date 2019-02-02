@@ -13,23 +13,26 @@ import XCTest
 
 class Test_API_Accounts: XCTestCase {
     
-    override func setUp() { }
+    override func setUp() {
+        self.continueAfterFailure = false
+        
+        let getTokenExpectation = self.expectation(description: "getToken")
+        API.shared.getToken(withUsername: "test@test.com", andPassword: "defaultPassword") { (token, error) in
+            XCTAssertNotNil(token)
+            getTokenExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
     
     override func tearDown() { }
 
     func test_getToken_createAccount() {
         let expectation = self.expectation(description: "createAccount")
-        
-        API.shared.getToken(withUsername: "test@test.com", andPassword: "defaultPassword") { (token, error) in
-
-            XCTAssertNotNil(token)
-            
-            API.shared.createAccount() { (account, error) in
-                XCTAssertNotNil(account)
-                XCTAssertNil(error)
+        API.shared.createAccount() { (account, error) in
+            XCTAssertNotNil(account)
+            XCTAssertNil(error)
                 
-                expectation.fulfill()
-            }
+            expectation.fulfill()
         }
         
         waitForExpectations(timeout: 5, handler: nil)
@@ -37,19 +40,12 @@ class Test_API_Accounts: XCTestCase {
     
     func test_getToken_getAccounts() {
         let expectation = self.expectation(description: "getAccounts")
-        
-        API.shared.getToken(withUsername: "test@test.com", andPassword: "defaultPassword") { (token, error) in
+        API.shared.getAccounts() { (accounts, error) in
+            XCTAssertNotNil(accounts)
+            XCTAssertNil(error)
             
-            XCTAssertNotNil(token)
-            
-            API.shared.getAccounts() { (accounts, error) in
-                XCTAssertNotNil(accounts)
-                XCTAssertNil(error)
-                
-                expectation.fulfill()
-            }
+            expectation.fulfill()
         }
-        
         waitForExpectations(timeout: 5, handler: nil)
     }
 }
