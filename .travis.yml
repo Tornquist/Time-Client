@@ -20,7 +20,6 @@ before_install:
   - brew tap homebrew/services
   - brew services start mysql@5.7
   - brew link mysql@5.7 --force
-  - gem install xcov
 
 install:
   # Clone API and merge current source with cached node_modules.
@@ -43,15 +42,4 @@ script:
       | xcpretty
 
 after_success:
-  # Coveralls
-  - |
-    xcov \
-    -w Time.xcworkspace \
-    -s Shared-Tests \
-    --json_report \
-    --skip_slack \
-    -o xcov_output \
-    --coveralls_service_name travis-ci \
-    --coveralls_service_job_id $TRAVIS_JOB_ID
-  # Codecov
   - bash <(curl -s https://codecov.io/bash)
