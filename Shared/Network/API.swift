@@ -126,6 +126,7 @@ class API {
             }
             
             self.remove(request: apiRequest)
+            
             completionHandler(data, nil)
         }
         

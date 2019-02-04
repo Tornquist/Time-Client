@@ -27,6 +27,9 @@
 		D855818421BDEB6400DCB577 /* Time_Shared.h in Headers */ = {isa = PBXBuildFile; fileRef = D855818221BDEB6400DCB577 /* Time_Shared.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D85581AD21BEABC300DCB577 /* EntryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85581AB21BEABC300DCB577 /* EntryType.swift */; };
 		D85581D821C14D6700DCB577 /* Time.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D855818021BDEB6400DCB577 /* Time.framework */; };
+		D89C7C47220879B200B09D73 /* API+Categories.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89C7C46220879B200B09D73 /* API+Categories.swift */; };
+		D89C7C4922087A8700B09D73 /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89C7C4822087A8700B09D73 /* Category.swift */; };
+		D89C7C4B22087B9300B09D73 /* Test_API_Categories.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89C7C4A22087B9300B09D73 /* Test_API_Categories.swift */; };
 		D8FE621A22062549003A095A /* Test_0_Setup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FE621922062549003A095A /* Test_0_Setup.swift */; };
 /* End PBXBuildFile section */
 
@@ -64,6 +67,9 @@
 		D85581AB21BEABC300DCB577 /* EntryType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryType.swift; sourceTree = "<group>"; };
 		D85581D321C14D6700DCB577 /* Shared-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Shared-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85581D721C14D6700DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D89C7C46220879B200B09D73 /* API+Categories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "API+Categories.swift"; sourceTree = "<group>"; };
+		D89C7C4822087A8700B09D73 /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
+		D89C7C4A22087B9300B09D73 /* Test_API_Categories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_API_Categories.swift; sourceTree = "<group>"; };
 		D8FE621922062549003A095A /* Test_0_Setup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_0_Setup.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -94,6 +100,7 @@
 				D811B18421ED84A9009F6C8E /* API+Accounts.swift */,
 				D811B18021ED8451009F6C8E /* API+Tokens.swift */,
 				D811B18221ED8491009F6C8E /* API+Users.swift */,
+				D89C7C46220879B200B09D73 /* API+Categories.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -153,6 +160,7 @@
 				D837025821CA83050095B19F /* User.swift */,
 				D85581AB21BEABC300DCB577 /* EntryType.swift */,
 				D811B17C21EA4269009F6C8E /* Account.swift */,
+				D89C7C4822087A8700B09D73 /* Category.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -168,6 +176,7 @@
 				D811B17821E62B81009F6C8E /* Test_API_Tokens.swift */,
 				D811B17A21E77ECF009F6C8E /* Test_API_Users.swift */,
 				D811B17E21EA451E009F6C8E /* Test_API_Accounts.swift */,
+				D89C7C4A22087B9300B09D73 /* Test_API_Categories.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -288,11 +297,13 @@
 				D837025C21CA846A0095B19F /* Time.swift in Sources */,
 				D811B18521ED84A9009F6C8E /* API+Accounts.swift in Sources */,
 				D8437C6221F9EB5D00974B03 /* TimeError.swift in Sources */,
+				D89C7C47220879B200B09D73 /* API+Categories.swift in Sources */,
 				D8437C5E21F4C6C300974B03 /* TokenStore.swift in Sources */,
 				D811B18121ED8451009F6C8E /* API+Tokens.swift in Sources */,
 				D837025721CA82E20095B19F /* API.swift in Sources */,
 				D837025421CA7EAB0095B19F /* Token.swift in Sources */,
 				D811B17D21EA4269009F6C8E /* Account.swift in Sources */,
+				D89C7C4922087A8700B09D73 /* Category.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -302,6 +313,7 @@
 			files = (
 				D8FE621A22062549003A095A /* Test_0_Setup.swift in Sources */,
 				D8437C5B21F3B04700974B03 /* Test_Token.swift in Sources */,
+				D89C7C4B22087B9300B09D73 /* Test_API_Categories.swift in Sources */,
 				D811B17921E62B81009F6C8E /* Test_API_Tokens.swift in Sources */,
 				D811B17F21EA451E009F6C8E /* Test_API_Accounts.swift in Sources */,
 				D8437C6021F4C8C800974B03 /* Test_TokenStore.swift in Sources */,
