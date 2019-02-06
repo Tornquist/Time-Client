@@ -12,18 +12,18 @@
 		D855814921BDEA2400DCB577 /* Time_macOS.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D855814721BDEA2400DCB577 /* Time_macOS.xcdatamodeld */; };
 		D855814B21BDEA2400DCB577 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D855814A21BDEA2400DCB577 /* Assets.xcassets */; };
 		D855814E21BDEA2400DCB577 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D855814C21BDEA2400DCB577 /* Main.storyboard */; };
-		D85581B621C147F600DCB577 /* Time.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D85581B521C147F600DCB577 /* Time.framework */; };
-		D85581B721C147F600DCB577 /* Time.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D85581B521C147F600DCB577 /* Time.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D8CC04F2220B1933003746FA /* TimeSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8CC04F1220B1933003746FA /* TimeSDK.framework */; };
+		D8CC04F3220B1933003746FA /* TimeSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D8CC04F1220B1933003746FA /* TimeSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		D85581B821C147F600DCB577 /* Embed Frameworks */ = {
+		D8CC04F4220B1933003746FA /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				D85581B721C147F600DCB577 /* Time.framework in Embed Frameworks */,
+				D8CC04F3220B1933003746FA /* TimeSDK.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -39,7 +39,7 @@
 		D855814D21BDEA2400DCB577 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		D855814F21BDEA2400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D855815021BDEA2400DCB577 /* Time_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Time_macOS.entitlements; sourceTree = "<group>"; };
-		D85581B521C147F600DCB577 /* Time.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Time.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D8CC04F1220B1933003746FA /* TimeSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TimeSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,7 +47,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D85581B621C147F600DCB577 /* Time.framework in Frameworks */,
+				D8CC04F2220B1933003746FA /* TimeSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -57,7 +57,7 @@
 		D855813721BDEA2400DCB577 = {
 			isa = PBXGroup;
 			children = (
-				D85581B521C147F600DCB577 /* Time.framework */,
+				D8CC04F1220B1933003746FA /* TimeSDK.framework */,
 				D855814221BDEA2400DCB577 /* macOS */,
 				D855814121BDEA2400DCB577 /* Products */,
 			);
@@ -95,7 +95,7 @@
 				D855813C21BDEA2400DCB577 /* Sources */,
 				D855813D21BDEA2400DCB577 /* Frameworks */,
 				D855813E21BDEA2400DCB577 /* Resources */,
-				D85581B821C147F600DCB577 /* Embed Frameworks */,
+				D8CC04F4220B1933003746FA /* Embed Frameworks */,
 			);
 			buildRules = (
 			);

@@ -26,4 +26,25 @@ extension API {
             }
         }
     }
+    
+    func createCategory(withName name: String, under parent: Category, completionHandler: @escaping (Category?, Error?) -> ()) {
+        
+        let body: [String: Any] = ["name": name, "parent_id": parent.id, "account_id": parent.accountID]
+        
+        POST("/categories", body, auth: true, encoding: .json)  { (data, error) in
+            guard let data = data, error == nil else {
+                let returnError = error ?? TimeError.requestFailed("Missing response data")
+                completionHandler(nil, returnError)
+                return
+            }
+            
+            do {
+                let category = try JSONDecoder().decode(Category.self, from: data)
+                completionHandler(category, nil)
+            } catch {
+                print (error)
+                completionHandler(nil, TimeError.unableToDecodeResponse())
+            }
+        }
+    }
 }

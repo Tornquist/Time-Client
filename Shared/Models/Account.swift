@@ -8,7 +8,7 @@
 
 import Foundation
 
-class Account: Codable {
+public class Account: Codable {
     var id: Int
     var userIDs: [Int]
     

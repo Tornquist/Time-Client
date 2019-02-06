@@ -8,11 +8,11 @@
 
 import Foundation
 
-class Category: Codable {
-    var id: Int
+public class Category: Codable {
+    public var id: Int
     var parentID: Int?
     var accountID: Int
-    var name: String
+    public var name: String
     
     enum CodingKeys: String, CodingKey
     {

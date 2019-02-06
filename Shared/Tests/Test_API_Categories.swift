@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import Time
+@testable import TimeSDK
 
 class Test_API_Categories: XCTestCase {
     
@@ -17,12 +17,28 @@ class Test_API_Categories: XCTestCase {
     static var email = "\(UUID().uuidString)@time.com"
     static var password = "defaultPassword"
     
+    static var accounts: [Account] = []
+    static var categories: [TimeSDK.Category] = []
+    
     var tokenTag: String { return Test_API_Categories.tokenTag }
     var api: API! { return Test_API_Categories.api }
     var time: Time! { return Test_API_Categories.time }
     
     var email: String { return Test_API_Categories.email }
     var password: String { return Test_API_Categories.password }
+    
+    var accounts: [Account] {
+        get { return Test_API_Categories.accounts }
+        set {
+            Test_API_Categories.accounts = newValue
+        }
+    }
+    var categories: [TimeSDK.Category] {
+        get { return Test_API_Categories.categories }
+        set {
+            Test_API_Categories.categories = newValue
+        }
+    }
     
     override class func setUp() {
         Test_API_Categories.api = API()
@@ -77,6 +93,10 @@ class Test_API_Categories: XCTestCase {
             XCTAssertNotNil(account)
             newAccount = account
             accountExpectation.fulfill()
+            
+            if newAccount != nil {
+                self.accounts.append(newAccount!)
+            }
         }
         waitForExpectations(timeout: 5, handler: nil)
         
@@ -89,8 +109,51 @@ class Test_API_Categories: XCTestCase {
                 XCTAssertEqual(category.accountID, newAccount!.id)
                 XCTAssertEqual(category.name, "root")
                 XCTAssertNil(category.parentID)
+                
+                self.categories.append(category)
             } else {
                 XCTFail("Expected a category to be created")
+            }
+            
+            categoriesExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_2_creatingAChildCategory() {
+        self.continueAfterFailure = false
+        
+        guard self.categories.count == 1 else {
+            XCTFail("Test requires a single category to exist")
+            return
+        }
+        
+        let parent = self.categories[0]
+        
+        let createCategoryExpectation = self.expectation(description: "postCategory")
+        api.createCategory(withName: "My Category", under: parent) { (newCategory, error) in
+            XCTAssertNil(error)
+            
+            XCTAssertEqual(parent.accountID, newCategory?.accountID)
+            XCTAssertEqual(newCategory?.name, "My Category")
+            
+            if newCategory != nil { self.categories.append(newCategory!) }
+            
+            createCategoryExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        let categoriesExpectation = self.expectation(description: "getCategories")
+        api.getCategories { (categories, error) in
+            XCTAssertNil(error)
+            XCTAssertEqual(categories?.count ?? 0, 2)
+            
+            if let a = categories?[0], let b = categories?[1] {
+                if a.parentID == nil {
+                    XCTAssertEqual(b.parentID!, a.id)
+                } else {
+                    XCTAssertEqual(a.parentID!, b.id)
+                }
             }
             
             categoriesExpectation.fulfill()
