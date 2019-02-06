@@ -160,4 +160,48 @@ class Test_API_Categories: XCTestCase {
         }
         waitForExpectations(timeout: 5, handler: nil)
     }
+    
+    func test_3_createASiblingCategory() {
+        self.continueAfterFailure = false
+        
+        guard self.categories.count == 2 else {
+            XCTFail("Test requires two categories to exist")
+            return
+        }
+        
+        guard let parent = self.categories.first(where: { $0.parentID == nil }) else {
+            XCTFail("Unable to find parent category")
+            return
+        }
+        
+        let createCategoryExpectation = self.expectation(description: "postCategory")
+        api.createCategory(withName: "My Sibling", under: parent) { (newCategory, error) in
+            XCTAssertNil(error)
+            
+            XCTAssertEqual(parent.accountID, newCategory?.accountID)
+            XCTAssertEqual(newCategory?.name, "My Sibling")
+            
+            if newCategory != nil { self.categories.append(newCategory!) }
+            
+            createCategoryExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        let categoriesExpectation = self.expectation(description: "getCategories")
+        api.getCategories { (categories, error) in
+            XCTAssertNil(error)
+            XCTAssertEqual(categories?.count ?? 0, 3)
+            
+            categories?.forEach({ (c) in
+                if c.parentID == nil {
+                    XCTAssertEqual(c.name, "root")
+                } else {
+                    XCTAssertEqual(c.parentID!, parent.id)
+                }
+            })
+            
+            categoriesExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
 }
