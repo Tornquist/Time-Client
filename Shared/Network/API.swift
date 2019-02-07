@@ -21,6 +21,7 @@ class API {
     enum HttpMethod: String {
         case GET = "GET"
         case POST = "POST"
+        case PUT = "PUT"
     }
 
     enum HttpEncoding {
@@ -35,6 +36,10 @@ class API {
     func POST(_ pathComponent: String, _ body: [String: Any]? = nil, auth: Bool = true, encoding: HttpEncoding? = nil, completionHandler: @escaping (Data?, TimeError?) -> ()) {
         let requestEncoding = body != nil && encoding == nil ? .json : encoding
         self.timeRequest(path: pathComponent, method: .POST, body: body, encoding: requestEncoding, authorized: auth, completionHandler: completionHandler)
+    }
+    
+    func PUT(_ pathComponent: String, _ body: [String: Any]? = nil, completionHandler: @escaping (Data?, TimeError?) -> ()) {
+        self.timeRequest(path: pathComponent, method: .PUT, body: body, encoding: .json, authorized: true, completionHandler: completionHandler)
     }
 
     func timeRequest(path pathComponent: String, method: HttpMethod, body: [String: Any]?, encoding: HttpEncoding?, authorized: Bool, completionHandler: @escaping (Data?, TimeError?) -> ()) {
@@ -194,7 +199,8 @@ class API {
         var headers: [String: String] = [:]
         
         switch (method, encoding) {
-        case (HttpMethod.POST, HttpEncoding.json):
+        case (HttpMethod.POST, HttpEncoding.json),
+             (HttpMethod.PUT, HttpEncoding.json):
             headers["Content-Type"] = "application/json"
             guard let httpBody = try? JSONSerialization.data(withJSONObject: body, options: JSONSerialization.WritingOptions.prettyPrinted) else {
                 throw TimeError.unableToSendRequest("Cannot encode body")

@@ -21,4 +21,11 @@ public class Category: Codable {
         case accountID = "account_id"
         case name
     }
+    
+    init(id: Int, parentID: Int?, accountID: Int, name: String) {
+        self.id = id
+        self.parentID = parentID
+        self.accountID = accountID
+        self.name = name
+    }
 }
