@@ -188,7 +188,7 @@ class API {
     }
     
     // MARK: - Helper Methods
-    
+
     private func remove(request: APIRequest) {
         request.removeReferences()
         self.activeRequests.removeValue(forKey: request.id)
@@ -237,5 +237,23 @@ class API {
         }
         
         return (data, headers)
+    }
+    
+    // MARK: - Completion Options
+    
+    func handleDecodableCompletion<T>(_ data: Data?, _ error: Error?, completion: (T?, Error?) -> (), _ additionalActions: ((T) -> ())? = nil) where T : Decodable {
+        guard let data = data, error == nil else {
+            let returnError = error ?? TimeError.requestFailed("Missing response data")
+            completion(nil, returnError)
+            return
+        }
+        
+        do {
+            let t = try JSONDecoder().decode(T.self, from: data)
+            additionalActions?(t)
+            completion(t, nil)
+        } catch {
+            completion(nil, TimeError.unableToDecodeResponse())
+        }
     }
 }

@@ -16,18 +16,8 @@ extension API {
             "password": password
         ]
         POST("/oauth/token", body, auth: false, encoding: .formUrlEncoded) { (data, error) in
-            guard let data = data, error == nil else {
-                let returnError = error ?? TimeError.requestFailed("Missing response data")
-                completionHandler(nil, returnError)
-                return
-            }
-            
-            do {
-                let token = try JSONDecoder().decode(Token.self, from: data)
+            self.handleDecodableCompletion(data, error, completion: completionHandler) { (token) in
                 self.token = token
-                completionHandler(token, nil)
-            } catch {
-                completionHandler(nil, TimeError.unableToDecodeResponse())
             }
         }
     }
@@ -43,18 +33,8 @@ extension API {
             "refresh_token": token.refresh
         ]
         POST("/oauth/token", body, auth: false, encoding: .formUrlEncoded) { (data, error) in
-            guard let data = data, error == nil else {
-                let returnError = error ?? TimeError.requestFailed("Missing response data")
-                completionHandler(nil, returnError)
-                return
-            }
-            
-            do {
-                let token = try JSONDecoder().decode(Token.self, from: data)
+            self.handleDecodableCompletion(data, error, completion: completionHandler) { (token) in
                 self.token = token
-                completionHandler(token, nil)
-            } catch {
-                completionHandler(nil, TimeError.unableToDecodeResponse())
             }
         }
     }
