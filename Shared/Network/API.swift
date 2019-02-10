@@ -8,15 +8,19 @@
 
 import Foundation
 
-class API {
+class API: APIQueueDelegate {
     static let shared = API()
     
     var isRefreshingToken = false
     var baseURL: String = "http://localhost:8000"
     var token: Token? = nil
     
-    let maximumFailures = 2
-    var activeRequests: [String: APIRequest] = [:]
+    var queue: APIQueue
+    
+    init() {
+        self.queue = APIQueue(maximumFailures: 2)
+        self.queue.delegate = self
+    }
     
     enum HttpMethod: String {
         case GET = "GET"
@@ -29,30 +33,30 @@ class API {
         case formUrlEncoded
     }
 
-    func GET(_ pathComponent: String, auth: Bool = true, completionHandler: @escaping (Data?, TimeError?) -> ()) {
-        self.timeRequest(path: pathComponent, method: .GET, body: nil, encoding: nil, authorized: auth, completionHandler: completionHandler)
+    func GET<T>(_ pathComponent: String, auth: Bool = true, completion: @escaping (T?, Error?) -> (), sideEffects: ((T) -> ())? = nil) where T : Decodable {
+        self.timeRequest(path: pathComponent, method: .GET, body: nil, encoding: nil, authorized: auth, completion: completion, sideEffects: sideEffects)
     }
 
-    func POST(_ pathComponent: String, _ body: [String: Any]? = nil, auth: Bool = true, encoding: HttpEncoding? = nil, completionHandler: @escaping (Data?, TimeError?) -> ()) {
+    func POST<T>(_ pathComponent: String, _ body: [String: Any]? = nil, auth: Bool = true, encoding: HttpEncoding? = nil, completion: @escaping (T?, Error?) -> (), sideEffects: ((T) -> ())? = nil) where T : Decodable {
         let requestEncoding = body != nil && encoding == nil ? .json : encoding
-        self.timeRequest(path: pathComponent, method: .POST, body: body, encoding: requestEncoding, authorized: auth, completionHandler: completionHandler)
+        self.timeRequest(path: pathComponent, method: .POST, body: body, encoding: requestEncoding, authorized: auth, completion: completion, sideEffects: sideEffects)
     }
     
-    func PUT(_ pathComponent: String, _ body: [String: Any]? = nil, completionHandler: @escaping (Data?, TimeError?) -> ()) {
-        self.timeRequest(path: pathComponent, method: .PUT, body: body, encoding: .json, authorized: true, completionHandler: completionHandler)
+    func PUT<T>(_ pathComponent: String, _ body: [String: Any]? = nil, completion: @escaping (T?, Error?) -> (), sideEffects: ((T) -> ())? = nil) where T : Decodable {
+        self.timeRequest(path: pathComponent, method: .PUT, body: body, encoding: .json, authorized: true, completion: completion, sideEffects: sideEffects)
     }
 
-    func timeRequest(path pathComponent: String, method: HttpMethod, body: [String: Any]?, encoding: HttpEncoding?, authorized: Bool, completionHandler: @escaping (Data?, TimeError?) -> ()) {
+    func timeRequest<T>(path pathComponent: String, method: HttpMethod, body: [String: Any]?, encoding: HttpEncoding?, authorized: Bool, completion: @escaping (T?, Error?) -> (), sideEffects: ((T) -> ())? = nil) where T : Decodable {
         // Build URL
         guard var url = URL(string: self.baseURL) else {
-            completionHandler(nil, TimeError.unableToSendRequest("Cannot build URL"))
+            complexCompletion(nil, TimeError.unableToSendRequest("Cannot build URL"), completion, sideEffects)
             return
         }
         url.appendPathComponent(pathComponent)
         
         // Build Body and Headers
         guard encoding == nil && body == nil || encoding != nil && body != nil else {
-            completionHandler(nil, TimeError.unableToSendRequest("Mismatched body and encoding"))
+            complexCompletion(nil, TimeError.unableToSendRequest("Mismatched body and encoding"), completion, sideEffects)
             return
         }
         
@@ -62,11 +66,11 @@ class API {
             do {
                 (httpBody, headers) = try self.buildBody(method: method, body: body!, encoding: encoding!)
             } catch let error as TimeError {
-                completionHandler(nil, error)
+                complexCompletion(nil, error, completion, sideEffects)
                 return
             } catch {
                 let returnError = TimeError.requestFailed(error.localizedDescription)
-                completionHandler(nil, returnError)
+                complexCompletion(nil, returnError, completion, sideEffects)
                 return
             }
         }
@@ -78,30 +82,31 @@ class API {
             authorized: authorized,
             headers: headers,
             body: httpBody,
-            completion: completionHandler
+            completion: completion,
+            sideEffects: sideEffects
         )
         
-        self.sendRequest(apiRequest, completionHandler: completionHandler)
+        self.sendRequest(apiRequest)
     }
     
-    func sendRequest(_ apiRequest: APIRequest, completionHandler: @escaping (Data?, TimeError?) -> ()) {
+    func sendRequest<T>(_ apiRequest: APIRequest<T>) where T : Decodable {
         var request: URLRequest!
         do {
             request = try apiRequest.buildRequest(for: self)
         } catch let error as TimeError {
-            completionHandler(nil, error)
+            completeRequest(apiRequest, nil, error)
             return
         } catch {
             let returnError = TimeError.requestFailed(error.localizedDescription)
-            completionHandler(nil, returnError)
+            completeRequest(apiRequest, nil, returnError)
             return
         }
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {
                 let message = error as? String ?? ""
-                self.remove(request: apiRequest)
-                completionHandler(nil, TimeError.requestFailed(message))
+                self.completeRequest(apiRequest, nil, TimeError.requestFailed(message))
+                self.queue.remove(request: apiRequest)
                 return
             }
             
@@ -116,45 +121,33 @@ class API {
                         if isFailedRefresh {
                             // Return failure on self
                         } else if isFailedAccess {
-                            self.markRequestAsFailed(id: apiRequest.id)
+                            let marked = self.queue.markRequestAsFailed(apiRequest)
                             self.refreshToken()
-                            return
+                            // If tracked, return immediately. Else dequeue and complete request
+                            if (marked) { return }
                         } else {
                             // Non-token related error. Use generic error callback
                         }
                     }
                 }
 
-                self.remove(request: apiRequest)
-                completionHandler(nil, TimeError.httpFailure(httpStatus.statusCode.description))
+                self.completeRequest(apiRequest, nil, TimeError.httpFailure(httpStatus.statusCode.description))
+                self.queue.remove(request: apiRequest)
                 return
             }
             
-            self.remove(request: apiRequest)
-            
-            completionHandler(data, nil)
+            self.completeRequest(apiRequest, data, nil)
+            self.queue.remove(request: apiRequest)
         }
         
         apiRequest.task = task
-        self.activeRequests[apiRequest.id] = apiRequest
+        self.queue.store(request: apiRequest)
         
         task.resume()
     }
     
     // MARK: - Token Refresh
-    
-    private func markRequestAsFailed(id: String) {
-        guard let request = self.activeRequests[id] else { return }
-        
-        request.reportFailure()
-        
-        if (request.failureCount >= self.maximumFailures) {
-            request.completion(nil, TimeError.authenticationFailure("Maximum number of access failures"))
-            self.remove(request: request)
-            return
-        }
-    }
-    
+
     private func refreshToken() {
         guard self.isRefreshingToken == false else { return }
         
@@ -162,37 +155,17 @@ class API {
         
         self.refreshToken { (newToken, error) in
             guard error == nil else {
-                self.failAllFailedRequests()
+                let error = TimeError.authenticationFailure("Unable to acquire active access token")
+                self.queue.failAllFailedRequests(with: error)
                 return
             }
             
             self.isRefreshingToken = false
-            self.retryAllFailedRequests()
-        }
-    }
-    
-    private func retryAllFailedRequests() {
-        let requests = self.activeRequests.values.filter{( $0.failed )}
-        requests.forEach { (request) in
-            request.failed = false
-            self.sendRequest(request, completionHandler: request.completion)
-        }
-    }
-    
-    private func failAllFailedRequests() {
-        let requests = self.activeRequests.values.filter{( $0.failed )}
-        requests.forEach { (request) in
-            request.completion(nil, TimeError.authenticationFailure("Unable to acquire active access token"))
-            self.remove(request: request)
+            self.queue.retryAllFailedRequests()
         }
     }
     
     // MARK: - Helper Methods
-
-    private func remove(request: APIRequest) {
-        request.removeReferences()
-        self.activeRequests.removeValue(forKey: request.id)
-    }
     
     private func buildBody(method: HttpMethod, body: [String: Any], encoding: HttpEncoding) throws -> (Data?, [String: String]) {
         var data: Data?
@@ -241,7 +214,11 @@ class API {
     
     // MARK: - Completion Options
     
-    func handleDecodableCompletion<T>(_ data: Data?, _ error: Error?, completion: (T?, Error?) -> (), _ additionalActions: ((T) -> ())? = nil) where T : Decodable {
+    func completeRequest<T>(_ apiRequest: APIRequest<T>, _ data: Data?, _ error: Error?) where T : Decodable {
+        complexCompletion(data, error, apiRequest.completion, apiRequest.sideEffects)
+    }
+    
+    func complexCompletion<T>(_ data: Data?, _ error: Error?, _ completion: (T?, Error?) -> (), _ sideEffects: ((T) -> ())? = nil) where T : Decodable {
         guard let data = data, error == nil else {
             let returnError = error ?? TimeError.requestFailed("Missing response data")
             completion(nil, returnError)
@@ -250,7 +227,7 @@ class API {
         
         do {
             let t = try JSONDecoder().decode(T.self, from: data)
-            additionalActions?(t)
+            sideEffects?(t)
             completion(t, nil)
         } catch {
             completion(nil, TimeError.unableToDecodeResponse())

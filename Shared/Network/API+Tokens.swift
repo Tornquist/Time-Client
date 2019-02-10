@@ -15,10 +15,8 @@ extension API {
             "username": username,
             "password": password
         ]
-        POST("/oauth/token", body, auth: false, encoding: .formUrlEncoded) { (data, error) in
-            self.handleDecodableCompletion(data, error, completion: completionHandler) { (token) in
-                self.token = token
-            }
+        POST("/oauth/token", body, auth: false, encoding: .formUrlEncoded, completion: completionHandler) { (token) in
+            self.token = token
         }
     }
     
@@ -32,10 +30,8 @@ extension API {
             "grant_type" : "refresh_token",
             "refresh_token": token.refresh
         ]
-        POST("/oauth/token", body, auth: false, encoding: .formUrlEncoded) { (data, error) in
-            self.handleDecodableCompletion(data, error, completion: completionHandler) { (token) in
-                self.token = token
-            }
+        POST("/oauth/token", body, auth: false, encoding: .formUrlEncoded, completion: completionHandler) { (token) in
+            self.token = token
         }
     }
 }

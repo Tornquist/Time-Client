@@ -10,14 +10,10 @@ import Foundation
 
 extension API {
     func createAccount(completionHandler: @escaping (Account?, Error?) -> ()) {
-        POST("/accounts") { (data, error) in
-            self.handleDecodableCompletion(data, error, completion: completionHandler)
-        }
+        POST("/accounts", completion: completionHandler)
     }
     
     func getAccounts(completionHandler: @escaping ([Account]?, Error?) -> ()) {
-        GET("/accounts") { (data, error) in
-            self.handleDecodableCompletion(data, error, completion: completionHandler)
-        }
+        GET("/accounts", completion: completionHandler)
     }
 }

@@ -10,8 +10,6 @@ import Foundation
 
 extension API {
     func createUser(withEmail email: String, andPassword password: String, completionHandler: @escaping (User?, Error?) -> ()) {
-        POST("/users", ["email": email, "password": password], auth: false) { (data, error) in
-            self.handleDecodableCompletion(data, error, completion: completionHandler)
-        }
+        POST("/users", ["email": email, "password": password], auth: false, completion: completionHandler)
     }
 }

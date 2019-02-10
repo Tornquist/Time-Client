@@ -8,21 +8,22 @@
 
 import Foundation
 
-class APIRequest {
+class APIRequest<T> {
     var id: String
     var url: URL
     var method: String
     var authorized: Bool
     var headers: [String: String]
     var body: Data?
-    var completion: ((Data?, TimeError?) -> ())!
+    var completion: ((T?, Error?) -> ())!
+    var sideEffects: ((T) -> ())?
     
     var task: URLSessionDataTask? = nil
     
     var failed: Bool = false
     var failureCount = 0
     
-    init(url: URL, method: String, authorized: Bool, headers: [String: String], body: Data?, completion: @escaping (Data?, TimeError?) -> ()) {
+    init(url: URL, method: String, authorized: Bool, headers: [String: String], body: Data?, completion: @escaping ((T?, Error?) -> ()), sideEffects: ((T) -> ())?) {
         self.id = UUID().uuidString
         self.url = url
         self.method = method
@@ -30,6 +31,7 @@ class APIRequest {
         self.headers = headers
         self.body = body
         self.completion = completion
+        self.sideEffects = sideEffects
     }
     
     func buildRequest(for api: API) throws -> URLRequest {
@@ -59,6 +61,7 @@ class APIRequest {
     func removeReferences() {
         self.body = nil
         self.completion = nil
+        self.sideEffects = nil
         self.task = nil
     }
 }
