@@ -122,45 +122,26 @@ class APIQueue {
     private func fail<T>(request: APIRequest<T>, with error: Error) {
         switch request {
         case is APIRequest<Token>:
-            if let item = self.activeTokenRequests[request.id] {
-                self.delegate?.completeRequest(item, nil, error)
-                self.remove(request: item)
-            }
-            
+            if let item = self.activeTokenRequests[request.id] { handleFail(request: item, with: error) }
         case is APIRequest<User>:
-            if let item = self.activeUserRequests[request.id] {
-                self.delegate?.completeRequest(item, nil, error)
-                self.remove(request: item)
-            }
-            
+            if let item = self.activeUserRequests[request.id] { handleFail(request: item, with: error) }
         case is APIRequest<Account>:
-            if let item = self.activeAccountRequests[request.id] {
-                self.delegate?.completeRequest(item, nil, error)
-                self.remove(request: item)
-            }
-            
+            if let item = self.activeAccountRequests[request.id] { handleFail(request: item, with: error) }
         case is APIRequest<[Account]>:
-            if let item = self.activeAccountsRequests[request.id] {
-                self.delegate?.completeRequest(item, nil, error)
-                self.remove(request: item)
-            }
-            
+            if let item = self.activeAccountsRequests[request.id] { handleFail(request: item, with: error) }
         case is APIRequest<Category>:
-            if let item = self.activeCategoryRequests[request.id] {
-                self.delegate?.completeRequest(item, nil, error)
-                self.remove(request: item)
-            }
-            
+            if let item = self.activeCategoryRequests[request.id] { handleFail(request: item, with: error) }
         case is APIRequest<[Category]>:
-            if let item = self.activeCategoriesRequests[request.id] {
-                self.delegate?.completeRequest(item, nil, error)
-                self.remove(request: item)
-            }
-            
+            if let item = self.activeCategoriesRequests[request.id] { handleFail(request: item, with: error) }
         default:
             // Unreachable due to exists check
             break
         }
+    }
+    
+    private func handleFail<T>(request: APIRequest<T>, with error: Error) where T : Decodable {
+        self.delegate?.completeRequest(request, nil, error)
+        self.remove(request: request)
     }
     
     private func retryAllFailedRequestsInStore<T>(_ store: [String: APIRequest<T>]) where T : Decodable {
