@@ -65,6 +65,19 @@ class Test_APIQueue: XCTestCase {
         return request
     }
     
+    class MockDelegate: APIQueueDelegate {
+        var send: (() -> ())? = nil
+        var complete: ((_ data: Data?, _ error: Error?) -> ())? = nil
+        
+        func sendRequest<T>(_ apiRequest: APIRequest<T>) where T : Decodable {
+            self.send?()
+        }
+        
+        func completeRequest<T>(_ apiRequest: APIRequest<T>, _ data: Data?, _ error: Error?) where T : Decodable {
+            self.complete?(data, error)
+        }
+    }
+    
     func test_storingKnownModels() {
         let request = getUserRequest()
         
@@ -126,5 +139,37 @@ class Test_APIQueue: XCTestCase {
         
         let result = queue.markRequestAsFailed(request)
         XCTAssertFalse(result, "Request holds unknown model. Should not have been marked.")
+    }
+    
+    func test_autofailingTrackedModels() {
+        var completionCalled: Bool = false
+        var completionError: Error? = nil
+        
+        let request = getUserRequest()
+
+        let myDelegate = MockDelegate()
+        myDelegate.send = {
+            XCTFail("Send should not have been called")
+        }
+        myDelegate.complete = { (data, error) in
+            completionCalled = true
+            completionError = error
+        }
+        queue.delegate = myDelegate
+        
+        queue.store(request: request)
+        
+        let try1 = queue.markRequestAsFailed(request)
+        XCTAssertTrue(try1)
+        XCTAssertFalse(completionCalled)
+        XCTAssertNil(completionError)
+        
+        let try2 = queue.markRequestAsFailed(request)
+        XCTAssertTrue(try2)
+        XCTAssertTrue(completionCalled)
+        XCTAssertEqual(completionError as? TimeError, TimeError.authenticationFailure("Maximum number of access failures"))
+        
+        let try3 = queue.markRequestAsFailed(request)
+        XCTAssertFalse(try3, "Failed requests should be removed from the queue")
     }
 }
