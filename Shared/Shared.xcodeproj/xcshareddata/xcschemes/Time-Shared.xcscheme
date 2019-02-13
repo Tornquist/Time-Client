@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D855817F21BDEB6400DCB577"
-               BuildableName = "Time.framework"
+               BuildableName = "TimeSDK.framework"
                BlueprintName = "Shared"
                ReferencedContainer = "container:Shared.xcodeproj">
             </BuildableReference>
@@ -46,7 +46,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D855817F21BDEB6400DCB577"
-            BuildableName = "Time.framework"
+            BuildableName = "TimeSDK.framework"
             BlueprintName = "Shared"
             ReferencedContainer = "container:Shared.xcodeproj">
          </BuildableReference>
@@ -64,7 +64,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D855817F21BDEB6400DCB577"
-            BuildableName = "Time.framework"
+            BuildableName = "TimeSDK.framework"
             BlueprintName = "Shared"
             ReferencedContainer = "container:Shared.xcodeproj">
          </BuildableReference>

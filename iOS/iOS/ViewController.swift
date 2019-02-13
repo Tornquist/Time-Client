@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Time
+import TimeSDK
 
 class ViewController: UIViewController {
 

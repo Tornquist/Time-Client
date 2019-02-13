@@ -9,7 +9,7 @@
 import Foundation
 
 import XCTest
-@testable import Time
+@testable import TimeSDK
 
 class Test_Token: XCTestCase {
     override func setUp() { }

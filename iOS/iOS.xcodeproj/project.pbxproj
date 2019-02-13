@@ -13,18 +13,18 @@
 		D855812B21BDE9A200DCB577 /* Time_iOS.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D855812921BDE9A200DCB577 /* Time_iOS.xcdatamodeld */; };
 		D855812D21BDE9A400DCB577 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D855812C21BDE9A400DCB577 /* Assets.xcassets */; };
 		D855813021BDE9A400DCB577 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D855812E21BDE9A400DCB577 /* LaunchScreen.storyboard */; };
-		D85581E321C14F7000DCB577 /* Time.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D85581E221C14F7000DCB577 /* Time.framework */; };
-		D85581E421C14F7000DCB577 /* Time.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D85581E221C14F7000DCB577 /* Time.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D8FB6ABF220B18CD002C0456 /* TimeSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8FB6ABE220B18CD002C0456 /* TimeSDK.framework */; };
+		D8FB6AC0220B18CD002C0456 /* TimeSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D8FB6ABE220B18CD002C0456 /* TimeSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		D85581E121C14F6800DCB577 /* Embed Frameworks */ = {
+		D8FB6AC1220B18CD002C0456 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				D85581E421C14F7000DCB577 /* Time.framework in Embed Frameworks */,
+				D8FB6AC0220B18CD002C0456 /* TimeSDK.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -40,7 +40,7 @@
 		D855812C21BDE9A400DCB577 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D855812F21BDE9A400DCB577 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D855813121BDE9A400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D85581E221C14F7000DCB577 /* Time.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Time.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D8FB6ABE220B18CD002C0456 /* TimeSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TimeSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -48,7 +48,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D85581E321C14F7000DCB577 /* Time.framework in Frameworks */,
+				D8FB6ABF220B18CD002C0456 /* TimeSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,7 +58,7 @@
 		D855811621BDE9A200DCB577 = {
 			isa = PBXGroup;
 			children = (
-				D85581E221C14F7000DCB577 /* Time.framework */,
+				D8FB6ABE220B18CD002C0456 /* TimeSDK.framework */,
 				D855812121BDE9A200DCB577 /* iOS */,
 				D855812021BDE9A200DCB577 /* Products */,
 			);
@@ -96,7 +96,7 @@
 				D855811B21BDE9A200DCB577 /* Sources */,
 				D855811C21BDE9A200DCB577 /* Frameworks */,
 				D855811D21BDE9A200DCB577 /* Resources */,
-				D85581E121C14F6800DCB577 /* Embed Frameworks */,
+				D8FB6AC1220B18CD002C0456 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
