@@ -46,6 +46,22 @@ class Test_APIQueue: XCTestCase {
         return request
     }
     
+    func getGenericRequest<T>(_ t: T.Type) -> APIRequest<T> where T : Decodable {
+        let url = URL(string: "https://test.com")!
+        
+        let request = APIRequest(
+            url: url,
+            method: "GET",
+            authorized: true,
+            headers: [:],
+            body: nil,
+            completion: { (t: T?, error: Error?) in },
+            sideEffects: nil
+        )
+        
+        return request
+    }
+    
     class NotTrackedClass {}
     func getNotTrackedClassRequest() -> APIRequest<NotTrackedClass> {
         let url = URL(string: "https://test.com")!
@@ -66,15 +82,15 @@ class Test_APIQueue: XCTestCase {
     }
     
     class MockDelegate: APIQueueDelegate {
-        var send: (() -> ())? = nil
-        var complete: ((_ data: Data?, _ error: Error?) -> ())? = nil
+        var send: ((_ id: String) -> ())? = nil
+        var complete: ((_ id: String, _ data: Data?, _ error: Error?) -> ())? = nil
         
         func sendRequest<T>(_ apiRequest: APIRequest<T>) where T : Decodable {
-            self.send?()
+            self.send?(apiRequest.id)
         }
         
         func completeRequest<T>(_ apiRequest: APIRequest<T>, _ data: Data?, _ error: Error?) where T : Decodable {
-            self.complete?(data, error)
+            self.complete?(apiRequest.id, data, error)
         }
     }
     
@@ -148,10 +164,10 @@ class Test_APIQueue: XCTestCase {
         let request = getUserRequest()
 
         let myDelegate = MockDelegate()
-        myDelegate.send = {
+        myDelegate.send = { _ in
             XCTFail("Send should not have been called")
         }
-        myDelegate.complete = { (data, error) in
+        myDelegate.complete = { (id, data, error) in
             completionCalled = true
             completionError = error
         }
@@ -171,5 +187,142 @@ class Test_APIQueue: XCTestCase {
         
         let try3 = queue.markRequestAsFailed(request)
         XCTAssertFalse(try3, "Failed requests should be removed from the queue")
+    }
+    
+    func test_retryAllFailedModelsMixedClasses() {
+        self.continueAfterFailure = false
+        
+        // Create a bunch of requests
+        var expectations: [String: XCTestExpectation] = [:]
+        
+        let userA = self.getGenericRequest(User.self)
+        userA.failed = true
+        queue.store(request: userA)
+        expectations[userA.id] = self.expectation(description: userA.id)
+        
+        let userB = self.getGenericRequest(User.self)
+        userB.failed = true
+        queue.store(request: userB)
+        expectations[userB.id] = self.expectation(description: userB.id)
+        
+        let accountA = self.getGenericRequest(Account.self)
+        accountA.failed = true
+        queue.store(request: accountA)
+        expectations[accountA.id] = self.expectation(description: accountA.id)
+        
+        let categoriesA = self.getGenericRequest([TimeSDK.Category].self)
+        categoriesA.failed = true
+        queue.store(request: categoriesA)
+        expectations[categoriesA.id] = self.expectation(description: categoriesA.id)
+        
+        let categoriesB = self.getGenericRequest([TimeSDK.Category].self)
+        categoriesB.failed = true
+        queue.store(request: categoriesB)
+        expectations[categoriesB.id] = self.expectation(description: categoriesB.id)
+        
+        // Retry all (will pass if all expectations pass)
+        // Build delegates
+        let myDelegate = MockDelegate()
+        myDelegate.send = { id in
+            expectations[id]?.fulfill()
+        }
+        myDelegate.complete = { (id, data, error) in
+            XCTFail("Complete should not have been called")
+        }
+        queue.delegate = myDelegate
+
+        // Queue requests
+        queue.retryAllFailedRequests()
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_retryAllFailedModelsMixedTypes() {
+        self.continueAfterFailure = false
+        
+        // Build tests
+        let expectationA = self.expectation(description: "a")
+        let expectationB = self.expectation(description: "b")
+        var aCalled = false
+        var bCalled = false
+        
+        let userA = self.getGenericRequest(User.self)
+        userA.failed = true
+        queue.store(request: userA)
+        
+        let userB = self.getGenericRequest(User.self)
+        userB.failed = false
+        queue.store(request: userB)
+        
+        // Build delegates
+        let myDelegate = MockDelegate()
+        myDelegate.send = { id in
+            if id == userA.id {
+                aCalled = true
+                expectationA.fulfill()
+            }
+            if id == userB.id {
+                bCalled = true
+                expectationB.fulfill()
+            }
+        }
+        myDelegate.complete = { (id, data, error) in
+            XCTFail("Complete should not have been called")
+        }
+        queue.delegate = myDelegate
+        
+        // Queue requests
+        queue.retryAllFailedRequests()
+        expectationB.fulfill() // Should only be called once
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        XCTAssertTrue(aCalled)
+        XCTAssertFalse(bCalled)
+    }
+    
+    func test_failAllFailedModels() {
+        self.continueAfterFailure = false
+        
+        let failureError = TimeError.authenticationFailure("System failure")
+    
+        // Build tests
+        let expectationA = self.expectation(description: "A")
+        let expectationB = self.expectation(description: "B")
+        var aCalled = false
+        var bCalled = false
+        
+        let userA = self.getGenericRequest(User.self)
+        userA.failed = true
+        queue.store(request: userA)
+        
+        let userB = self.getGenericRequest(User.self)
+        userB.failed = false
+        queue.store(request: userB)
+        
+        // Build delegates
+        let myDelegate = MockDelegate()
+        myDelegate.send = { id in
+            XCTFail("Send should not have been called")
+        }
+        myDelegate.complete = { (id, data, error) in
+            if id == userA.id {
+                aCalled = true
+                XCTAssertEqual(error as? TimeError, failureError)
+                XCTAssertNotNil(error)
+                expectationA.fulfill()
+            }
+            if id == userB.id {
+                bCalled = true
+                expectationB.fulfill()
+            }
+        }
+        queue.delegate = myDelegate
+        
+        // Queue requests
+        queue.failAllFailedRequests(with: failureError)
+        expectationB.fulfill() // Should only be called once. B is not failed, so it should not be completed
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        XCTAssertTrue(aCalled)
+        XCTAssertFalse(bCalled)
     }
 }
