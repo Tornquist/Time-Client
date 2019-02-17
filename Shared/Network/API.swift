@@ -185,10 +185,7 @@ class API: APIQueueDelegate {
             let rfc3986Reserved = CharacterSet(charactersIn: " %!*'();:@+$,/?#[]&=")
             var safeData: [(String, String)] = []
             try body.keys.forEach { (key) in
-                guard let value = body[key] else {
-                    throw TimeError.unableToSendRequest("Cannot encode null for x-www-form-urlencoded")
-                }
-                guard let stringValue = value as? String else {
+                guard let value = body[key], let stringValue = value as? String else {
                     throw TimeError.unableToSendRequest("x-www-form-urlencoded requires string values")
                 }
                 guard

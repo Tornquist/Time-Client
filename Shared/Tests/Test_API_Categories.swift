@@ -10,7 +10,6 @@ import XCTest
 @testable import TimeSDK
 
 class Test_API_Categories: XCTestCase {
-    
     static var tokenTag = "test-categories-tests"
     static var api: API!
     static var time: Time!

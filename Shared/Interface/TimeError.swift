@@ -22,16 +22,16 @@ public enum TimeError: Error {
 extension TimeError: Equatable {
     public static func == (lhs: TimeError, rhs: TimeError) -> Bool {
         switch (lhs, rhs) {
-        case (.unableToSendRequest, .unableToSendRequest):
-            return true
+        case (.unableToSendRequest(let l), .unableToSendRequest(let r)):
+            return l == r
         case (.unableToDecodeResponse, .unableToDecodeResponse):
             return true
-        case (.requestFailed, .requestFailed):
-            return true
-        case (.httpFailure, .httpFailure):
-            return true
-        case (.authenticationFailure, .authenticationFailure):
-            return true
+        case (.requestFailed(let l), .requestFailed(let r)):
+            return l == r
+        case (.httpFailure(let l), .httpFailure(let r)):
+            return l == r
+        case (.authenticationFailure(let l), .authenticationFailure(let r)):
+            return l == r
         case (.tokenNotFound, .tokenNotFound):
             return true
         case (.unableToRefreshToken, .unableToRefreshToken):
