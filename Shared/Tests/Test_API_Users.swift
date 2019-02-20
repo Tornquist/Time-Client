@@ -43,7 +43,7 @@ class Test_API_Users: XCTestCase {
         API.shared.createUser(withEmail: email, andPassword: password) { (user, error) in
             XCTAssertNil(user)
             if let trueError = error as? TimeError {
-                XCTAssertEqual(trueError, TimeError.httpFailure("400"))
+                XCTAssertEqual(trueError, TimeError.httpFailure("409"))
             } else {
                 XCTAssert(false, "Unexpected error returned")
             }
