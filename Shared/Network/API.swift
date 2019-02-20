@@ -122,7 +122,7 @@ class API: APIQueueDelegate {
                             // Return failure on self
                         } else if isFailedAccess {
                             let marked = self.queue.markRequestAsFailed(apiRequest)
-                            self.refreshToken()
+                            self.handleFailedAccess()
                             // If tracked, return immediately. Else dequeue and complete request
                             if (marked) { return }
                         } else {
@@ -148,7 +148,7 @@ class API: APIQueueDelegate {
     
     // MARK: - Token Refresh
 
-    private func refreshToken() {
+    func handleFailedAccess() {
         guard self.isRefreshingToken == false else { return }
         
         self.isRefreshingToken = true

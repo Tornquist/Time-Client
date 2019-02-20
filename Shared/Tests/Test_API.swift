@@ -121,4 +121,88 @@ class Test_API: XCTestCase {
         }, sideEffects: nil)
         waitForExpectations(timeout: 5, handler: nil)
     }
+    
+    // MARK: - Handle Failed Access
+    
+    func test_failedTokenSuccessfulRefresh() {
+        let expectation = self.expectation(description: "autoRefreshToken")
+        
+        // Configure real request
+        let url = URL(string: self.api.baseURL + "/accounts")!
+        var sideEffectsCalled = false
+        
+        let request = APIRequest(
+            url: url,
+            method: "GET",
+            authorized: true,
+            headers: ["Content-Type":"application/json"],
+            body: nil,
+            completion: { (accounts: [Account]?, error: Error?) in
+                XCTAssertNotNil(accounts)
+                XCTAssertNil(error)
+                expectation.fulfill()
+            },
+            sideEffects: { (accounts: [Account]?) in
+                sideEffectsCalled = true
+            }
+        )
+        
+        // Load request in failed queue
+        request.failed = true
+        request.failureCount = 1
+        self.api.queue.store(request: request)
+        
+        // Trigger token refresh and monitor token change
+        let startingToken = self.api.token?.token
+        api.handleFailedAccess()
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        let endingToken = self.api.token?.token
+        
+        XCTAssertNotEqual(startingToken, endingToken)
+        XCTAssertTrue(sideEffectsCalled)
+    }
+    
+    // Destructive test: run last
+    func test_z_failedTokenFailedRefresh() {
+        let expectation = self.expectation(description: "autoRefreshToken")
+        
+        // Configure real request
+        let url = URL(string: self.api.baseURL + "/accounts")!
+        var sideEffectsCalled = false
+        
+        let request = APIRequest(
+            url: url,
+            method: "GET",
+            authorized: true,
+            headers: ["Content-Type":"application/json"],
+            body: nil,
+            completion: { (accounts: [Account]?, error: Error?) in
+                XCTAssertNil(accounts)
+                XCTAssertNotNil(error)
+                expectation.fulfill()
+            },
+            sideEffects: { (accounts: [Account]?) in
+                sideEffectsCalled = true
+            }
+        )
+        
+        // Load request in failed queue
+        request.failed = true
+        request.failureCount = 1
+        self.api.queue.store(request: request)
+        
+        // Trigger token refresh and monitor token change
+        let startingToken = self.api.token?.token
+        self.api.token?.refresh = "ASDF" // Break token so refresh fails
+        api.handleFailedAccess()
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        let endingToken = self.api.token?.token
+        
+        // No refresh occurred
+        XCTAssertEqual(startingToken, endingToken)
+        // Side effects only called on success
+        XCTAssertFalse(sideEffectsCalled)
+    }
 }
