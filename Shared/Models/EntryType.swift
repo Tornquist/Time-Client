@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum EntryType: String {
-    case event = "event"
-    case range = "range"
+public enum EntryType: String, Codable {
+    case event
+    case range
 }
