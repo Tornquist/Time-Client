@@ -97,10 +97,10 @@ extension API {
         var body: [String: Any] = [:]
         if category != nil { body["category_id"] = category!.id }
         if type != nil { body["type"] = type!.rawValue }
-        if startedAt != nil { body["started_at"] = startedAt!.description }
-        if endedAt != nil { body["ended_at"] = endedAt!.description }
+        if startedAt != nil { body["started_at"] = DateHelper.isoStringFrom(date: startedAt!) }
+        if endedAt != nil { body["ended_at"] = DateHelper.isoStringFrom(date: endedAt!) }
         
-        POST("/entries/\(id)", body, auth: true, encoding: .json, completion: completionHandler)
+        PUT("/entries/\(id)", body, completion: completionHandler)
     }
     
     func deleteEntry(withID id: Int, completionHandler: @escaping (Error?) -> ()) {

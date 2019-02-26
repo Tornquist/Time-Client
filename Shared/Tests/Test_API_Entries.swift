@@ -16,8 +16,7 @@ class Test_API_Entries: XCTestCase {
     static var email = "\(UUID().uuidString)@time.com"
     static var password = "defaultPassword"
     
-    static var accounts: [Account] = []
-    static var categories: [TimeSDK.Category] = []
+    static var sharedEntry: Entry? = nil
     
     var tokenTag: String { return Test_API_Entries.tokenTag }
     var api: API! { return Test_API_Entries.api }
@@ -81,7 +80,7 @@ class Test_API_Entries: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_0_startsWithNoEntries() {
+    func test_00_startsWithNoEntries() {
         let expectation = self.expectation(description: "entries")
         api.getEntries { (entries, error) in
             XCTAssertNotNil(entries)
@@ -91,7 +90,7 @@ class Test_API_Entries: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_1_recordingAnEvent() {
+    func test_01_recordingAnEvent() {
         let expectation = self.expectation(description: "entries")
         api.recordEvent(for: self.category) { (entry, error) in
             XCTAssertNotNil(entry)
@@ -106,7 +105,7 @@ class Test_API_Entries: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_2_rejectsStoppingARangeWhenNoneOpen() {
+    func test_02_rejectsStoppingARangeWhenNoneOpen() {
         let expectation = self.expectation(description: "entries")
         api.updateRange(for: self.category, with: .stop) { (entry, error) in
             XCTAssertEqual(error as? TimeError, TimeError.httpFailure("400"))
@@ -115,7 +114,7 @@ class Test_API_Entries: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_3_allowsStartingARangeWhenNoneOpen() {
+    func test_03_allowsStartingARangeWhenNoneOpen() {
         let expectation = self.expectation(description: "entries")
         api.updateRange(for: self.category, with: .start) { (entry, error) in
             XCTAssertNotNil(entry)
@@ -129,7 +128,7 @@ class Test_API_Entries: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_4_rejectsStartingARangeWhenOneOpen() {
+    func test_04_rejectsStartingARangeWhenOneOpen() {
         let expectation = self.expectation(description: "entries")
         api.updateRange(for: self.category, with: .start) { (entry, error) in
             XCTAssertEqual(error as? TimeError, TimeError.httpFailure("400"))
@@ -138,7 +137,7 @@ class Test_API_Entries: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_5_allowsStoppingARangeWhenOneOpen() {
+    func test_05_allowsStoppingARangeWhenOneOpen() {
         let expectation = self.expectation(description: "entries")
         api.updateRange(for: self.category, with: .stop) { (entry, error) in
             XCTAssertNotNil(entry)
@@ -147,7 +146,157 @@ class Test_API_Entries: XCTestCase {
                 XCTAssertNotNil(entry?.startedAt)
                 XCTAssertNotNil(entry?.endedAt)
             }
+            
+            Test_API_Entries.sharedEntry = entry
             expectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_06_allowsEntriesToBeLoadedByID() {
+        guard let se = Test_API_Entries.sharedEntry else {
+            XCTFail("Dependent on test 5. Missing entry")
+            return
+        }
+        
+        let expectation = self.expectation(description: "entry")
+        api.getEntry(withID: se.id) { (e, error) in
+            XCTAssertEqual(se.id, e?.id)
+            XCTAssertEqual(se.type, e?.type)
+            XCTAssertEqual(se.categoryID, e?.categoryID)
+            XCTAssertEqual(se.startedAt, e?.startedAt)
+            XCTAssertEqual(
+                se.endedAt?.timeIntervalSinceReferenceDate ?? -100,
+                e?.endedAt?.timeIntervalSinceReferenceDate ?? -200,
+                accuracy: 1.0
+            )
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_07_allowsEntryTypeToBeUpdated() {
+        guard let se = Test_API_Entries.sharedEntry else {
+            XCTFail("Dependent on test 5. Missing entry")
+            return
+        }
+        
+        let expectation = self.expectation(description: "entry")
+        api.updateEntry(with: se.id, setType: .event) { (updatedEvent, error) in
+            XCTAssertEqual(se.id, updatedEvent?.id)
+            XCTAssertEqual(updatedEvent?.type, EntryType.event)
+            XCTAssertEqual(se.categoryID, updatedEvent?.categoryID)
+            XCTAssertEqual(se.startedAt, updatedEvent?.startedAt)
+            XCTAssertNil(updatedEvent?.endedAt)
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_08_allowsStartedAtToBeUpdated() {
+        guard let se = Test_API_Entries.sharedEntry else {
+            XCTFail("Dependent on test 5. Missing entry")
+            return
+        }
+        
+        let newStart = Date()
+        
+        let expectation = self.expectation(description: "entry")
+        api.updateEntry(with: se.id, setStartedAt: newStart) { (updatedEvent, error) in
+            XCTAssertEqual(se.id, updatedEvent?.id)
+            XCTAssertEqual(updatedEvent?.type, EntryType.event)
+            XCTAssertEqual(se.categoryID, updatedEvent?.categoryID)
+            XCTAssertEqual(
+                updatedEvent?.startedAt.timeIntervalSinceReferenceDate ?? -100,
+                newStart.timeIntervalSinceReferenceDate,
+                accuracy: 1.0
+            )
+            XCTAssertNil(updatedEvent?.endedAt)
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_09_allowsMultipleFieldsToBeChanged() {
+        guard let se = Test_API_Entries.sharedEntry else {
+            XCTFail("Dependent on test 5. Missing entry")
+            return
+        }
+        
+        let newEnd = Date()
+        
+        let expectation = self.expectation(description: "entry")
+        api.updateEntry(with: se.id, setType: .range, setEndedAt: newEnd) { (updatedEvent, error) in
+            XCTAssertEqual(se.id, updatedEvent?.id)
+            XCTAssertEqual(updatedEvent?.type, EntryType.range)
+            XCTAssertEqual(se.categoryID, updatedEvent?.categoryID)
+            XCTAssertEqual(
+                updatedEvent?.endedAt?.timeIntervalSinceReferenceDate ?? -100,
+                newEnd.timeIntervalSinceReferenceDate,
+                accuracy: 1.0
+            )
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_10_allowsCategoryToBeChanged() {
+        guard let se = Test_API_Entries.sharedEntry else {
+            XCTFail("Dependent on test 5. Missing entry")
+            return
+        }
+        
+        var parent: TimeSDK.Category! = nil
+        let categoriesExpectation = self.expectation(description: "getCategories")
+        api.getCategories { (categories, error) in
+            parent = categories?[0]
+            categoriesExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        guard parent != nil else {
+            XCTFail("Expected parent to exist")
+            return
+        }
+        
+        var child: TimeSDK.Category! = nil
+        let createCategoryExpectation = self.expectation(description: "createCategory")
+        api.createCategory(withName: "Child", under: parent!) { (newCategory, error) in
+            child = newCategory
+            createCategoryExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        guard child != nil else {
+            XCTFail("Expected child to exist")
+            return
+        }
+        
+        let expectation = self.expectation(description: "entry")
+        api.updateEntry(with: se.id, setCategory: child) { (updatedEvent, error) in
+            XCTAssertEqual(child.id, updatedEvent?.categoryID)
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_11_deletingEntries() {
+        guard let se = Test_API_Entries.sharedEntry else {
+            XCTFail("Dependent on test 5. Missing entry")
+            return
+        }
+        
+        let deleteExpectation = self.expectation(description: "deleteEntry")
+        api.deleteEntry(withID: se.id) { error in
+            XCTAssertNil(error)
+            deleteExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        let confirmDeletion = self.expectation(description: "confirmEntry")
+        api.getEntry(withID: se.id) { (entry, error) in
+            XCTAssertEqual(error as? TimeError, TimeError.httpFailure("400"))
+            confirmDeletion.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
     }
