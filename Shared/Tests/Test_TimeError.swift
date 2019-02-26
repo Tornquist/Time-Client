@@ -6,8 +6,6 @@
 //  Copyright © 2019 nathantornquist. All rights reserved.
 //
 
-import Foundation
-
 import XCTest
 @testable import TimeSDK
 

@@ -26,11 +26,18 @@ class API: APIQueueDelegate {
         case GET = "GET"
         case POST = "POST"
         case PUT = "PUT"
+        case DELETE = "DELETE"
     }
 
     enum HttpEncoding {
         case json
         case formUrlEncoded
+    }
+    
+    // Internal codable object consumed by delete requests
+    // Success is internal to this class and will not be stored in APIQueue
+    struct Success: Codable {
+        var success: Bool
     }
 
     func GET<T>(_ pathComponent: String, auth: Bool = true, completion: @escaping (T?, Error?) -> (), sideEffects: ((T) -> ())? = nil) where T : Decodable {
@@ -44,6 +51,17 @@ class API: APIQueueDelegate {
     
     func PUT<T>(_ pathComponent: String, _ body: [String: Any]? = nil, completion: @escaping (T?, Error?) -> (), sideEffects: ((T) -> ())? = nil) where T : Decodable {
         self.timeRequest(path: pathComponent, method: .PUT, body: body, encoding: .json, authorized: true, completion: completion, sideEffects: sideEffects)
+    }
+    
+    func DELETE(_ pathComponent: String, completion: @escaping (Error?) -> ()) {
+        let internalCompletion = { (success: Success?, error: Error?) in
+            guard error == nil else { completion(error); return }
+            let result = success?.success ?? false
+            let finalError = result ? nil : TimeError.requestFailed("Deletion did not return success")
+            completion(finalError)
+        }
+        
+        self.timeRequest(path: pathComponent, method: .DELETE, body: nil, encoding: nil, authorized: true, completion: internalCompletion, sideEffects: nil)
     }
 
     func timeRequest<T>(path pathComponent: String, method: HttpMethod, body: [String: Any]?, encoding: HttpEncoding?, authorized: Bool, completion: @escaping (T?, Error?) -> (), sideEffects: ((T) -> ())? = nil) where T : Decodable {

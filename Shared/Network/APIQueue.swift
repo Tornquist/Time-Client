@@ -30,6 +30,8 @@ class APIQueue {
     var activeAccountsRequests: [String: APIRequest<[Account]>] = [:]
     var activeCategoryRequests: [String: APIRequest<Category>] = [:]
     var activeCategoriesRequests: [String: APIRequest<[Category]>] = [:]
+    var activeEntryRequests: [String: APIRequest<Entry>] = [:]
+    var activeEntriesRequests: [String: APIRequest<[Entry]>] = [:]
     
     // MARK: - Interface
     
@@ -63,6 +65,8 @@ class APIQueue {
         self.retryAllFailedRequestsInStore(self.activeAccountsRequests)
         self.retryAllFailedRequestsInStore(self.activeCategoryRequests)
         self.retryAllFailedRequestsInStore(self.activeCategoriesRequests)
+        self.retryAllFailedRequestsInStore(self.activeEntryRequests)
+        self.retryAllFailedRequestsInStore(self.activeEntriesRequests)
     }
     
     func failAllFailedRequests(with error: Error) {
@@ -72,6 +76,8 @@ class APIQueue {
         self.failAllFailedRequestsInStore(self.activeAccountsRequests, with: error)
         self.failAllFailedRequestsInStore(self.activeCategoryRequests, with: error)
         self.failAllFailedRequestsInStore(self.activeCategoriesRequests, with: error)
+        self.failAllFailedRequestsInStore(self.activeEntryRequests, with: error)
+        self.failAllFailedRequestsInStore(self.activeEntriesRequests, with: error)
     }
     
     // MARK: - Internal Interface
@@ -83,8 +89,10 @@ class APIQueue {
         let isAccounts = self.activeAccountsRequests[id] != nil
         let isCategory = self.activeCategoryRequests[id] != nil
         let isCategories = self.activeCategoriesRequests[id] != nil
+        let isEntry = self.activeEntryRequests[id] != nil
+        let isEntries = self.activeEntriesRequests[id] != nil
         
-        return isToken || isUser || isAccount || isAccounts || isCategory || isCategories
+        return isToken || isUser || isAccount || isAccounts || isCategory || isCategories || isEntry || isEntries
     }
     
     private func set<T>(request: APIRequest<T>) -> Bool {
@@ -101,6 +109,10 @@ class APIQueue {
             self.activeCategoryRequests[request.id] = (request as! APIRequest<Category>)
         case is APIRequest<[Category]>:
             self.activeCategoriesRequests[request.id] = (request as! APIRequest<[Category]>)
+        case is APIRequest<Entry>:
+            self.activeEntryRequests[request.id] = (request as! APIRequest<Entry>)
+        case is APIRequest<[Entry]>:
+            self.activeEntriesRequests[request.id] = (request as! APIRequest<[Entry]>)
         default:
             // Cannot store. No retry supported
             return false
@@ -117,6 +129,8 @@ class APIQueue {
         self.activeAccountsRequests.removeValue(forKey: id)
         self.activeCategoryRequests.removeValue(forKey: id)
         self.activeCategoriesRequests.removeValue(forKey: id)
+        self.activeEntryRequests.removeValue(forKey: id)
+        self.activeEntriesRequests.removeValue(forKey: id)
     }
     
     private func fail<T>(request: APIRequest<T>, with error: Error) {
@@ -133,6 +147,10 @@ class APIQueue {
             if let item = self.activeCategoryRequests[request.id] { handleFail(request: item, with: error) }
         case is APIRequest<[Category]>:
             if let item = self.activeCategoriesRequests[request.id] { handleFail(request: item, with: error) }
+        case is APIRequest<Entry>:
+            if let item = self.activeEntryRequests[request.id] { handleFail(request: item, with: error) }
+        case is APIRequest<[Entry]>:
+            if let item = self.activeEntriesRequests[request.id] { handleFail(request: item, with: error) }
         default:
             // Unreachable due to exists check
             break

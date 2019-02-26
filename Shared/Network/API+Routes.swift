@@ -61,16 +61,49 @@ extension API {
     }
     
     func createCategory(withName name: String, under parent: Category, completionHandler: @escaping (Category?, Error?) -> ()) {
-        
         let body: [String: Any] = ["name": name, "parent_id": parent.id, "account_id": parent.accountID]
         
         POST("/categories", body, auth: true, encoding: .json, completion: completionHandler)
     }
     
     func moveCategory(_ category: Category, toParent parent: Category, completionHandler: @escaping (Category?, Error?) -> ()) {
-        
         let body: [String: Any] = ["parent_id": parent.id, "account_id": parent.accountID]
         
         PUT("/categories/\(category.id)", body, completion: completionHandler)
+    }
+    
+    // MARK: - Entries
+    
+    func getEntries(completionHandler: @escaping ([Entry]?, Error?) -> ()) {
+        GET("/entries", completion: completionHandler)
+    }
+    
+    func recordEvent(for category: Category, completionHandler: @escaping (Entry?, Error?) -> ()) {
+        let body: [String: Any] = ["category_id": category.id, "type": EntryType.event.rawValue]
+        POST("/entries", body, auth: true, encoding: .json, completion: completionHandler)
+    }
+    
+    func updateRange(for category: Category, with action: EntryAction, completionHandler: @escaping (Entry?, Error?) -> ()) {
+        let body: [String: Any] = ["category_id": category.id, "type": EntryType.range.rawValue, "action": action.rawValue]
+        POST("/entries", body, auth: true, encoding: .json, completion: completionHandler)
+    }
+    
+    func getEntry(withID id: Int, completionHandler: @escaping (Entry?, Error?) -> ()) {
+        GET("/entries/\(id)", completion: completionHandler)
+    }
+    
+    func updateEntry(with id: Int, setCategory category: Category? = nil, setType type: EntryType? = nil, setStartedAt startedAt: Date? = nil, setEndedAt endedAt: Date? = nil, completionHandler: @escaping (Entry?, Error?) -> ()) {
+        
+        var body: [String: Any] = [:]
+        if category != nil { body["category_id"] = category!.id }
+        if type != nil { body["type"] = type!.rawValue }
+        if startedAt != nil { body["started_at"] = DateHelper.isoStringFrom(date: startedAt!) }
+        if endedAt != nil { body["ended_at"] = DateHelper.isoStringFrom(date: endedAt!) }
+        
+        PUT("/entries/\(id)", body, completion: completionHandler)
+    }
+    
+    func deleteEntry(withID id: Int, completionHandler: @escaping (Error?) -> ()) {
+        DELETE("/entries/\(id)", completion: completionHandler)
     }
 }
