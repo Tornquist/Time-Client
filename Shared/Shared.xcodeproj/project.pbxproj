@@ -35,6 +35,7 @@
 		D8EA80EC222253D5002686D4 /* EntryAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EA80EB222253D5002686D4 /* EntryAction.swift */; };
 		D8EA80F022239130002686D4 /* Test_API_Entries.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EA80EF22239130002686D4 /* Test_API_Entries.swift */; };
 		D8EA80F22223944F002686D4 /* DateHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EA80F12223944F002686D4 /* DateHelper.swift */; };
+		D8EA80F42224E873002686D4 /* Test_DateHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EA80F32224E873002686D4 /* Test_DateHelper.swift */; };
 		D8FE621A22062549003A095A /* Test_0_Setup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FE621922062549003A095A /* Test_0_Setup.swift */; };
 /* End PBXBuildFile section */
 
@@ -80,6 +81,7 @@
 		D8EA80EB222253D5002686D4 /* EntryAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryAction.swift; sourceTree = "<group>"; };
 		D8EA80EF22239130002686D4 /* Test_API_Entries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_API_Entries.swift; sourceTree = "<group>"; };
 		D8EA80F12223944F002686D4 /* DateHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateHelper.swift; sourceTree = "<group>"; };
+		D8EA80F32224E873002686D4 /* Test_DateHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_DateHelper.swift; sourceTree = "<group>"; };
 		D8FE621922062549003A095A /* Test_0_Setup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_0_Setup.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -192,6 +194,7 @@
 				D89C7C4A22087B9300B09D73 /* Test_API_Categories.swift */,
 				D8EA80EF22239130002686D4 /* Test_API_Entries.swift */,
 				D822E5622218EAA40011C09F /* Test_TimeError.swift */,
+				D8EA80F32224E873002686D4 /* Test_DateHelper.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -332,6 +335,7 @@
 				D89C7C4B22087B9300B09D73 /* Test_API_Categories.swift in Sources */,
 				D8EA80F022239130002686D4 /* Test_API_Entries.swift in Sources */,
 				D811B17921E62B81009F6C8E /* Test_API_Tokens.swift in Sources */,
+				D8EA80F42224E873002686D4 /* Test_DateHelper.swift in Sources */,
 				D822E55F22144D790011C09F /* Test_APIQueue.swift in Sources */,
 				D811B17F21EA451E009F6C8E /* Test_API_Accounts.swift in Sources */,
 				D822E5632218EAA40011C09F /* Test_TimeError.swift in Sources */,
