@@ -44,6 +44,16 @@ extension API {
         POST("/users", ["email": email, "password": password], auth: false, completion: completionHandler)
     }
     
+    func updateUser(withID id: Int, setEmail email: String, completionHandler: @escaping (User?, Error?) -> ()) {
+        let body: [String: Any] = ["email": email]
+        PUT("/users/\(id)", body, completion: completionHandler)
+    }
+    
+    func updateUser(withID id: Int, changePasswordFrom oldPassword: String, to newPassword: String, completionHandler: @escaping (User?, Error?) -> ()) {
+        let body: [String: Any] = ["old_password": oldPassword, "new_password": newPassword]
+        PUT("/users/\(id)", body, completion: completionHandler)
+    }
+    
     // MARK: - Accounts
     
     func createAccount(completionHandler: @escaping (Account?, Error?) -> ()) {
@@ -52,6 +62,10 @@ extension API {
     
     func getAccounts(completionHandler: @escaping ([Account]?, Error?) -> ()) {
         GET("/accounts", completion: completionHandler)
+    }
+    
+    func getAccount(withID id: Int, completionHandler: @escaping (Account?, Error?) -> ()) {
+        GET("/accounts/\(id)", completion: completionHandler)
     }
     
     // MARK: - Categories
@@ -66,10 +80,26 @@ extension API {
         POST("/categories", body, auth: true, encoding: .json, completion: completionHandler)
     }
     
+    func getCategory(withID id: Int, completionHandler: @escaping (Category?, Error?) -> ()) {
+        GET("/categories/\(id)", completion: completionHandler)
+    }
+    
     func moveCategory(_ category: Category, toParent parent: Category, completionHandler: @escaping (Category?, Error?) -> ()) {
         let body: [String: Any] = ["parent_id": parent.id, "account_id": parent.accountID]
         
         PUT("/categories/\(category.id)", body, completion: completionHandler)
+    }
+    
+    func renameCategory(_ category: Category, withName name: String, completionHandler: @escaping (Category?, Error?) -> ()) {
+        let body: [String: Any] = ["name": name]
+        
+        PUT("/categories/\(category.id)", body, completion: completionHandler)
+    }
+    
+    func deleteCategory(withID id: Int, andChildren deleteChildren: Bool, completionHandler: @escaping (Error?) -> ()) {
+        let body: [String: Any] = ["delete_children": deleteChildren]
+
+        DELETE("/categories/\(id)", body, completion: completionHandler)
     }
     
     // MARK: - Entries

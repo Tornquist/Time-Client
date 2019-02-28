@@ -53,7 +53,7 @@ class API: APIQueueDelegate {
         self.timeRequest(path: pathComponent, method: .PUT, body: body, encoding: .json, authorized: true, completion: completion, sideEffects: sideEffects)
     }
     
-    func DELETE(_ pathComponent: String, completion: @escaping (Error?) -> ()) {
+    func DELETE(_ pathComponent: String, _ body: [String: Any]? = nil, completion: @escaping (Error?) -> ()) {
         let internalCompletion = { (success: Success?, error: Error?) in
             guard error == nil else { completion(error); return }
             let result = success?.success ?? false
@@ -61,7 +61,9 @@ class API: APIQueueDelegate {
             completion(finalError)
         }
         
-        self.timeRequest(path: pathComponent, method: .DELETE, body: nil, encoding: nil, authorized: true, completion: internalCompletion, sideEffects: nil)
+        let encoding = body != nil ? HttpEncoding.json : nil
+        
+        self.timeRequest(path: pathComponent, method: .DELETE, body: body, encoding: encoding, authorized: true, completion: internalCompletion, sideEffects: nil)
     }
 
     func timeRequest<T>(path pathComponent: String, method: HttpMethod, body: [String: Any]?, encoding: HttpEncoding?, authorized: Bool, completion: @escaping (T?, Error?) -> (), sideEffects: ((T) -> ())? = nil) where T : Decodable {
@@ -191,7 +193,8 @@ class API: APIQueueDelegate {
         
         switch (method, encoding) {
         case (HttpMethod.POST, HttpEncoding.json),
-             (HttpMethod.PUT, HttpEncoding.json):
+             (HttpMethod.PUT, HttpEncoding.json),
+             (HttpMethod.DELETE, HttpEncoding.json):
             headers["Content-Type"] = "application/json"
             guard let httpBody = try? JSONSerialization.data(withJSONObject: body, options: JSONSerialization.WritingOptions.prettyPrinted) else {
                 throw TimeError.unableToSendRequest("Cannot encode body")

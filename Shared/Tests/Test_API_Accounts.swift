@@ -11,6 +11,8 @@ import XCTest
 
 class Test_API_Accounts: XCTestCase {
     
+    static var accountID: Int? = nil
+    
     override func setUp() {
         self.continueAfterFailure = false
         
@@ -24,7 +26,7 @@ class Test_API_Accounts: XCTestCase {
     
     override func tearDown() { }
 
-    func test_getToken_createAccount() {
+    func test_createAccount() {
         let expectation = self.expectation(description: "createAccount")
         API.shared.createAccount() { (account, error) in
             XCTAssertNotNil(account)
@@ -36,10 +38,30 @@ class Test_API_Accounts: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_getToken_getAccounts() {
+    func test_getAccounts() {
         let expectation = self.expectation(description: "getAccounts")
         API.shared.getAccounts() { (accounts, error) in
             XCTAssertNotNil(accounts)
+            XCTAssertNil(error)
+            
+            if accounts != nil && accounts!.count > 0 {
+                Test_API_Accounts.accountID = accounts![0].id
+            }
+            
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_getSingleAccounts() {
+        guard let accountID = Test_API_Accounts.accountID else {
+            XCTFail("Dependent on accountID. Unable to perform test")
+            return
+        }
+        
+        let expectation = self.expectation(description: "getAccount")
+        API.shared.getAccount(withID: accountID) { (account, error) in
+            XCTAssertNotNil(account)
             XCTAssertNil(error)
             
             expectation.fulfill()

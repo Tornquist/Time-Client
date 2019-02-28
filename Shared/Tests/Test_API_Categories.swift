@@ -128,6 +128,7 @@ class Test_API_Categories: XCTestCase {
         }
         
         let parent = self.categories[0]
+        var child: TimeSDK.Category? = nil
         
         let createCategoryExpectation = self.expectation(description: "postCategory")
         api.createCategory(withName: "A", under: parent) { (newCategory, error) in
@@ -136,7 +137,10 @@ class Test_API_Categories: XCTestCase {
             XCTAssertEqual(parent.accountID, newCategory?.accountID)
             XCTAssertEqual(newCategory?.name, "A")
             
-            if newCategory != nil { self.categories.append(newCategory!) }
+            if newCategory != nil {
+                self.categories.append(newCategory!)
+                child = newCategory
+            }
             
             createCategoryExpectation.fulfill()
         }
@@ -157,6 +161,21 @@ class Test_API_Categories: XCTestCase {
             
             categoriesExpectation.fulfill()
         }
+        
+        if child != nil {
+            let categoryExpectation = self.expectation(description: "getCategory")
+            api.getCategory(withID: child!.id) { (category, error) in
+                XCTAssertNil(error)
+                XCTAssertNotNil(category)
+                
+                XCTAssertEqual(child?.name, category?.name)
+                
+                categoryExpectation.fulfill()
+            }
+        } else {
+            XCTFail("Child was not generated successfully")
+        }
+
         waitForExpectations(timeout: 5, handler: nil)
     }
     
@@ -343,6 +362,104 @@ class Test_API_Categories: XCTestCase {
             XCTAssertEqual(timeError, TimeError.httpFailure("400"))
             
             moveExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_7_allowsRenamingCategories() {
+        self.continueAfterFailure = false
+        
+        guard let categoryB = self.categories.first(where: { $0.name == "B" }) else {
+            XCTFail("Missing required root nodes")
+            return
+        }
+        
+        let renameExpectation = self.expectation(description: "renameCategory")
+        api.renameCategory(categoryB, withName: "Fresh Rename") { (updatedCategory, error) in
+            XCTAssertEqual(updatedCategory?.name, "Fresh Rename")
+
+            renameExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        let verifyRename = self.expectation(description: "verifyRename")
+        api.getCategory(withID: categoryB.id) { (verifiedCategory, error) in
+            XCTAssertEqual(verifiedCategory?.name, "Fresh Rename")
+            
+            verifyRename.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_8_deletingCategories() {
+        self.continueAfterFailure = false
+        
+        guard
+            let secondRoot = self.categories.first(where: { $0.parentID == nil && $0.accountID == self.accounts[1].id }),
+            let categoryA = self.categories.first(where: { $0.name == "A" }),
+            let categoryB = self.categories.first(where: { $0.name == "B" }) // Not updated in cache
+            else {
+                XCTFail("Missing required nodes")
+                return
+        }
+        
+        // Verify starting situation
+        XCTAssertEqual(categoryB.parentID, secondRoot.id)
+        XCTAssertEqual(categoryA.parentID, categoryB.id)
+        
+        var categoryC: TimeSDK.Category! = nil
+        
+        // Create an additional category
+        let createCategoryExpectation = self.expectation(description: "postCategory")
+        api.createCategory(withName: "C", under: categoryA) { (newCategory, error) in
+            XCTAssertNil(error)
+            XCTAssertNotNil(newCategory)
+            
+            categoryC = newCategory
+
+            createCategoryExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Delete A
+        let deleteWithoutChildren = self.expectation(description: "deleteWithoutChildren")
+        api.deleteCategory(withID: categoryA.id, andChildren: false) { error in
+            XCTAssertNil(error)
+            deleteWithoutChildren.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Verify C exists and has new parent
+        let verifyMovedC = self.expectation(description: "verifyMovedC")
+        api.getCategory(withID: categoryC.id) { (category, error) in
+            XCTAssertEqual(category?.id, categoryC.id)
+            XCTAssertEqual(category?.parentID, categoryB.id)
+            
+            verifyMovedC.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Delete B and children
+        let deleteWithChildren = self.expectation(description: "deleteWithChildren")
+        api.deleteCategory(withID: categoryB.id, andChildren: true) { error in
+            XCTAssertNil(error)
+            deleteWithChildren.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Verify B and C Deleted
+        let verifyBDeleted = self.expectation(description: "verifyBDeleted")
+        api.getCategory(withID: categoryB.id) { (category, error) in
+            XCTAssertEqual(error as? TimeError, TimeError.httpFailure("404"))
+            
+            verifyBDeleted.fulfill()
+        }
+        
+        let verifyCDeleted = self.expectation(description: "verifyCDeleted")
+        api.getCategory(withID: categoryC.id) { (category, error) in
+            XCTAssertEqual(error as? TimeError, TimeError.httpFailure("404"))
+            
+            verifyCDeleted.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
     }
