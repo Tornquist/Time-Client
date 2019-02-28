@@ -70,10 +70,26 @@ extension API {
         POST("/categories", body, auth: true, encoding: .json, completion: completionHandler)
     }
     
+    func getCategory(withID id: Int, completionHandler: @escaping (Category?, Error?) -> ()) {
+        GET("/categories/\(id)", completion: completionHandler)
+    }
+    
     func moveCategory(_ category: Category, toParent parent: Category, completionHandler: @escaping (Category?, Error?) -> ()) {
         let body: [String: Any] = ["parent_id": parent.id, "account_id": parent.accountID]
         
         PUT("/categories/\(category.id)", body, completion: completionHandler)
+    }
+    
+    func renameCategory(_ category: Category, withName name: String, completionHandler: @escaping (Category?, Error?) -> ()) {
+        let body: [String: Any] = ["name": name]
+        
+        PUT("/categories/\(category.id)", body, completion: completionHandler)
+    }
+    
+    func deleteCategory(withID id: Int, andChildren deleteChildren: Bool, completionHandler: @escaping (Error?) -> ()) {
+        let body: [String: Any] = ["delete_children": deleteChildren]
+
+        DELETE("/categories/\(id)", body, completion: completionHandler)
     }
     
     // MARK: - Entries
