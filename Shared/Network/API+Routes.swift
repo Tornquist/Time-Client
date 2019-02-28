@@ -54,6 +54,10 @@ extension API {
         GET("/accounts", completion: completionHandler)
     }
     
+    func getAccount(withID id: Int, completionHandler: @escaping (Account?, Error?) -> ()) {
+        GET("/accounts/\(id)", completion: completionHandler)
+    }
+    
     // MARK: - Categories
     
     func getCategories(completionHandler: @escaping ([Category]?, Error?) -> ()) {
