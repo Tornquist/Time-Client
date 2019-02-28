@@ -44,6 +44,16 @@ extension API {
         POST("/users", ["email": email, "password": password], auth: false, completion: completionHandler)
     }
     
+    func updateUser(withID id: Int, setEmail email: String, completionHandler: @escaping (User?, Error?) -> ()) {
+        let body: [String: Any] = ["email": email]
+        PUT("/users/\(id)", body, completion: completionHandler)
+    }
+    
+    func updateUser(withID id: Int, changePasswordFrom oldPassword: String, to newPassword: String, completionHandler: @escaping (User?, Error?) -> ()) {
+        let body: [String: Any] = ["old_password": oldPassword, "new_password": newPassword]
+        PUT("/users/\(id)", body, completion: completionHandler)
+    }
+    
     // MARK: - Accounts
     
     func createAccount(completionHandler: @escaping (Account?, Error?) -> ()) {
