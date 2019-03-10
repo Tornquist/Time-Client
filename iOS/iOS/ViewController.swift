@@ -19,6 +19,8 @@ class ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        Time.shared.authenticate(username: "test@test.com", password: "defaultPassword")
+        Time.shared.authenticate(username: "test@test.com", password: "defaultPassword") { error in
+            print("Authentication Error: \(error)")
+        }
     }
 }
