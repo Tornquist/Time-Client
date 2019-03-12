@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		D855814421BDEA2400DCB577 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D855814321BDEA2400DCB577 /* AppDelegate.swift */; };
-		D855814621BDEA2400DCB577 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D855814521BDEA2400DCB577 /* ViewController.swift */; };
+		D855814621BDEA2400DCB577 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D855814521BDEA2400DCB577 /* LoginViewController.swift */; };
 		D855814921BDEA2400DCB577 /* Time_macOS.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D855814721BDEA2400DCB577 /* Time_macOS.xcdatamodeld */; };
 		D855814B21BDEA2400DCB577 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D855814A21BDEA2400DCB577 /* Assets.xcassets */; };
 		D855814E21BDEA2400DCB577 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D855814C21BDEA2400DCB577 /* Main.storyboard */; };
@@ -33,7 +33,7 @@
 /* Begin PBXFileReference section */
 		D855814021BDEA2400DCB577 /* Time-macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Time-macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D855814321BDEA2400DCB577 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		D855814521BDEA2400DCB577 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		D855814521BDEA2400DCB577 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		D855814821BDEA2400DCB577 /* Time_macOS.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Time_macOS.xcdatamodel; sourceTree = "<group>"; };
 		D855814A21BDEA2400DCB577 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D855814D21BDEA2400DCB577 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -75,7 +75,7 @@
 			isa = PBXGroup;
 			children = (
 				D855814321BDEA2400DCB577 /* AppDelegate.swift */,
-				D855814521BDEA2400DCB577 /* ViewController.swift */,
+				D855814521BDEA2400DCB577 /* LoginViewController.swift */,
 				D855814A21BDEA2400DCB577 /* Assets.xcassets */,
 				D855814C21BDEA2400DCB577 /* Main.storyboard */,
 				D855814F21BDEA2400DCB577 /* Info.plist */,
@@ -162,7 +162,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D855814921BDEA2400DCB577 /* Time_macOS.xcdatamodeld in Sources */,
-				D855814621BDEA2400DCB577 /* ViewController.swift in Sources */,
+				D855814621BDEA2400DCB577 /* LoginViewController.swift in Sources */,
 				D855814421BDEA2400DCB577 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
