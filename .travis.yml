@@ -5,6 +5,15 @@ osx_image: xcode10.1
 notifications:
   email: false
 
+matrix:
+  include:
+    - env:
+      - SCHEME=Shared-Tests-macOS
+      - DESTINATION="platform=macOS,arch=x86_64"
+    - env:
+      - SCHEME=Shared-Tests-iOS
+      - DESTINATION="platform=iOS Simulator,name=iPhone X,OS=12.1"
+
 env:
   global:
     - DB_USER=root
@@ -36,15 +45,8 @@ script:
     set -o pipefail &&
       xcodebuild test \
         -workspace Time.xcworkspace \
-        -scheme Shared-Tests-macOS \
-        -sdk macosx10.14 \
-        CODE_SIGN_IDENTITY="" \
-        CODE_SIGNING_REQUIRED=NO \
-        | xcpretty &&
-      xcodebuild test \
-        -workspace Time.xcworkspace \
-        -scheme Shared-Tests-iOS \
-        -destination 'platform=iOS Simulator,name=iPhone XS,OS=12.1' \
+        -scheme "$SCHEME" \
+        -destination "$DESTINATION" \
         CODE_SIGN_IDENTITY="" \
         CODE_SIGNING_REQUIRED=NO \
         | xcpretty
