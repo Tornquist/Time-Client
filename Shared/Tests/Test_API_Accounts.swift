@@ -14,14 +14,19 @@ class Test_API_Accounts: XCTestCase {
     static var accountID: Int? = nil
     
     override func setUp() {
-        self.continueAfterFailure = false
-        
+        var succeeded = false
         let getTokenExpectation = self.expectation(description: "getToken")
         API.shared.getToken(withUsername: "test@test.com", andPassword: "defaultPassword") { (token, error) in
             XCTAssertNotNil(token)
+            succeeded = token != nil
             getTokenExpectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
+        
+        guard succeeded else {
+            XCTFail("Token not found.")
+            return
+        }
     }
     
     override func tearDown() { }

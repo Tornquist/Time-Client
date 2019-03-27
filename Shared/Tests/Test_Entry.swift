@@ -12,8 +12,6 @@ import XCTest
 class Test_Entry: XCTestCase {
     
     func test_decodable() {
-        self.continueAfterFailure = false
-        
         let startString = "2019-02-25T03:09:53.394Z"
         let endString = "2019-02-27T02:08:53.394Z"
         let entryDictionary: [String: Any] = [
@@ -23,47 +21,51 @@ class Test_Entry: XCTestCase {
             "started_at": startString,
             "ended_at": endString
         ]
-        let entryData = try? JSONSerialization.data(
+        guard let entryData = try? JSONSerialization.data(
             withJSONObject: entryDictionary,
             options: .prettyPrinted
-        )
-        XCTAssertNotNil(entryData)
+            ) else {
+            XCTFail("EntryData cannot be nil")
+               return
+        }
         
-        let entry = try? JSONDecoder().decode(Entry.self, from: entryData!)
-        XCTAssertNotNil(entry)
+        guard let entry = try? JSONDecoder().decode(Entry.self, from: entryData) else {
+            XCTFail("Entry cannot be nil")
+            return
+        }
         
-        XCTAssertEqual(entry!.id, 15)
-        XCTAssertEqual(entry!.type, EntryType.range)
-        XCTAssertEqual(entry!.categoryID, 16)
+        XCTAssertEqual(entry.id, 15)
+        XCTAssertEqual(entry.type, EntryType.range)
+        XCTAssertEqual(entry.categoryID, 16)
         XCTAssertEqual(
-            entry!.startedAt.timeIntervalSinceReferenceDate,
+            entry.startedAt.timeIntervalSinceReferenceDate,
             DateHelper.dateFrom(isoString: startString)?.timeIntervalSinceReferenceDate ?? -200,
             accuracy: 1.0
         )
         XCTAssertEqual(
-            entry!.endedAt?.timeIntervalSinceReferenceDate ?? -100,
+            entry.endedAt?.timeIntervalSinceReferenceDate ?? -100,
             DateHelper.dateFrom(isoString: endString)?.timeIntervalSinceReferenceDate ?? -200,
             accuracy: 1.0
         )
     }
     
     func test_decodableError() {
-        self.continueAfterFailure = false
-
         let entryDictionary: [String: Any] = [
             "id": 15,
             "type": "event",
             "category_id": 16,
             "started_at": "March 3rd, 2019 12:01pm"
         ]
-        let entryData = try? JSONSerialization.data(
+        guard let entryData = try? JSONSerialization.data(
             withJSONObject: entryDictionary,
             options: .prettyPrinted
-        )
-        XCTAssertNotNil(entryData)
+            ) else {
+            XCTFail("Entry data could not be serialized")
+            return
+        }
         
         do {
-            _ = try JSONDecoder().decode(Entry.self, from: entryData!)
+            _ = try JSONDecoder().decode(Entry.self, from: entryData)
             XCTFail("Expected entry to throw")
         } catch {
             XCTAssertEqual(error as? TimeError, TimeError.unableToDecodeResponse())
@@ -71,8 +73,6 @@ class Test_Entry: XCTestCase {
     }
     
     func test_encodable() {
-        self.continueAfterFailure = false
-        
         let id = 16
         let type = EntryType.event
         let categoryID = 17
@@ -80,17 +80,22 @@ class Test_Entry: XCTestCase {
         
         let entry = Entry(id: id, type: type, categoryID: categoryID, startedAt: startedAt, endedAt: nil)
         
-        let encodedEntry = try? JSONEncoder().encode(entry)
-        XCTAssertNotNil(encodedEntry)
-        let decodedEntry = try? JSONDecoder().decode(Entry.self, from: encodedEntry!)
-        XCTAssertNotNil(decodedEntry)
+        guard let encodedEntry = try? JSONEncoder().encode(entry) else {
+            XCTFail("Entry could not be encoded")
+            return
+        }
         
-        XCTAssertEqual(entry.id, decodedEntry!.id)
-        XCTAssertEqual(entry.type, decodedEntry!.type)
-        XCTAssertEqual(entry.categoryID, decodedEntry!.categoryID)
+        guard let decodedEntry = try? JSONDecoder().decode(Entry.self, from: encodedEntry) else {
+            XCTFail("Entry could not be decoded")
+            return
+        }
+        
+        XCTAssertEqual(entry.id, decodedEntry.id)
+        XCTAssertEqual(entry.type, decodedEntry.type)
+        XCTAssertEqual(entry.categoryID, decodedEntry.categoryID)
         XCTAssertEqual(
             entry.startedAt.timeIntervalSinceReferenceDate,
-            decodedEntry!.startedAt.timeIntervalSinceReferenceDate,
+            decodedEntry.startedAt.timeIntervalSinceReferenceDate,
             accuracy: 0.001
         )
     }

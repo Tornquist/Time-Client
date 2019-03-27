@@ -14,8 +14,6 @@ class Test_APIQueue: XCTestCase {
     var queue: APIQueue!
     
     override func setUp() {
-        self.continueAfterFailure = false
-        
         queue = APIQueue()
     }
     
@@ -190,8 +188,6 @@ class Test_APIQueue: XCTestCase {
     }
     
     func test_retryAllFailedModelsMixedClasses() {
-        self.continueAfterFailure = false
-        
         // Create a bunch of requests
         var expectations: [String: XCTestExpectation] = [:]
         
@@ -237,8 +233,6 @@ class Test_APIQueue: XCTestCase {
     }
     
     func test_retryAllFailedModelsMixedTypes() {
-        self.continueAfterFailure = false
-        
         // Build tests
         let expectationA = self.expectation(description: "a")
         let expectationB = self.expectation(description: "b")
@@ -280,8 +274,6 @@ class Test_APIQueue: XCTestCase {
     }
     
     func test_failAllFailedModels() {
-        self.continueAfterFailure = false
-        
         let failureError = TimeError.authenticationFailure("System failure")
     
         // Build tests
