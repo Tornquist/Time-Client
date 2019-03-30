@@ -61,8 +61,6 @@ class Test_API_Categories: XCTestCase {
     }
     
     func test_0_startsWithNoAccountsAndNoCategories() {
-        self.continueAfterFailure = false
-        
         let categoriesExpectation = self.expectation(description: "getCategories")
         api.getCategories { (categories, error) in
             XCTAssertNil(error)
@@ -83,8 +81,6 @@ class Test_API_Categories: XCTestCase {
     }
     
     func test_1_createsARootCategoryWithEachNewAccount() {
-        self.continueAfterFailure = false
-        
         var newAccount: Account?
         let accountExpectation = self.expectation(description: "createAccount")
         api.createAccount { (account, error) in
@@ -98,6 +94,10 @@ class Test_API_Categories: XCTestCase {
             }
         }
         waitForExpectations(timeout: 5, handler: nil)
+        guard newAccount != nil else {
+            XCTFail("New acocunt not found. Required to continue.")
+            return
+        }
         
         let categoriesExpectation = self.expectation(description: "getCategories")
         api.getCategories { (categories, error) in
@@ -120,8 +120,6 @@ class Test_API_Categories: XCTestCase {
     }
     
     func test_2_creatingAChildCategory() {
-        self.continueAfterFailure = false
-        
         guard self.categories.count == 1 else {
             XCTFail("Test requires a single category to exist")
             return
@@ -180,8 +178,6 @@ class Test_API_Categories: XCTestCase {
     }
     
     func test_3_createASiblingCategory() {
-        self.continueAfterFailure = false
-        
         guard self.categories.count == 2 else {
             XCTFail("Test requires two categories to exist")
             return
@@ -224,8 +220,6 @@ class Test_API_Categories: XCTestCase {
     }
     
     func test_4_allowsCategoriesToBeMoved() {
-        self.continueAfterFailure = false
-        
         guard let root = self.categories.first(where: { $0.name == "root" }),
             let categoryA = self.categories.first(where: { $0.name == "A" }),
             let categoryB = self.categories.first(where: { $0.name == "B" }) else {
@@ -253,8 +247,6 @@ class Test_API_Categories: XCTestCase {
     }
     
     func test_5_allowsMovingCategoriesBetweenAccounts() {
-        self.continueAfterFailure = false
-        
         // Create a second account
         let accountExpectation = self.expectation(description: "createAccount")
         api.createAccount { (account, error) in
@@ -333,8 +325,6 @@ class Test_API_Categories: XCTestCase {
     }
     
     func test_6_rejectsMovingCategoriesWithMismatchedParentAndAccountIDs() {
-        self.continueAfterFailure = false
-        
         guard
             let firstRoot = self.categories.first(where: { $0.parentID == nil && $0.accountID == self.accounts[0].id }),
             let secondRoot = self.categories.first(where: { $0.parentID == nil && $0.accountID == self.accounts[1].id }),
@@ -367,8 +357,6 @@ class Test_API_Categories: XCTestCase {
     }
     
     func test_7_allowsRenamingCategories() {
-        self.continueAfterFailure = false
-        
         guard let categoryB = self.categories.first(where: { $0.name == "B" }) else {
             XCTFail("Missing required root nodes")
             return
@@ -392,8 +380,6 @@ class Test_API_Categories: XCTestCase {
     }
     
     func test_8_deletingCategories() {
-        self.continueAfterFailure = false
-        
         guard
             let secondRoot = self.categories.first(where: { $0.parentID == nil && $0.accountID == self.accounts[1].id }),
             let categoryA = self.categories.first(where: { $0.name == "A" }),

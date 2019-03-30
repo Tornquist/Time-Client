@@ -30,13 +30,15 @@ class Test_Authentication: XCTestCase {
     }
     
     func test_1_initializeWithNoTokenReturnsTokenNotFound() {
-        self.continueAfterFailure = false
-        
         let expectation = self.expectation(description: "authentication")
         
         self.time.initialize { (error) in
             XCTAssertNotNil(error)
-            XCTAssertEqual(error as! TimeError, TimeError.tokenNotFound())
+            if let timeError = error as? TimeError {
+                XCTAssertEqual(timeError, TimeError.tokenNotFound())
+            } else {
+                XCTFail("Unknown error message returned")
+            }
             
             expectation.fulfill()
         }
@@ -45,8 +47,6 @@ class Test_Authentication: XCTestCase {
     }
     
     func test_2_authenticateSetsToken() {
-        self.continueAfterFailure = false
-        
         let username = "test@test.com"
         let password = "defaultPassword"
         
@@ -105,8 +105,6 @@ class Test_Authentication: XCTestCase {
     }
     
     func test_6_initializeWithAnExpiredTokenRefreshes() {
-        self.continueAfterFailure = false
-        
         guard let startingToken = TokenStore.getToken(withTag: self.tokenTag) else {
             XCTAssertTrue(false, "Test conditions not met")
             return
@@ -119,7 +117,10 @@ class Test_Authentication: XCTestCase {
             refresh: startingToken.refresh
         )
         let storedExpiredToken = TokenStore.storeToken(newToken, withTag: self.tokenTag)
-        XCTAssertTrue(storedExpiredToken)
+        guard storedExpiredToken else {
+            XCTFail("Token could not be stored")
+            return
+        }
         
         // Clear API token for true refresh
         self.api.token = nil
@@ -139,8 +140,6 @@ class Test_Authentication: XCTestCase {
     }
     
     func test_7_initializeWithAnInvalidRefreshTokenRejects() {
-        self.continueAfterFailure = false
-        
         guard let startingToken = TokenStore.getToken(withTag: self.tokenTag) else {
             XCTAssertTrue(false, "Test conditions not met")
             return
@@ -153,7 +152,10 @@ class Test_Authentication: XCTestCase {
             refresh: "This is not a real token"
         )
         let storedExpiredToken = TokenStore.storeToken(newToken, withTag: self.tokenTag)
-        XCTAssertTrue(storedExpiredToken)
+        guard storedExpiredToken else {
+            XCTFail("Token could not be stored")
+            return
+        }
         
         // Clear API token for true refresh
         self.api.token = nil

@@ -46,8 +46,6 @@ class Test_API_Tokens: XCTestCase {
     }
     
     func test_refreshToken_validRefresh() {
-        self.continueAfterFailure = false
-        
         var startingToken: Token? = nil
         let getExpectation = self.expectation(description: "getToken")
         API.shared.getToken(withUsername: "test@test.com", andPassword: "defaultPassword") { (authToken, error) in
@@ -57,13 +55,14 @@ class Test_API_Tokens: XCTestCase {
             getExpectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
+        guard startingToken != nil else { return }
         
         let refreshExpectation = self.expectation(description: "refreshToken")
         API.shared.refreshToken() { (refreshedToken, error) in
             XCTAssertNotNil(refreshedToken)
             XCTAssertNil(error)
             
-            XCTAssertNotEqual(startingToken!.token, refreshedToken!.token)
+            XCTAssertNotEqual(startingToken!.token, refreshedToken?.token ?? startingToken!.token)
             refreshExpectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)

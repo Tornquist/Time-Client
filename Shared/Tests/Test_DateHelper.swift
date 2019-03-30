@@ -72,16 +72,16 @@ class Test_DateHelper: XCTestCase {
     }
     
     func test_dateFromStringWithoutMilliseconds() {
-        self.continueAfterFailure = false
         let dateString = "2019-02-25T03:09:53Z"
-        let date = DateHelper.dateFrom(isoString: dateString)
+        guard let date = DateHelper.dateFrom(isoString: dateString) else {
+            XCTFail("Parsed date not found.")
+            return
+        }
         
-        XCTAssertNotNil(date)
-
         var calendar = Calendar.current
         calendar.timeZone = TimeZone(identifier: "UTC")!
         
-        let dateComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second, .nanosecond], from: date!)
+        let dateComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second, .nanosecond], from: date)
         XCTAssertEqual(dateComponents.year, 2019)
         XCTAssertEqual(dateComponents.month, 2)
         XCTAssertEqual(dateComponents.day, 25)
