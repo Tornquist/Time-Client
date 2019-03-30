@@ -37,16 +37,16 @@ class Test_TokenStore: XCTestCase {
     }
     
     func test_3_allowsRetrievalOfAToken() {
-        self.continueAfterFailure = false
+        guard let token = TokenStore.getToken(withTag: "test-token") else {
+            XCTFail("Token not found.")
+            return
+        }
         
-        let token = TokenStore.getToken(withTag: "test-token")
-        XCTAssertNotNil(token)
-        
-        XCTAssertEqual(token!.userID, 1234)
-        XCTAssertEqual(token!.creation.timeIntervalSinceReferenceDate, 0, accuracy: 0.01)
-        XCTAssertEqual(token!.expiration.timeIntervalSinceReferenceDate, 10000, accuracy: 0.01)
-        XCTAssertEqual(token!.token, "myToken")
-        XCTAssertEqual(token!.refresh, "myRefreshToken")
+        XCTAssertEqual(token.userID, 1234)
+        XCTAssertEqual(token.creation.timeIntervalSinceReferenceDate, 0, accuracy: 0.01)
+        XCTAssertEqual(token.expiration.timeIntervalSinceReferenceDate, 10000, accuracy: 0.01)
+        XCTAssertEqual(token.token, "myToken")
+        XCTAssertEqual(token.refresh, "myRefreshToken")
     }
     
     func test_4_allowsANewTokenToBeStored() {
@@ -63,16 +63,16 @@ class Test_TokenStore: XCTestCase {
     }
     
     func test_5_allowsRetrievalOfTheMostRecentToken() {
-        self.continueAfterFailure = false
+        guard let token = TokenStore.getToken(withTag: "test-token") else {
+            XCTFail("Token not found.")
+            return
+        }
         
-        let token = TokenStore.getToken(withTag: "test-token")
-        XCTAssertNotNil(token)
-        
-        XCTAssertEqual(token!.userID, 1235)
-        XCTAssertEqual(token!.creation.timeIntervalSinceReferenceDate, 10, accuracy: 0.01)
-        XCTAssertEqual(token!.expiration.timeIntervalSinceReferenceDate, 20000, accuracy: 0.01)
-        XCTAssertEqual(token!.token, "myNewToken")
-        XCTAssertEqual(token!.refresh, "myNewRefreshToken")
+        XCTAssertEqual(token.userID, 1235)
+        XCTAssertEqual(token.creation.timeIntervalSinceReferenceDate, 10, accuracy: 0.01)
+        XCTAssertEqual(token.expiration.timeIntervalSinceReferenceDate, 20000, accuracy: 0.01)
+        XCTAssertEqual(token.token, "myNewToken")
+        XCTAssertEqual(token.refresh, "myNewRefreshToken")
     }
     
     func test_6_allowsDeletion() {

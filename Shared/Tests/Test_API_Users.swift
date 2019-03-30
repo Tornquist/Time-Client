@@ -106,46 +106,56 @@ class Test_API_Users: XCTestCase {
     }
     
     func test_allowsEmailToBeChanged() {
-        self.continueAfterFailure = false
-        
         let email = "\(UUID().uuidString)@time.com"
         let newEmail = "\(UUID().uuidString)@time.com"
         let password = "defaultPassword"
         
         // Configure User
         let createExpectation = self.expectation(description: "createUser")
-
         var user: User! = nil
         api.createUser(withEmail: email, andPassword: password) { (newUser, error) in
             XCTAssertNotNil(newUser)
             XCTAssertNil(error)
-            user = newUser
-            
             XCTAssertEqual(newUser?.email, email)
+            user = newUser
             
             createExpectation.fulfill()
         }
-        
         waitForExpectations(timeout: 5, handler: nil)
+        guard user != nil else {
+            XCTFail("User is required to continue. User not found.")
+            return
+        }
         
         // Login User
+        var loginSucceeded = false
         let loginExpectation = self.expectation(description: "loginUser")
         api.getToken(withUsername: email, andPassword: password) { (token, error) in
+            loginSucceeded = token != nil
             loginExpectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
+        guard loginSucceeded else {
+            XCTFail("Successful login required to continue")
+            return
+        }
         
         // Update User
+        var userUpdated = false
         let updateExpectation = self.expectation(description: "updateUser")
         api.updateUser(withID: user.id, setEmail: newEmail) { (user, error) in
             XCTAssertNotNil(user)
             XCTAssertNil(error)
-            
             XCTAssertEqual(user?.email, newEmail)
+            userUpdated = user?.email == newEmail
             
             updateExpectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
+        guard userUpdated else {
+            XCTFail("Updated required to re-authenticate with changed credentials")
+            return
+        }
         
         // Login with new credentials
         let reloginExpectation = self.expectation(description: "loginUser")
@@ -157,44 +167,56 @@ class Test_API_Users: XCTestCase {
     }
     
     func test_allowsPasswordToBeChanged() {
-        self.continueAfterFailure = false
-        
         let email = "\(UUID().uuidString)@time.com"
         let password = "defaultPassword"
         let newPassword = "brandNewPassword"
         
         // Configure User
-        let createExpectation = self.expectation(description: "createUser")
-        
         var user: User! = nil
+        let createExpectation = self.expectation(description: "createUser")
         api.createUser(withEmail: email, andPassword: password) { (newUser, error) in
             XCTAssertNotNil(newUser)
             XCTAssertNil(error)
-            user = newUser
-            
             XCTAssertEqual(newUser?.email, email)
+            
+            user = newUser
             
             createExpectation.fulfill()
         }
-        
         waitForExpectations(timeout: 5, handler: nil)
+        guard user != nil else {
+            XCTFail("User is required to continue. User not found.")
+            return
+        }
         
         // Login User
+        var loginSucceeded = false
         let loginExpectation = self.expectation(description: "loginUser")
         api.getToken(withUsername: email, andPassword: password) { (token, error) in
+            loginSucceeded = token != nil
             loginExpectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
+        guard loginSucceeded else {
+            XCTFail("Successful login required to continue")
+            return
+        }
         
         // Update User
+        var userUpdated = false
         let updateExpectation = self.expectation(description: "updateUser")
         api.updateUser(withID: user.id, changePasswordFrom: password, to: newPassword) { (user, error) in
             XCTAssertNotNil(user)
             XCTAssertNil(error)
+            userUpdated = error == nil
             
             updateExpectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
+        guard userUpdated else {
+            XCTFail("Update required to re-authenticate with changed credentials")
+            return
+        }
         
         // Login with new credentials
         let reloginExpectation = self.expectation(description: "loginUser")

@@ -35,7 +35,7 @@ class TokenStore {
             base[kSecAttrAccount as String] = "User \(userID) - \(TokenStore.prefix)"
             base[kSecAttrComment as String] = TokenStore.description
             base[kSecAttrLabel as String] = "Time"
-            base[kSecValueData as String] = data
+            base[kSecValueData as String] = data.data(using: .utf8)
         case .delete:
             break
         }
