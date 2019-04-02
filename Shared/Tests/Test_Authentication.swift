@@ -171,4 +171,36 @@ class Test_Authentication: XCTestCase {
         
         waitForExpectations(timeout: 5, handler: nil)
     }
+    
+    func test_8_deauthenticateClearsLocalSession() {
+        // Can authenticate with credentials
+        let username = "test@test.com"
+        let password = "defaultPassword"
+        
+        let authenticationExpectation = self.expectation(description: "authentication")
+        self.time.authenticate(username: username, password: password) { (error) in
+            XCTAssertNil(error)
+            authenticationExpectation.fulfill()
+        }
+        
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Token is set after authentication
+        XCTAssertNotNil(self.time.api.token)
+        
+        self.time.deauthenticate()
+        
+        // Deauthentication clears local token
+        XCTAssertNil(self.time.api.token)
+        
+        // Deauthentication also clears keychain and prevents re-login
+        let initializeExpectation = self.expectation(description: "initialize")
+        self.time.initialize { (error) in
+            XCTAssertNotNil(error)
+            XCTAssertEqual(error as! TimeError, TimeError.tokenNotFound())
+            initializeExpectation.fulfill()
+        }
+        
+        waitForExpectations(timeout: 5, handler: nil)
+    }
 }

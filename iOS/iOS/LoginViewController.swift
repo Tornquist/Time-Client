@@ -70,11 +70,14 @@ class LoginViewController: UIViewController {
     }
     
     func showHome() {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let controller = storyboard.instantiateViewController(withIdentifier: "homeView")
-        let action = { self.present(controller, animated: true, completion: nil) }
+        // To keep the view hierarchy clean, the home vc can only be presented
+        // from the landing vc. The login vc will validate the login, which sets
+        // the keychain/caches appropriately, and then the landing vc will
+        // actually start the session.
+        //
+        // The user will see the login page as a popover style on first launch.
+        // This view should be seen rarely.
         
-        if Thread.isMainThread { action() }
-        else { DispatchQueue.main.async { action() }}
+        self.dismiss(animated: true, completion: nil)
     }
 }

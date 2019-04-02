@@ -74,4 +74,9 @@ public class Time {
         self.api.token = token
         completionHandler?(nil)
     }
+    
+    public func deauthenticate() {
+        _ = TokenStore.deleteToken(withTag: self.tokenIdentifier)
+        self.api.token = nil
+    }
 }

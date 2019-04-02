@@ -32,9 +32,25 @@
                     <view key="view" contentMode="scaleToFill" id="1q4-ji-hZl">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iHl-nl-vgN">
+                                <rect key="frame" x="164.5" y="328.5" width="46" height="30"/>
+                                <state key="normal" title="Button"/>
+                                <connections>
+                                    <action selector="signOutPressed:" destination="M4D-jS-VP3" eventType="touchUpInside" id="enI-4V-Gwj"/>
+                                </connections>
+                            </button>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="iHl-nl-vgN" firstAttribute="centerX" secondItem="rNV-3Z-C2e" secondAttribute="centerX" id="Lac-iR-9am"/>
+                            <constraint firstItem="iHl-nl-vgN" firstAttribute="centerY" secondItem="rNV-3Z-C2e" secondAttribute="centerY" id="oS0-VD-pv8"/>
+                        </constraints>
                         <viewLayoutGuide key="safeArea" id="rNV-3Z-C2e"/>
                     </view>
+                    <connections>
+                        <outlet property="signOutButton" destination="iHl-nl-vgN" id="5fQ-ci-h7f"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ep7-oX-oFi" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
