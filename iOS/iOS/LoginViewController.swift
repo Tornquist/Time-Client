@@ -16,6 +16,8 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var signUpButton: UIButton!
     @IBOutlet weak var logInButton: UIButton!
     
+    @IBOutlet weak var errorLabel: UILabel!
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
@@ -30,25 +32,47 @@ class LoginViewController: UIViewController {
         
         self.signUpButton.setTitle(NSLocalizedString("Sign Up", comment: ""), for: .normal)
         self.logInButton.setTitle(NSLocalizedString("Log In", comment: ""), for: .normal)
+        
+        self.errorLabel.text = nil
+        self.errorLabel.font = UIFont.systemFont(ofSize: 12.0)
     }
     
     @IBAction func handleButtonPress(_ sender: UIButton) {
-        guard let email = self.emailTextField.text else {
-            // Show Error
-            return
-        }
-        guard let password = self.passwordTextField.text else {
-            // Show Error
-            return
-        }
-        guard email.count > 0 && password.count > 0 else {
-            // Show Error
-            return
+        self.hideError()
+        
+        guard
+            let email = self.emailTextField.text,
+            let password = self.passwordTextField.text,
+            email.count > 0 && password.count > 0
+            else {
+                // Show Error
+                self.show(error: NSLocalizedString("Email and password are required", comment: ""))
+                return
         }
         
         let signUp = sender == self.signUpButton
         if signUp {
             // Validate email and password
+//            let emailRange = NSRange(location: 0, length: email.utf16.count)
+//            let emailRegex = try! NSRegularExpression(pattern: "/^(([^<>()[]\\.,;:\\s@`\"]+(\\.[^<>()[]\\.,;:\\s@\"]+)*)|(\".+\"))@(([[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$")
+            let validEmail = true//emailRegex.firstMatch(in: email, options: [], range: emailRange) != nil
+            
+            let passwordRange = NSRange(location: 0, length: password.utf16.count)
+            let passwordRegex = try! NSRegularExpression(pattern: "^([a-zA-Z0-9@*#!%$_-]{8,30})$")
+            let validPassword = passwordRegex.firstMatch(in: password, options: [], range: passwordRange) != nil
+            
+            if !validEmail || !validPassword {
+                var errorComponents: [String] = []
+                if !validEmail {
+                    errorComponents.append(NSLocalizedString("Invalid email", comment: ""))
+                }
+                if !validPassword {
+                    errorComponents.append(NSLocalizedString("Invalid password", comment: ""))
+                }
+                let error = errorComponents.joined(separator: "\n")
+                self.show(error: error)
+                return
+            }
         }
         
         if signUp {
@@ -65,6 +89,10 @@ class LoginViewController: UIViewController {
         }
     }
     
+    @IBAction func editingChanged(_ sender: Any) {
+        self.hideError()
+    }
+    
     @IBAction func backgroundTapped(_ sender: Any) {
         self.view.endEditing(false)
     }
@@ -79,5 +107,17 @@ class LoginViewController: UIViewController {
         // This view should be seen rarely.
         
         self.dismiss(animated: true, completion: nil)
+    }
+    
+    // MARK: - Error Handling
+    
+    func show(error: String) {
+        self.errorLabel.text = error
+        self.errorLabel.isHidden = false
+    }
+    
+    func hideError() {
+        self.errorLabel.text = nil
+        self.errorLabel.isHidden = true
     }
 }
