@@ -22,8 +22,10 @@ class LoginViewController: UIViewController {
         super.viewWillAppear(animated)
         
         self.emailTextField.placeholder = NSLocalizedString("Email", comment: "")
+        self.emailTextField.spellCheckingType = .no
         self.emailTextField.keyboardType = .emailAddress
         self.emailTextField.autocapitalizationType = .none
+        self.emailTextField.autocorrectionType = .no
         
         self.passwordTextField.placeholder = NSLocalizedString("Password", comment: "")
         self.passwordTextField.spellCheckingType = .no
@@ -53,9 +55,9 @@ class LoginViewController: UIViewController {
         let signUp = sender == self.signUpButton
         if signUp {
             // Validate email and password
-//            let emailRange = NSRange(location: 0, length: email.utf16.count)
-//            let emailRegex = try! NSRegularExpression(pattern: "/^(([^<>()[]\\.,;:\\s@`\"]+(\\.[^<>()[]\\.,;:\\s@\"]+)*)|(\".+\"))@(([[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$")
-            let validEmail = true//emailRegex.firstMatch(in: email, options: [], range: emailRange) != nil
+            let emailRange = NSRange(location: 0, length: email.utf16.count)
+            let emailRegex = try! NSRegularExpression(pattern: "^(([^<>()\\[\\]\\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$")
+            let validEmail = emailRegex.firstMatch(in: email, options: [], range: emailRange) != nil
             
             let passwordRange = NSRange(location: 0, length: password.utf16.count)
             let passwordRegex = try! NSRegularExpression(pattern: "^([a-zA-Z0-9@*#!%$_-]{8,30})$")
