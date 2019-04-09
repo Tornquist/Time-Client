@@ -39,48 +39,85 @@ class LoginViewController: UIViewController {
         self.errorLabel.font = UIFont.systemFont(ofSize: 12.0)
     }
     
+    enum ValidationError {
+        case emailRequired
+        case emailInvalid
+        
+        case passwordRequired
+        case passwordTooShort
+        case passwordTooLong
+        case passwordInvalidCharacters
+        
+        var description: String {
+            switch self {
+            case .emailRequired:
+                return NSLocalizedString("Email required.", comment: "")
+            case .emailInvalid:
+                return NSLocalizedString("Email not recognized.", comment: "")
+            case .passwordRequired:
+                return NSLocalizedString("Password required.", comment: "")
+            case .passwordTooShort:
+                return NSLocalizedString("Password length invalid. Must be at least 8 characters.", comment: "")
+            case .passwordTooLong:
+                return NSLocalizedString("Password length invalid. Must be 30 characters or less.", comment: "")
+            case .passwordInvalidCharacters:
+                return NSLocalizedString("Password can contain a-z, A-Z, 0-9 or @*#!%$_-", comment: "")
+            }
+        }
+    }
+    
+    func validate(email emailCandidate: String?, validateContents: Bool) -> (String?, [ValidationError]) {
+        guard let email = emailCandidate else { return (nil, [.emailRequired]) }
+        guard email.count > 0 else { return (nil, [.emailRequired]) }
+        guard validateContents else { return (email, []) }
+        
+        let emailRange = NSRange(location: 0, length: email.utf16.count)
+        let emailRegex = try! NSRegularExpression(pattern: "^(([^<>()\\[\\]\\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$")
+        let validEmail = emailRegex.firstMatch(in: email, options: [], range: emailRange) != nil
+        
+        guard validEmail else { return (nil, [.emailInvalid]) }
+        
+        return (email, [])
+    }
+    
+    func validate(password passwordCandidate: String?, validateContents: Bool = true) -> (String?, [ValidationError]) {
+        guard let password = passwordCandidate else { return (nil, [.passwordRequired]) }
+        guard password.count > 0 else { return (nil, [.passwordRequired]) }
+        guard validateContents else { return (password, []) }
+        
+        guard password.count >= 8 else { return (nil, [.passwordTooShort]) }
+        guard password.count <= 30 else { return (nil, [.passwordTooLong]) }
+        
+        let passwordRange = NSRange(location: 0, length: password.utf16.count)
+        let passwordRegex = try! NSRegularExpression(pattern: "^([a-zA-Z0-9@*#!%$_-]{8,30})$")
+        let validPassword = passwordRegex.firstMatch(in: password, options: [], range: passwordRange) != nil
+        
+        guard validPassword else { return (nil, [.passwordInvalidCharacters]) }
+        
+        return (password, [])
+    }
+    
     @IBAction func handleButtonPress(_ sender: UIButton) {
         self.hideError()
         
-        guard
-            let email = self.emailTextField.text,
-            let password = self.passwordTextField.text,
-            email.count > 0 && password.count > 0
-            else {
-                // Show Error
-                self.show(error: NSLocalizedString("Email and password are required", comment: ""))
-                return
-        }
-        
         let signUp = sender == self.signUpButton
-        if signUp {
-            // Validate email and password
-            let emailRange = NSRange(location: 0, length: email.utf16.count)
-            let emailRegex = try! NSRegularExpression(pattern: "^(([^<>()\\[\\]\\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$")
-            let validEmail = emailRegex.firstMatch(in: email, options: [], range: emailRange) != nil
-            
-            let passwordRange = NSRange(location: 0, length: password.utf16.count)
-            let passwordRegex = try! NSRegularExpression(pattern: "^([a-zA-Z0-9@*#!%$_-]{8,30})$")
-            let validPassword = passwordRegex.firstMatch(in: password, options: [], range: passwordRange) != nil
-            
-            if !validEmail || !validPassword {
-                var errorComponents: [String] = []
-                if !validEmail {
-                    errorComponents.append(NSLocalizedString("Invalid email", comment: ""))
-                }
-                if !validPassword {
-                    errorComponents.append(NSLocalizedString("Invalid password", comment: ""))
-                }
-                let error = errorComponents.joined(separator: "\n")
-                self.show(error: error)
-                return
-            }
+        let (email, emailErrors) = validate(email: self.emailTextField.text, validateContents: signUp)
+        let (password, passwordErrors) = validate(password: self.passwordTextField.text, validateContents: signUp)
+        
+        guard emailErrors.count == 0 && passwordErrors.count == 0 else {
+            let displayError = (emailErrors + passwordErrors).map({ $0.description }).joined(separator: "\n")
+            self.show(error: displayError)
+            return
+        }
+        guard let safeEmail = email, let safePassword = password else {
+            self.show(error: NSLocalizedString("An unknown error has occurred.", comment: ""))
+            return
         }
         
         if signUp {
             // Not supported
         } else {
-            Time.shared.authenticate(username: email, password: password) { error in
+            Time.shared.authenticate(username: safeEmail, password: safePassword) { error in
                 guard error == nil else {
                     // Show Error
                     return
