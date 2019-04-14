@@ -21,7 +21,7 @@ class Test_0_Setup: XCTestCase {
         
         // Attempt to log user in
         let loginUserExpectation = self.expectation(description: "loginUser")
-        api.getToken(withUsername: email, andPassword: password) { (token, error) in
+        api.getToken(withEmail: email, andPassword: password) { (token, error) in
             userExists = token != nil
             loginUserExpectation.fulfill()
         }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.31"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -619,7 +619,7 @@
                                         <menuItem title="Show Sidebar" keyEquivalent="s" id="kIP-vf-haE">
                                             <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
                                             <connections>
-                                                <action selector="toggleSourceList:" target="Ady-hI-5gd" id="iwa-gc-5KM"/>
+                                                <action selector="toggleSidebar:" target="Ady-hI-5gd" id="iwa-gc-5KM"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Enter Full Screen" keyEquivalent="f" id="4J7-dP-txa">
@@ -674,7 +674,7 @@
                         <outlet property="delegate" destination="Voe-Tx-rLC" id="PrD-fu-P6m"/>
                     </connections>
                 </application>
-                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModuleProvider="target"/>
+                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="Time_macOS" customModuleProvider="target"/>
                 <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -701,18 +701,112 @@
             </objects>
             <point key="canvasLocation" x="75" y="250"/>
         </scene>
-        <!--View Controller-->
+        <!--Login View Controller-->
         <scene sceneID="hIz-AP-VOD">
             <objects>
-                <viewController id="XfG-lQ-9wD" customClass="ViewController" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="XfG-lQ-9wD" customClass="LoginViewController" customModule="Time_macOS" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" wantsLayer="YES" id="m2S-Jp-Qdl">
                         <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <stackView distribution="fillEqually" orientation="vertical" alignment="centerX" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Oh4-hP-DRc">
+                                <rect key="frame" x="165" y="90" width="150" height="90"/>
+                                <subviews>
+                                    <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FUe-zr-gni">
+                                        <rect key="frame" x="0.0" y="65" width="150" height="25"/>
+                                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Email" drawsBackground="YES" id="BxC-Yd-gRw">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <secureTextField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="YNt-Cy-euv">
+                                        <rect key="frame" x="0.0" y="33" width="150" height="24"/>
+                                        <secureTextFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Password" drawsBackground="YES" usesSingleLineMode="YES" id="W3T-hc-BRH">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            <allowedInputSourceLocales>
+                                                <string>NSAllRomanInputSourcesLocaleIdentifier</string>
+                                            </allowedInputSourceLocales>
+                                        </secureTextFieldCell>
+                                    </secureTextField>
+                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="7HF-MI-urR">
+                                        <rect key="frame" x="-6" y="-7" width="162" height="36"/>
+                                        <buttonCell key="cell" type="push" title="Login" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="lWo-4A-ius">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="loginTapped:" target="XfG-lQ-9wD" id="o5H-Fk-31k"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="FUe-zr-gni" firstAttribute="width" secondItem="Oh4-hP-DRc" secondAttribute="width" id="2sJ-Gy-uht"/>
+                                    <constraint firstItem="7HF-MI-urR" firstAttribute="width" secondItem="YNt-Cy-euv" secondAttribute="width" id="IBb-XI-F59"/>
+                                    <constraint firstAttribute="width" constant="150" id="UB9-sp-qEY"/>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="90" id="tl2-E9-AOy"/>
+                                    <constraint firstItem="YNt-Cy-euv" firstAttribute="width" secondItem="FUe-zr-gni" secondAttribute="width" id="yDk-lC-oxW"/>
+                                </constraints>
+                                <visibilityPriorities>
+                                    <integer value="1000"/>
+                                    <integer value="1000"/>
+                                    <integer value="1000"/>
+                                </visibilityPriorities>
+                                <customSpacing>
+                                    <real value="3.4028234663852886e+38"/>
+                                    <real value="3.4028234663852886e+38"/>
+                                    <real value="3.4028234663852886e+38"/>
+                                </customSpacing>
+                            </stackView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="Oh4-hP-DRc" firstAttribute="centerY" secondItem="m2S-Jp-Qdl" secondAttribute="centerY" id="5gZ-EY-roz"/>
+                            <constraint firstItem="Oh4-hP-DRc" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="8" id="Oca-Z3-oS3"/>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Oh4-hP-DRc" secondAttribute="bottom" constant="8" id="YBG-pF-BnC"/>
+                            <constraint firstItem="Oh4-hP-DRc" firstAttribute="centerX" secondItem="m2S-Jp-Qdl" secondAttribute="centerX" id="gc0-vt-j6p"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Oh4-hP-DRc" secondAttribute="trailing" constant="8" id="iRx-YD-A7i"/>
+                            <constraint firstItem="Oh4-hP-DRc" firstAttribute="top" relation="greaterThanOrEqual" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="8" id="xGR-8l-g59"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="emailTextField" destination="FUe-zr-gni" id="ag6-sb-3uH"/>
+                        <outlet property="loginButton" destination="7HF-MI-urR" id="hz9-rL-aSf"/>
+                        <outlet property="passwordTextField" destination="YNt-Cy-euv" id="Ahj-wQ-nao"/>
+                        <segue destination="lBA-SZ-euD" kind="show" identifier="login" id="jye-7A-BzK"/>
+                    </connections>
                 </viewController>
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="75" y="655"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="D87-SZ-nQi">
+            <objects>
+                <viewController id="lBA-SZ-euD" sceneMemberID="viewController">
+                    <view key="view" id="a3w-OE-xgk">
+                        <rect key="frame" x="0.0" y="0.0" width="480" height="300"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="LKX-Gj-dqB">
+                                <rect key="frame" x="208" y="142" width="64" height="17"/>
+                                <textFieldCell key="cell" lineBreakMode="clipping" title="Logged in" id="BJC-nU-dMe">
+                                    <font key="font" usesAppearanceFont="YES"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="LKX-Gj-dqB" firstAttribute="centerX" secondItem="a3w-OE-xgk" secondAttribute="centerX" id="CLJ-eM-gX8"/>
+                            <constraint firstItem="LKX-Gj-dqB" firstAttribute="centerY" secondItem="a3w-OE-xgk" secondAttribute="centerY" id="HXQ-Mr-0va"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <customObject id="WFo-X9-zv9" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="75" y="1077"/>
         </scene>
     </scenes>
 </document>

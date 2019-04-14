@@ -18,7 +18,7 @@ class Test_API_Tokens: XCTestCase {
     func test_getToken_validCredentials() {
         let expectation = self.expectation(description: "getToken")
         
-        API.shared.getToken(withUsername: "test@test.com", andPassword: "defaultPassword") { (token, error) in
+        API.shared.getToken(withEmail: "test@test.com", andPassword: "defaultPassword") { (token, error) in
             XCTAssertNotNil(token)
             XCTAssertNil(error)
             
@@ -31,7 +31,7 @@ class Test_API_Tokens: XCTestCase {
     func test_getToken_invalidCredentials() {
         let expectation = self.expectation(description: "getToken")
         
-        API.shared.getToken(withUsername: "test@test.com", andPassword: "madeUpPassword") { (token, error) in
+        API.shared.getToken(withEmail: "test@test.com", andPassword: "madeUpPassword") { (token, error) in
             XCTAssertNil(token)
             if let trueError = error as? TimeError {
                 XCTAssertEqual(trueError, TimeError.httpFailure("401"))
@@ -48,7 +48,7 @@ class Test_API_Tokens: XCTestCase {
     func test_refreshToken_validRefresh() {
         var startingToken: Token? = nil
         let getExpectation = self.expectation(description: "getToken")
-        API.shared.getToken(withUsername: "test@test.com", andPassword: "defaultPassword") { (authToken, error) in
+        API.shared.getToken(withEmail: "test@test.com", andPassword: "defaultPassword") { (authToken, error) in
             startingToken = authToken
             
             XCTAssertNotNil(authToken)

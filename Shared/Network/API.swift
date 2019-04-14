@@ -248,7 +248,7 @@ class API: APIQueueDelegate {
             sideEffects?(t)
             completion(t, nil)
         } catch {
-            completion(nil, TimeError.unableToDecodeResponse())
+            completion(nil, TimeError.unableToDecodeResponse)
         }
     }
 }

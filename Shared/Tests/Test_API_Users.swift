@@ -130,7 +130,7 @@ class Test_API_Users: XCTestCase {
         // Login User
         var loginSucceeded = false
         let loginExpectation = self.expectation(description: "loginUser")
-        api.getToken(withUsername: email, andPassword: password) { (token, error) in
+        api.getToken(withEmail: email, andPassword: password) { (token, error) in
             loginSucceeded = token != nil
             loginExpectation.fulfill()
         }
@@ -159,7 +159,7 @@ class Test_API_Users: XCTestCase {
         
         // Login with new credentials
         let reloginExpectation = self.expectation(description: "loginUser")
-        api.getToken(withUsername: newEmail, andPassword: password) { (token, error) in
+        api.getToken(withEmail: newEmail, andPassword: password) { (token, error) in
             XCTAssertNotNil(token)
             reloginExpectation.fulfill()
         }
@@ -192,7 +192,7 @@ class Test_API_Users: XCTestCase {
         // Login User
         var loginSucceeded = false
         let loginExpectation = self.expectation(description: "loginUser")
-        api.getToken(withUsername: email, andPassword: password) { (token, error) in
+        api.getToken(withEmail: email, andPassword: password) { (token, error) in
             loginSucceeded = token != nil
             loginExpectation.fulfill()
         }
@@ -220,7 +220,7 @@ class Test_API_Users: XCTestCase {
         
         // Login with new credentials
         let reloginExpectation = self.expectation(description: "loginUser")
-        api.getToken(withUsername: email, andPassword: newPassword) { (token, error) in
+        api.getToken(withEmail: email, andPassword: newPassword) { (token, error) in
             XCTAssertNotNil(token)
             reloginExpectation.fulfill()
         }

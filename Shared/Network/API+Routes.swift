@@ -12,10 +12,12 @@ extension API {
     
     // MARK: - Tokens
     
-    func getToken(withUsername username: String, andPassword password: String, completionHandler: @escaping (Token?, Error?) -> ()) {
+    func getToken(withEmail email: String, andPassword password: String, completionHandler: @escaping (Token?, Error?) -> ()) {
+        // username is part of the oauth spec.
+        // email is used for a consistent interface within the app. (authenticate/register/getToken)
         let body = [
             "grant_type" : "password",
-            "username": username,
+            "username": email,
             "password": password
         ]
         POST("/oauth/token", body, auth: false, encoding: .formUrlEncoded, completion: completionHandler) { (token) in
