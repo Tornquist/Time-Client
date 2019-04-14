@@ -68,7 +68,7 @@ class Test_Entry: XCTestCase {
             _ = try JSONDecoder().decode(Entry.self, from: entryData)
             XCTFail("Expected entry to throw")
         } catch {
-            XCTAssertEqual(error as? TimeError, TimeError.unableToDecodeResponse())
+            XCTAssertEqual(error as? TimeError, TimeError.unableToDecodeResponse)
         }
     }
     

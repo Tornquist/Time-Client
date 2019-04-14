@@ -33,7 +33,7 @@ public class Time {
         }
         
         guard let fetchedToken = TokenStore.getToken(withTag: self.tokenIdentifier) else {
-            completionHandler?(TimeError.tokenNotFound())
+            completionHandler?(TimeError.tokenNotFound)
             return
         }
         
@@ -45,7 +45,7 @@ public class Time {
         
         self.api.refreshToken { (newToken, error) in
             guard error == nil && newToken != nil else {
-                completionHandler?(TimeError.unableToRefreshToken())
+                completionHandler?(TimeError.unableToRefreshToken)
                 return
             }
             
@@ -53,19 +53,33 @@ public class Time {
         }
     }
     
-    public func authenticate(username: String, password: String, completionHandler: ((Error?) -> ())? = nil) {
-        self.api.getToken(withUsername: username, andPassword: password) { (token, error) in
+    public func authenticate(email: String, password: String, completionHandler: ((Error?) -> ())? = nil) {
+        self.api.getToken(withEmail: email, andPassword: password) { (token, error) in
             guard error == nil else {
                 completionHandler?(error)
                 return
             }
             
             guard token != nil else {
-                completionHandler?(TimeError.tokenNotFound())
+                completionHandler?(TimeError.tokenNotFound)
                 return
             }
             
             self.handleTokenSuccess(token: token!, completionHandler: completionHandler)
+        }
+    }
+    
+    public func register(email: String, password: String, completionHandler: ((Error?) -> ())? = nil) {
+        self.api.createUser(withEmail: email, andPassword: password) { (_, error) in
+            guard error == nil else {
+                completionHandler?(error)
+                return
+            }
+            
+            // Note: Can hide create success followed by auth failures.
+            // Currently 409 (dup email) is the most common unique createUser issue --> A wrapper method
+            // to expand and detail specific errors (like Time+Validation) is needed
+            self.authenticate(email: email, password: password, completionHandler: completionHandler)
         }
     }
     

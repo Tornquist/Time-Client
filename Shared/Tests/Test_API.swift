@@ -42,7 +42,7 @@ class Test_API: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
         
         let loginExpectation = self.expectation(description: "loginUser")
-        api.getToken(withUsername: email, andPassword: password) { (user, error) in
+        api.getToken(withEmail: email, andPassword: password) { (user, error) in
             loginExpectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
@@ -116,7 +116,7 @@ class Test_API: XCTestCase {
         let expectation = self.expectation(description: "typeMismatch")
         api.timeRequest(path: "/accounts", method: .POST, body: nil, encoding: nil, authorized: true, completion: { (accounts: [Account]?, error: Error?) in
             
-            XCTAssertEqual(error as? TimeError, TimeError.unableToDecodeResponse())
+            XCTAssertEqual(error as? TimeError, TimeError.unableToDecodeResponse)
             expectation.fulfill()
         }, sideEffects: nil)
         waitForExpectations(timeout: 5, handler: nil)

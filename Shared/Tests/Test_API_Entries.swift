@@ -52,7 +52,7 @@ class Test_API_Entries: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
         
         let loginExpectation = self.expectation(description: "loginUser")
-        api.getToken(withUsername: email, andPassword: password) { (user, error) in
+        api.getToken(withEmail: email, andPassword: password) { (user, error) in
             loginExpectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)

@@ -16,7 +16,7 @@ class Test_API_Accounts: XCTestCase {
     override func setUp() {
         var succeeded = false
         let getTokenExpectation = self.expectation(description: "getToken")
-        API.shared.getToken(withUsername: "test@test.com", andPassword: "defaultPassword") { (token, error) in
+        API.shared.getToken(withEmail: "test@test.com", andPassword: "defaultPassword") { (token, error) in
             XCTAssertNotNil(token)
             succeeded = token != nil
             getTokenExpectation.fulfill()

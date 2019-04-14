@@ -35,7 +35,7 @@ class Test_Authentication: XCTestCase {
         self.time.initialize { (error) in
             XCTAssertNotNil(error)
             if let timeError = error as? TimeError {
-                XCTAssertEqual(timeError, TimeError.tokenNotFound())
+                XCTAssertEqual(timeError, TimeError.tokenNotFound)
             } else {
                 XCTFail("Unknown error message returned")
             }
@@ -47,11 +47,11 @@ class Test_Authentication: XCTestCase {
     }
     
     func test_2_authenticateSetsToken() {
-        let username = "test@test.com"
+        let email = "test@test.com"
         let password = "defaultPassword"
         
         let expectation = self.expectation(description: "authentication")
-        self.time.authenticate(username: username, password: password) { (error) in
+        self.time.authenticate(email: email, password: password) { (error) in
             XCTAssertNil(error)
             expectation.fulfill()
         }
@@ -164,7 +164,7 @@ class Test_Authentication: XCTestCase {
         self.time.initialize { (error) in
             XCTAssertNotNil(error)
             
-            XCTAssertEqual(error as! TimeError, TimeError.unableToRefreshToken())
+            XCTAssertEqual(error as! TimeError, TimeError.unableToRefreshToken)
             
             expectation.fulfill()
         }
@@ -174,11 +174,11 @@ class Test_Authentication: XCTestCase {
     
     func test_8_deauthenticateClearsLocalSession() {
         // Can authenticate with credentials
-        let username = "test@test.com"
+        let email = "test@test.com"
         let password = "defaultPassword"
         
         let authenticationExpectation = self.expectation(description: "authentication")
-        self.time.authenticate(username: username, password: password) { (error) in
+        self.time.authenticate(email: email, password: password) { (error) in
             XCTAssertNil(error)
             authenticationExpectation.fulfill()
         }
@@ -197,7 +197,7 @@ class Test_Authentication: XCTestCase {
         let initializeExpectation = self.expectation(description: "initialize")
         self.time.initialize { (error) in
             XCTAssertNotNil(error)
-            XCTAssertEqual(error as! TimeError, TimeError.tokenNotFound())
+            XCTAssertEqual(error as! TimeError, TimeError.tokenNotFound)
             initializeExpectation.fulfill()
         }
         

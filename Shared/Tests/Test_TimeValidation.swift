@@ -190,7 +190,17 @@ class Test_TimeValidation: XCTestCase {
         )
         XCTAssertEqual(
             ValidationError.passwordInvalidCharacters("&").description,
-            "Password can contain a-z, A-Z, 0-9 or @*#!%$_-"
+            [
+                "Password can contain a-z, A-Z, 0-9 or @*#!%$_-",
+                "Invalid character: &"
+            ].joined(separator: "\n")
+        )
+        XCTAssertEqual(
+            ValidationError.passwordInvalidCharacters("&()").description,
+            [
+                "Password can contain a-z, A-Z, 0-9 or @*#!%$_-",
+                "Invalid characters: &()"
+            ].joined(separator: "\n")
         )
         
         XCTAssertEqual(ValidationError.emailRequired, ValidationError.emailRequired)

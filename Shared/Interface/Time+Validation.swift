@@ -66,8 +66,10 @@ public enum ValidationError {
             return NSLocalizedString("Password length invalid. Must be at least 8 characters.", comment: "")
         case .passwordTooLong:
             return NSLocalizedString("Password length invalid. Must be 30 characters or less.", comment: "")
-        case .passwordInvalidCharacters:
-            return NSLocalizedString("Password can contain a-z, A-Z, 0-9 or @*#!%$_-", comment: "")
+        case .passwordInvalidCharacters(let invalid):
+            let generalMessage = NSLocalizedString("Password can contain a-z, A-Z, 0-9 or @*#!%$_-", comment: "")
+            let errorCharacters = NSLocalizedString("Invalid character\(invalid.count == 1 ? "" : "s"): \(invalid)", comment: "")
+            return [generalMessage, errorCharacters].joined(separator: "\n")
         }
     }
     

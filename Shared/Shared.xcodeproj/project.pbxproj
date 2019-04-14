@@ -52,6 +52,8 @@
 		D87F5A9B22636C1700DD5DEA /* Time+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5A9A22636C1700DD5DEA /* Time+Validation.swift */; };
 		D87F5AA022636EAC00DD5DEA /* Test_TimeValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5A9F22636EAC00DD5DEA /* Test_TimeValidation.swift */; };
 		D87F5AA122636EAC00DD5DEA /* Test_TimeValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5A9F22636EAC00DD5DEA /* Test_TimeValidation.swift */; };
+		D87F5AA42263DBCF00DD5DEA /* Test_Registration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5AA32263DBCF00DD5DEA /* Test_Registration.swift */; };
+		D87F5AA52263DBCF00DD5DEA /* Test_Registration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5AA32263DBCF00DD5DEA /* Test_Registration.swift */; };
 		D89C7C4922087A8700B09D73 /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89C7C4822087A8700B09D73 /* Category.swift */; };
 		D89C7C4B22087B9300B09D73 /* Test_API_Categories.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89C7C4A22087B9300B09D73 /* Test_API_Categories.swift */; };
 		D8EA80EA2222501C002686D4 /* Entry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EA80E92222501C002686D4 /* Entry.swift */; };
@@ -125,6 +127,7 @@
 		D85B0A832246F7C700835E55 /* Info-iOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-iOS.plist"; sourceTree = "<group>"; };
 		D87F5A9A22636C1700DD5DEA /* Time+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Time+Validation.swift"; sourceTree = "<group>"; };
 		D87F5A9F22636EAC00DD5DEA /* Test_TimeValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_TimeValidation.swift; sourceTree = "<group>"; };
+		D87F5AA32263DBCF00DD5DEA /* Test_Registration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_Registration.swift; sourceTree = "<group>"; };
 		D89C7C4822087A8700B09D73 /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
 		D89C7C4A22087B9300B09D73 /* Test_API_Categories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_API_Categories.swift; sourceTree = "<group>"; };
 		D8EA80E92222501C002686D4 /* Entry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entry.swift; sourceTree = "<group>"; };
@@ -254,7 +257,7 @@
 				D85B0A832246F7C700835E55 /* Info-iOS.plist */,
 				D85581D721C14D6700DCB577 /* Info-macOS.plist */,
 				D8FE621922062549003A095A /* Test_0_Setup.swift */,
-				D87F5A9E22636E9C00DD5DEA /* Interface Extensions */,
+				D87F5AA22263DBB800DD5DEA /* Interface */,
 				D8EA80F62225764D002686D4 /* Network */,
 				D8EA80FB22257749002686D4 /* Models */,
 				D8EA80F822257688002686D4 /* Helpers */,
@@ -276,18 +279,19 @@
 			path = "iOS-Host";
 			sourceTree = "<group>";
 		};
-		D87F5A9E22636E9C00DD5DEA /* Interface Extensions */ = {
+		D87F5AA22263DBB800DD5DEA /* Interface */ = {
 			isa = PBXGroup;
 			children = (
+				D811B17521E38CD3009F6C8E /* Test_Authentication.swift */,
+				D87F5AA32263DBCF00DD5DEA /* Test_Registration.swift */,
 				D87F5A9F22636EAC00DD5DEA /* Test_TimeValidation.swift */,
 			);
-			name = "Interface Extensions";
+			name = Interface;
 			sourceTree = "<group>";
 		};
 		D8EA80F62225764D002686D4 /* Network */ = {
 			isa = PBXGroup;
 			children = (
-				D811B17521E38CD3009F6C8E /* Test_Authentication.swift */,
 				D822E5602218E2BC0011C09F /* Test_API.swift */,
 				D822E55D22144D710011C09F /* Test_APIQueue.swift */,
 				D811B17821E62B81009F6C8E /* Test_API_Tokens.swift */,
@@ -529,6 +533,7 @@
 				D822E5632218EAA40011C09F /* Test_TimeError.swift in Sources */,
 				D87F5AA022636EAC00DD5DEA /* Test_TimeValidation.swift in Sources */,
 				D822E5612218E2BC0011C09F /* Test_API.swift in Sources */,
+				D87F5AA42263DBCF00DD5DEA /* Test_Registration.swift in Sources */,
 				D8437C6021F4C8C800974B03 /* Test_TokenStore.swift in Sources */,
 				D811B17B21E77ECF009F6C8E /* Test_API_Users.swift in Sources */,
 				D811B17721E38D76009F6C8E /* Test_Authentication.swift in Sources */,
@@ -560,6 +565,7 @@
 				D85B0A762246F2ED00835E55 /* Test_TimeError.swift in Sources */,
 				D87F5AA122636EAC00DD5DEA /* Test_TimeValidation.swift in Sources */,
 				D85B0A772246F2ED00835E55 /* Test_API.swift in Sources */,
+				D87F5AA52263DBCF00DD5DEA /* Test_Registration.swift in Sources */,
 				D85B0A782246F2ED00835E55 /* Test_TokenStore.swift in Sources */,
 				D85B0A792246F2ED00835E55 /* Test_API_Users.swift in Sources */,
 				D85B0A7A2246F2ED00835E55 /* Test_Authentication.swift in Sources */,

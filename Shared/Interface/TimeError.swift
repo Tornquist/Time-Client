@@ -10,13 +10,13 @@ import Foundation
 
 public enum TimeError: Error {
     case unableToSendRequest(String)
-    case unableToDecodeResponse()
+    case unableToDecodeResponse
     case requestFailed(String)
     case httpFailure(String)
     case authenticationFailure(String)
     
-    case tokenNotFound()
-    case unableToRefreshToken()
+    case tokenNotFound
+    case unableToRefreshToken
 }
 
 extension TimeError: Equatable {

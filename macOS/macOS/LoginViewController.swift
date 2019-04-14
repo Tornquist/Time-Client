@@ -11,7 +11,7 @@ import TimeSDK
 
 class LoginViewController: NSViewController {
 
-    @IBOutlet weak var usernameTextField: NSTextField!
+    @IBOutlet weak var emailTextField: NSTextField!
     @IBOutlet weak var passwordTextField: NSSecureTextField!
     @IBOutlet weak var loginButton: NSButton!
     
@@ -44,9 +44,9 @@ class LoginViewController: NSViewController {
     // MARK: - Data Management
     
     func loginUser() {
-        let username = self.usernameTextField.stringValue
+        let email = self.emailTextField.stringValue
         let password = self.passwordTextField.stringValue
-        Time.shared.authenticate(username: username, password: password) { error in
+        Time.shared.authenticate(email: email, password: password) { error in
             if error == nil {
                 self.openApplication()
             }

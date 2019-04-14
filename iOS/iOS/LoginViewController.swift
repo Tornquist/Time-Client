@@ -56,17 +56,28 @@ class LoginViewController: UIViewController {
             return
         }
         
-        if signUp {
-            // Not supported
-        } else {
-            Time.shared.authenticate(username: safeEmail, password: safePassword) { error in
+        let complete = { (allowDuplicate: Bool) in
+            return { (error: Error?) in
                 guard error == nil else {
-                    // Show Error
+                    let timeError = error as? TimeError
+                    let is409 = timeError == TimeError.httpFailure("409")
+                    let duplicateError = allowDuplicate && is409
+                    let message = duplicateError
+                        ? NSLocalizedString("Email already associated with an account.", comment: "")
+                        : NSLocalizedString("An unknown error has occurred.", comment: "")
+                    
+                    DispatchQueue.main.async { self.show(error: message) }
                     return
                 }
                 
-                self.showHome()
+                DispatchQueue.main.async { self.showHome() }
             }
+        }
+        
+        if signUp {
+            Time.shared.register(email: safeEmail, password: safePassword, completionHandler: complete(true))
+        } else {
+            Time.shared.authenticate(email: safeEmail, password: safePassword, completionHandler: complete(false))
         }
     }
     

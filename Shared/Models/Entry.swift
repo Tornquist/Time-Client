@@ -40,7 +40,7 @@ public class Entry: Codable {
         let categoryID: Int = try container.decode(Int.self, forKey: .categoryID)
         let startedAtString: String = try container.decode(String.self, forKey: .startedAt)
         guard let startedAt: Date = DateHelper.dateFrom(isoString: startedAtString) else {
-            throw TimeError.unableToDecodeResponse()
+            throw TimeError.unableToDecodeResponse
         }
         
         let endedAtString: String? = try? container.decode(String.self, forKey: .endedAt)

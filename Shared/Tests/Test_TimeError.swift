@@ -26,19 +26,19 @@ class Test_TimeError: XCTestCase {
     }
     
     func test_equalityPassesWhenNoMessageIsSupported() {
-        XCTAssertEqual(TimeError.unableToDecodeResponse(), TimeError.unableToDecodeResponse())
-        XCTAssertEqual(TimeError.tokenNotFound(), TimeError.tokenNotFound())
-        XCTAssertEqual(TimeError.unableToRefreshToken(), TimeError.unableToRefreshToken())
+        XCTAssertEqual(TimeError.unableToDecodeResponse, TimeError.unableToDecodeResponse)
+        XCTAssertEqual(TimeError.tokenNotFound, TimeError.tokenNotFound)
+        XCTAssertEqual(TimeError.unableToRefreshToken, TimeError.unableToRefreshToken)
     }
     
     func test_equalityValidatesType() {
         let a = TimeError.unableToSendRequest("")
-        let b = TimeError.unableToDecodeResponse()
+        let b = TimeError.unableToDecodeResponse
         let c = TimeError.requestFailed("")
         let d = TimeError.httpFailure("")
         let e = TimeError.authenticationFailure("")
-        let f = TimeError.tokenNotFound()
-        let g = TimeError.unableToRefreshToken()
+        let f = TimeError.tokenNotFound
+        let g = TimeError.unableToRefreshToken
         
         XCTAssertNotEqual(a, b)
         XCTAssertNotEqual(b, c)
