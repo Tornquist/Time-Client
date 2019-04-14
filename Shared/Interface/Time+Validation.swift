@@ -70,6 +70,15 @@ public enum ValidationError {
             return NSLocalizedString("Password can contain a-z, A-Z, 0-9 or @*#!%$_-", comment: "")
         }
     }
+    
+    public var details: String? {
+        switch self {
+        case .passwordInvalidCharacters(let details):
+            return details
+        default:
+            return nil
+        }
+    }
 }
 
 extension ValidationError: Equatable {
@@ -85,8 +94,8 @@ extension ValidationError: Equatable {
             return true
         case (.passwordTooLong, .passwordTooLong):
             return true
-        case (.passwordInvalidCharacters(let l), .passwordInvalidCharacters(let r)):
-            return l == r
+        case (.passwordInvalidCharacters(_), .passwordInvalidCharacters(_)):
+            return true
         case (.emailRequired, _), (.emailInvalid, _), (.passwordRequired, _), (.passwordTooShort, _), (.passwordTooLong, _), (.passwordInvalidCharacters, _):
             return false
         }

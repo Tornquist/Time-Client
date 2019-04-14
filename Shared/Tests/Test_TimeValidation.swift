@@ -189,7 +189,7 @@ class Test_TimeValidation: XCTestCase {
             "Password length invalid. Must be 30 characters or less."
         )
         XCTAssertEqual(
-            ValidationError.passwordInvalidCharacters("").description,
+            ValidationError.passwordInvalidCharacters("&").description,
             "Password can contain a-z, A-Z, 0-9 or @*#!%$_-"
         )
         
@@ -200,7 +200,8 @@ class Test_TimeValidation: XCTestCase {
         XCTAssertEqual(ValidationError.passwordTooLong, ValidationError.passwordTooLong)
         XCTAssertEqual(ValidationError.passwordInvalidCharacters("a"), ValidationError.passwordInvalidCharacters("a"))
         
-        XCTAssertNotEqual(ValidationError.passwordInvalidCharacters("a"), ValidationError.passwordInvalidCharacters("b"))
+        // Intentionally allow invalidCharacters errors with different details to match
+        XCTAssertEqual(ValidationError.passwordInvalidCharacters("a"), ValidationError.passwordInvalidCharacters("b"))
         
         XCTAssertNotEqual(ValidationError.emailRequired, ValidationError.emailInvalid)
         XCTAssertNotEqual(ValidationError.emailInvalid, ValidationError.passwordRequired)
@@ -208,5 +209,11 @@ class Test_TimeValidation: XCTestCase {
         XCTAssertNotEqual(ValidationError.passwordTooShort, ValidationError.passwordTooLong)
         XCTAssertNotEqual(ValidationError.passwordTooLong, ValidationError.passwordInvalidCharacters("a"))
         XCTAssertNotEqual(ValidationError.passwordInvalidCharacters("a"), ValidationError.emailRequired)
+    }
+    
+    func test_validationErrorExtractingBadCharacters() {
+        let returnedError = ValidationError.passwordInvalidCharacters("&")
+        let details = returnedError.details
+        XCTAssertEqual(details, "&")
     }
 }
