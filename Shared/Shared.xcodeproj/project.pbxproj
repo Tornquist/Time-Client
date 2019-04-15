@@ -54,6 +54,8 @@
 		D87F5AA122636EAC00DD5DEA /* Test_TimeValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5A9F22636EAC00DD5DEA /* Test_TimeValidation.swift */; };
 		D87F5AA42263DBCF00DD5DEA /* Test_Registration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5AA32263DBCF00DD5DEA /* Test_Registration.swift */; };
 		D87F5AA52263DBCF00DD5DEA /* Test_Registration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5AA32263DBCF00DD5DEA /* Test_Registration.swift */; };
+		D87F5AA72264AC5100DD5DEA /* Time+Categories.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5AA62264AC5100DD5DEA /* Time+Categories.swift */; };
+		D87F5AA92264AC9300DD5DEA /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5AA82264AC9300DD5DEA /* Store.swift */; };
 		D89C7C4922087A8700B09D73 /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89C7C4822087A8700B09D73 /* Category.swift */; };
 		D89C7C4B22087B9300B09D73 /* Test_API_Categories.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89C7C4A22087B9300B09D73 /* Test_API_Categories.swift */; };
 		D8EA80EA2222501C002686D4 /* Entry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EA80E92222501C002686D4 /* Entry.swift */; };
@@ -128,6 +130,8 @@
 		D87F5A9A22636C1700DD5DEA /* Time+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Time+Validation.swift"; sourceTree = "<group>"; };
 		D87F5A9F22636EAC00DD5DEA /* Test_TimeValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_TimeValidation.swift; sourceTree = "<group>"; };
 		D87F5AA32263DBCF00DD5DEA /* Test_Registration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_Registration.swift; sourceTree = "<group>"; };
+		D87F5AA62264AC5100DD5DEA /* Time+Categories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Time+Categories.swift"; sourceTree = "<group>"; };
+		D87F5AA82264AC9300DD5DEA /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 		D89C7C4822087A8700B09D73 /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
 		D89C7C4A22087B9300B09D73 /* Test_API_Categories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_API_Categories.swift; sourceTree = "<group>"; };
 		D8EA80E92222501C002686D4 /* Entry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entry.swift; sourceTree = "<group>"; };
@@ -189,6 +193,7 @@
 			children = (
 				D837025B21CA846A0095B19F /* Time.swift */,
 				D8437C6121F9EB5D00974B03 /* TimeError.swift */,
+				D87F5AA62264AC5100DD5DEA /* Time+Categories.swift */,
 				D87F5A9A22636C1700DD5DEA /* Time+Validation.swift */,
 			);
 			path = Interface;
@@ -240,6 +245,7 @@
 		D85581AA21BEAB8800DCB577 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				D87F5AA82264AC9300DD5DEA /* Store.swift */,
 				D837025321CA7EAB0095B19F /* Token.swift */,
 				D837025821CA83050095B19F /* User.swift */,
 				D811B17C21EA4269009F6C8E /* Account.swift */,
@@ -501,12 +507,14 @@
 				D8EA80F22223944F002686D4 /* DateHelper.swift in Sources */,
 				D837025921CA83050095B19F /* User.swift in Sources */,
 				D8437C6421FCF3D400974B03 /* APIRequest.swift in Sources */,
+				D87F5AA92264AC9300DD5DEA /* Store.swift in Sources */,
 				D8EA80EA2222501C002686D4 /* Entry.swift in Sources */,
 				D822E55C221308B70011C09F /* API+Routes.swift in Sources */,
 				D85581AD21BEABC300DCB577 /* EntryType.swift in Sources */,
 				D837025C21CA846A0095B19F /* Time.swift in Sources */,
 				D8437C6221F9EB5D00974B03 /* TimeError.swift in Sources */,
 				D822E55A2211AED70011C09F /* APIQueue.swift in Sources */,
+				D87F5AA72264AC5100DD5DEA /* Time+Categories.swift in Sources */,
 				D87F5A9B22636C1700DD5DEA /* Time+Validation.swift in Sources */,
 				D8437C5E21F4C6C300974B03 /* TokenStore.swift in Sources */,
 				D837025721CA82E20095B19F /* API.swift in Sources */,
