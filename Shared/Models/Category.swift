@@ -10,8 +10,8 @@ import Foundation
 
 public class Category: Codable {
     public var id: Int
-    var parentID: Int?
-    var accountID: Int
+    public var parentID: Int?
+    public var accountID: Int
     public var name: String
     
     enum CodingKeys: String, CodingKey

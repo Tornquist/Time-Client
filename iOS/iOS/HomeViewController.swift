@@ -35,7 +35,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         self.tableView.addSubview(self.refreshControl)
     }
     
-    // MARK: - Data Methods
+    // MARK: - Data Methods and Actions
     
     func loadData(refresh: Bool = false) {
         Time.shared.store.getCategories(refresh: true) { (categories, error) in
@@ -49,6 +49,43 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
                 if self.refreshControl.isRefreshing {
                     self.refreshControl.endRefreshing()
                 }
+            }
+        }
+    }
+    
+    func addChildTo(category: TimeSDK.Category, completion: @escaping (Bool) -> Void) {
+        let alert = UIAlertController(title: "Create Category", message: "Under \(category.id)", preferredStyle: .alert)
+        
+        alert.addTextField { (textField : UITextField!) -> Void in
+            textField.placeholder = "Name"
+        }
+        
+        let create = UIAlertAction(title: "Create", style: .default) { _ -> Void in
+            let nameTextField = alert.textFields![0] as UITextField
+            let name = nameTextField.text
+            guard name != nil && name!.count > 0 else {
+                completion(false)
+                return
+            }
+            
+            Time.shared.store.addCategory(withName: name!, to: category) { (success) in
+                // Need to update specific rows for clean animation out of swipe gesture
+                DispatchQueue.main.async {
+                    if success { self.tableView.reloadData() }
+                    completion(success)
+                }
+            }
+        }
+        
+        let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in completion(false) })
+        alert.addAction(create)
+        alert.addAction(cancel)
+
+        if Thread.current.isMainThread {
+            self.present(alert, animated: true, completion: nil)
+        } else {
+            DispatchQueue.main.async {
+                self.present(alert, animated: true, completion: nil)
             }
         }
     }
@@ -79,5 +116,28 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         cell.textLabel?.text = "\(category.id)"
         cell.detailTextLabel?.text = category.name
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let category = Time.shared.store.categories[indexPath.row]
+        let isRoot = category.parentID == nil
+        
+        let edit = UIContextualAction(style: .normal, title: "Edit", handler: { (action, view, completion) in
+            print("EDIT")
+            completion(true)
+        })
+        
+        let delete = UIContextualAction(style: .destructive, title: "Delete", handler: { (action, view, completion) in
+            print("DELETE")
+            completion(false)
+        })
+        
+        let add = UIContextualAction(style: .normal, title: "Add", handler: { (action, view, completion) in
+            self.addChildTo(category: category, completion: completion)
+        })
+        
+        let config = UISwipeActionsConfiguration(actions: isRoot ? [add] : [add, edit, delete])
+        config.performsFirstActionWithFullSwipe = false
+        return config
     }
 }

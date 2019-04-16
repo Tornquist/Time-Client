@@ -29,4 +29,14 @@ public class Store {
             completionHandler(categories, error)
         }
     }
+    
+    public func addCategory(withName name: String, to parent: Category, completion: ((Bool) -> Void)?) {
+        self.api.createCategory(withName: name, under: parent) { (category, error) in
+            if category != nil {
+                self.categories.append(category!)
+            }
+            
+            completion?(error == nil)
+        }
+    }
 }
