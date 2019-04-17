@@ -39,4 +39,8 @@ public class Store {
             completion?(error == nil)
         }
     }
+    
+    public func getCategoryTree() -> [CategoryTree] {
+        return CategoryTree.generateFrom(self.categories)
+    }
 }

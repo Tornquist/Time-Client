@@ -71,7 +71,12 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
             Time.shared.store.addCategory(withName: name!, to: category) { (success) in
                 // Need to update specific rows for clean animation out of swipe gesture
                 DispatchQueue.main.async {
-                    if success { self.tableView.reloadData() }
+                    if success {
+//                        self.tableView.beginUpdates()
+//                        self.tableView.insertRows(at: [IndexPath(row: Time.shared.store.categories.count-1, section: 0)], with: .automatic)
+//                        self.tableView.endUpdates()
+                        self.tableView.reloadData()
+                    }
                     completion(success)
                 }
             }
@@ -103,23 +108,45 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return Time.shared.store.getCategoryTree().count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return Time.shared.store.categories.count
+        return Time.shared.store.getCategoryTree()[section].numChildren
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        let tree = Time.shared.store.getCategoryTree()[section]
+        return "Account: \(tree.node.accountID)"
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
-        let category = Time.shared.store.categories[indexPath.row]
-        cell.textLabel?.text = "\(category.id)"
-        cell.detailTextLabel?.text = category.name
+        guard let category = Time.shared.store.getCategoryTree()[indexPath.section].getChild(withOffset: indexPath.row) else {
+            cell.textLabel?.text = "ERROR"
+            cell.detailTextLabel?.text = "ERROR"
+            return cell
+        }
+        
+        if category.parentID == nil {
+            cell.textLabel?.text = "\(category.accountID)"
+            cell.detailTextLabel?.text = "ACCOUNT"
+        } else {
+            let depth = Time.shared.store.getCategoryTree()[indexPath.section].findItem(withID: category.id)?.depth ?? 0
+            let padding = String(repeating: "    ", count: depth)
+            cell.textLabel?.text = "\(category.id)"
+            cell.detailTextLabel?.text = padding + category.name
+        }
+        
         return cell
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let category = Time.shared.store.categories[indexPath.row]
+        
+        guard let category = Time.shared.store.getCategoryTree()[indexPath.section].getChild(withOffset: indexPath.row) else {
+            return nil
+        }
+        
         let isRoot = category.parentID == nil
         
         let edit = UIContextualAction(style: .normal, title: "Edit", handler: { (action, view, completion) in
