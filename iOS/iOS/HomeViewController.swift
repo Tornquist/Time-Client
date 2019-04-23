@@ -113,43 +113,35 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let tree = self.getTree(for: section) else { return 0 }
-        return tree.numChildren
-    }
-    
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        guard let tree = self.getTree(for: section) else { return "" }
-        return "Account: \(tree.node.accountID)"
+        return tree.numChildren + 1 // Add node for account
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
-        guard
-            let tree = self.getTree(for: indexPath.section),
-            let category = tree.getChild(withOffset: indexPath.row) else {
+        guard let category = self.getCategory(for: indexPath) else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
             cell.textLabel?.text = "ERROR"
             cell.detailTextLabel?.text = "ERROR"
             return cell
         }
         
         if category.parentID == nil {
-            cell.textLabel?.text = "\(category.accountID)"
-            cell.detailTextLabel?.text = "ACCOUNT"
-        } else {
-            let depth = tree.findItem(withID: category.id)?.depth ?? 0
-            let padding = String(repeating: "    ", count: depth)
-            cell.textLabel?.text = "\(category.id)"
-            cell.detailTextLabel?.text = padding + category.name
+            let cell = tableView.dequeueReusableCell(withIdentifier: "accountCell", for: indexPath)
+            cell.textLabel?.text = "ACCOUNT \(category.accountID)"
+            return cell
         }
+            
+        let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
+        let trueDepth = self.getTree(for: indexPath.section)?.findItem(withID: category.id)?.depth ?? 1
+        let displayDepth = trueDepth - 1 // Will not show account cell
+        let padding = String(repeating: "    ", count: displayDepth)
+        cell.textLabel?.text = "\(category.id)"
+        cell.detailTextLabel?.text = padding + category.name
         
         return cell
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        guard
-            let tree = self.getTree(for: indexPath.section),
-            let category = tree.getChild(withOffset: indexPath.row) else {
-            return nil
-        }
+        guard let category = self.getCategory(for: indexPath) else { return nil }
         
         let isRoot = category.parentID == nil
         
@@ -180,5 +172,17 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         guard let tree = Time.shared.store.categoryTrees[accountID] else { return nil }
         
         return tree
+    }
+    
+    func getCategory(for indexPath: IndexPath) -> TimeSDK.Category? {
+        guard let tree = self.getTree(for: indexPath.section) else {
+            return nil
+        }
+        
+        // Starts with Root
+        if indexPath.row == 0 { return tree.node }
+        
+        let category = tree.getChild(withOffset: indexPath.row - 1)
+        return category
     }
 }

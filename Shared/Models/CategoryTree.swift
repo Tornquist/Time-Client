@@ -50,11 +50,23 @@ public class CategoryTree {
         return list.count - 1 > offset ? list[offset + 1] : nil
     }
     
+    public func sortChildren() {
+        // Default (and only) sorting method is alphabetically (ignoring case)
+        self.children.sort { (treeA, treeB) -> Bool in
+            return treeA.node.name.lowercased() < treeB.node.name.lowercased()
+        }
+        self.children.forEach({ $0.sortChildren() })
+    }
+    
     public static func generateFrom(_ categories: [Category]) -> [CategoryTree] {
+        // Setup
         let rootNodes = categories.filter({ $0.parentID == nil })
         var childNodes = categories.filter({ $0.parentID != nil })
         
+        // Plan Trees
         let treeRoots = rootNodes.map({ CategoryTree($0) })
+        
+        // Grow Trees
         var placedOne = false
         repeat {
             placedOne = false
@@ -69,6 +81,9 @@ public class CategoryTree {
                 return true
             })
         } while placedOne
+        
+        // Groom Trees
+        treeRoots.forEach({ $0.sortChildren() })
         
         return treeRoots
     }
