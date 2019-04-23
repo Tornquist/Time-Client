@@ -15,6 +15,9 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     var refreshControl: UIRefreshControl!
     @IBOutlet weak var tableView: UITableView!
     
+    // Table View Display Variables
+    var accountDisplay: [Int: Bool] = [:]
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
@@ -112,8 +115,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let tree = self.getTree(for: section) else { return 0 }
-        return tree.numChildren + 1 // Add node for account
+        return self.getTableViewRows(for: section)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -164,7 +166,25 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         return config
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let tree = self.getTree(for: indexPath.section) else { return }
+        let accountID = tree.node.accountID
+        self.accountDisplay[accountID] = !(self.accountDisplay[accountID] ?? true)
+        self.tableView.reloadData()
+    }
+    
     // MARK: - TableView <-> Data store support methods
+    
+    func getTableViewRows(for section: Int) -> Int {
+        guard let tree = self.getTree(for: section) else { return 0 }
+        
+        let accountID = tree.node.accountID
+        let show = self.accountDisplay[accountID] ?? true
+        let headerRows = 1
+        let itemRows = show ? tree.numChildren : 0
+        
+        return headerRows + itemRows
+    }
     
     func getTree(for section: Int) -> CategoryTree? {
         guard section < Time.shared.store.accountIDs.count else { return nil }
