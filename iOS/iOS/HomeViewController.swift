@@ -108,21 +108,21 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return Time.shared.store.getCategoryTree().count
+        return Time.shared.store.categoryTree.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return Time.shared.store.getCategoryTree()[section].numChildren
+        return Time.shared.store.categoryTree[section].numChildren
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        let tree = Time.shared.store.getCategoryTree()[section]
+        let tree = Time.shared.store.categoryTree[section]
         return "Account: \(tree.node.accountID)"
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
-        guard let category = Time.shared.store.getCategoryTree()[indexPath.section].getChild(withOffset: indexPath.row) else {
+        guard let category = Time.shared.store.categoryTree[indexPath.section].getChild(withOffset: indexPath.row) else {
             cell.textLabel?.text = "ERROR"
             cell.detailTextLabel?.text = "ERROR"
             return cell
@@ -132,7 +132,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
             cell.textLabel?.text = "\(category.accountID)"
             cell.detailTextLabel?.text = "ACCOUNT"
         } else {
-            let depth = Time.shared.store.getCategoryTree()[indexPath.section].findItem(withID: category.id)?.depth ?? 0
+            let depth = Time.shared.store.categoryTree[indexPath.section].findItem(withID: category.id)?.depth ?? 0
             let padding = String(repeating: "    ", count: depth)
             cell.textLabel?.text = "\(category.id)"
             cell.detailTextLabel?.text = padding + category.name
@@ -143,7 +143,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-        guard let category = Time.shared.store.getCategoryTree()[indexPath.section].getChild(withOffset: indexPath.row) else {
+        guard let category = Time.shared.store.categoryTree[indexPath.section].getChild(withOffset: indexPath.row) else {
             return nil
         }
         
