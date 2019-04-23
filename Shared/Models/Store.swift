@@ -12,18 +12,31 @@ public class Store {
     
     var api: API
     
+    private var staleTrees: Bool = false
+    private var staleAccountIDs: Bool = false
+    
+    private var _accountIDs: [Int] = []
+    public var accountIDs: [Int] {
+        let hasCategories = self.categories.count != 0
+        let hasAccountIDs = self._accountIDs.count > 0
+        let needsGeneration = self.staleAccountIDs || (hasCategories && !hasAccountIDs)
+        
+        if needsGeneration { self.regenerateAccountIDs() }
+        
+        return self._accountIDs
+    }
+
     public var categories: [Category] = []
     
-    private var _categoryTree: [CategoryTree] = []
-    private var staleTree: Bool = false
-    public var categoryTree: [CategoryTree] {
+    private var _categoryTrees: [Int: CategoryTree] = [:]
+    public var categoryTrees: [Int:CategoryTree] {
         let hasCategories = self.categories.count != 0
-        let hasTree = self._categoryTree.count > 0
-        let needsGeneration = self.staleTree || (hasCategories && !hasTree)
+        let hasTrees = self._categoryTrees.count > 0
+        let needsGeneration = self.staleTrees || (hasCategories && !hasTrees)
         
-        if needsGeneration { self.regenerateTree() }
+        if needsGeneration { self.regenerateTrees() }
         
-        return self._categoryTree
+        return self._categoryTrees
     }
     
     
@@ -40,7 +53,8 @@ public class Store {
         self.api.getCategories { (categories, error) in
             if categories != nil {
                 self.categories = categories!
-                self.staleTree = true
+                self.staleTrees = true
+                self.staleAccountIDs = true
             }
             completionHandler(categories, error)
         }
@@ -50,16 +64,28 @@ public class Store {
         self.api.createCategory(withName: name, under: parent) { (category, error) in
             if category != nil {
                 self.categories.append(category!)
-                self.staleTree = true
+                self.staleTrees = true
+                self.staleAccountIDs = true
             }
             
             completion?(error == nil)
         }
     }
     
-    private func regenerateTree() {
-        let newTree = CategoryTree.generateFrom(self.categories)
-        self._categoryTree = newTree
-        self.staleTree = false
+    private func regenerateTrees() {
+        let trees = CategoryTree.generateFrom(self.categories)
+        var treeMapping: [Int: CategoryTree] = [:]
+        
+        trees.forEach { (tree) in
+            treeMapping[tree.node.accountID] = tree
+        }
+        
+        self._categoryTrees = treeMapping
+        self.staleTrees = false
+    }
+    
+    private func regenerateAccountIDs() {
+        let sortedIDs = Array(Set(categories.map({ $0.accountID }))).sorted()
+        self._accountIDs = sortedIDs
     }
 }
