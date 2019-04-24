@@ -72,6 +72,54 @@ public class Store {
         }
     }
     
+    public func deleteCategory(withID id: Int, andChildren deleteChildren: Bool, completion: ((Bool) -> Void)?) {
+        self.api.deleteCategory(withID: id, andChildren: deleteChildren) { (error) in
+            guard error == nil else {
+                completion?(false)
+                return
+            }
+            
+            guard
+                let category = self.categories.first(where: { $0.id == id }),
+                let tree = self.categoryTrees[category.accountID],
+                let categoryTree = tree.findItem(withID: category.id)
+                else {
+                    // Deleted, but items are not local. Inconsistent state
+                    completion?(true)
+                    return
+            }
+            
+            if deleteChildren {
+                let allChildren = categoryTree.asList()
+                let filteredCategories = self.categories.filter({ (category) -> Bool in
+                    let inFilterSet = allChildren.contains(where: { (referenceCategory) -> Bool in
+                        return referenceCategory.id == category.id
+                    })
+                    return !inFilterSet
+                })
+                if let safeChildren = categoryTree.parent?.children.filter({ $0.node.id != categoryTree.node.id }) {
+                    categoryTree.parent?.children = safeChildren
+                }
+                self.categories = filteredCategories
+            } else {
+                let filteredCategories = self.categories.filter({ (testCategory) -> Bool in
+                    return testCategory.id != category.id
+                })
+                let elevateChildren = categoryTree.children
+                if var safeChildren = categoryTree.parent?.children.filter({ $0.node.id != categoryTree.node.id }) {
+                    safeChildren.append(contentsOf: elevateChildren)
+                    categoryTree.parent?.children = safeChildren
+                    elevateChildren.forEach({ (child) in
+                        child.parent = categoryTree.parent
+                    })
+                    categoryTree.parent?.sortChildren()
+                }
+                self.categories = filteredCategories
+            }
+            completion?(true)
+        }
+    }
+    
     private func regenerateTrees() {
         let trees = CategoryTree.generateFrom(self.categories)
         var treeMapping: [Int: CategoryTree] = [:]

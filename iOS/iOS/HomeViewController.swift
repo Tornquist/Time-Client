@@ -98,6 +98,81 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
+    func delete(tree: CategoryTree, completion: @escaping (Bool) -> Void) {
+        let category = tree.node
+        
+        // Initial Question
+        let startingTitle = NSLocalizedString("Delete", comment: "")
+        let startingMessage = NSLocalizedString("Are you sure you wish to remove the category \"\(category.name)\"?\n\nAny entries attached to deleted categories will also be removed.", comment: "")
+        
+        let deleteCategoryText = NSLocalizedString("Delete Selected Category", comment: "")
+        let deleteCategoryAndChildrenText = NSLocalizedString("Delete Category and Children", comment: "")
+        let cancelText = NSLocalizedString("Cancel", comment: "")
+        
+        // Confirmation Support
+        let confirmAction = { (all: Bool) in
+            let deleteTitle = NSLocalizedString("Confirm Delete", comment: "")
+            let confirmText = NSLocalizedString("Delete", comment: "")
+            let cancelText = NSLocalizedString("Cancel", comment: "")
+            
+            let entriesOnCategory = all ? 0 : 0 // Needs to dynamically build based on children
+            let entriesPlural = entriesOnCategory == 1 ? NSLocalizedString("entry", comment: "") : NSLocalizedString("entries", comment: "")
+            
+            let numChildren = tree.numChildren
+            let childrenPlural = numChildren == 1 ? NSLocalizedString("child", comment: "") : NSLocalizedString("children", comment: "")
+            
+            let deleteSelectedMainMessage = NSLocalizedString("Category \"\(category.name)\" will be removed.", comment: "")
+            let deleteAllMainMessage = NSLocalizedString("Category \"\(category.name)\" and its children will be removed.", comment: "")
+            
+            let entryMessage = NSLocalizedString("\(entriesOnCategory) \(entriesPlural) will be removed.", comment: "")
+            let childrenMessage = NSLocalizedString("\(numChildren) \(childrenPlural) will be reassigned to the parent of \"\(category.name)\"", comment: "")
+            
+            var actionMessage: [String] = []
+            actionMessage.append(all ? deleteAllMainMessage : deleteSelectedMainMessage)
+            actionMessage.append(entryMessage)
+            if !all { actionMessage.append(childrenMessage) }
+            let deleteMessage = actionMessage.joined(separator: "\n\n")
+            
+            let trueAction = {
+                Time.shared.store.deleteCategory(withID: category.id, andChildren: all, completion: { success in
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                        completion(false)
+                    }
+                })
+            }
+            
+            let alert = UIAlertController(title: deleteTitle, message: deleteMessage, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: confirmText, style: .destructive, handler: { _ in trueAction() }))
+            alert.addAction(UIAlertAction(title: cancelText, style: .cancel, handler: { _ in completion(false) }))
+            
+            if Thread.current.isMainThread {
+                self.present(alert, animated: true, completion: nil)
+            } else {
+                DispatchQueue.main.async {
+                    self.present(alert, animated: true, completion: nil)
+                }
+            }
+        }
+        
+        // Initial Alert
+        let startingAlert = UIAlertController(title: startingTitle, message: startingMessage, preferredStyle: .alert)
+        let deleteCategory = UIAlertAction(title: deleteCategoryText, style: .destructive, handler: { _ in confirmAction(false) })
+        let deleteCategoryAndChildren = UIAlertAction(title: deleteCategoryAndChildrenText, style: .destructive, handler: { _ in confirmAction(true) })
+        let cancelAll = UIAlertAction(title: cancelText, style: .cancel, handler: { _ in completion(false) })
+        startingAlert.addAction(deleteCategory)
+        startingAlert.addAction(deleteCategoryAndChildren)
+        startingAlert.addAction(cancelAll)
+        
+        if Thread.current.isMainThread {
+            self.present(startingAlert, animated: true, completion: nil)
+        } else {
+            DispatchQueue.main.async {
+                self.present(startingAlert, animated: true, completion: nil)
+            }
+        }
+    }
+    
     // MARK: - Events
     
     @IBAction func signOutPressed(_ sender: Any) {
@@ -143,7 +218,10 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        guard let category = self.getCategory(for: indexPath) else { return nil }
+        guard
+            let tree = self.getTree(for: indexPath.section),
+            let category = self.getCategory(for: indexPath)
+        else { return nil }
         
         let isRoot = category.parentID == nil
         
@@ -153,8 +231,8 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         })
         
         let delete = UIContextualAction(style: .destructive, title: "Delete", handler: { (action, view, completion) in
-            print("DELETE")
-            completion(false)
+            guard let categoryTree = tree.findItem(withID: category.id) else { return completion(false) }
+            self.delete(tree: categoryTree, completion: completion)
         })
         
         let add = UIContextualAction(style: .normal, title: "Add", handler: { (action, view, completion) in
