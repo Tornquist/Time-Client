@@ -72,6 +72,18 @@ public class Store {
         }
     }
     
+    public func renameCategory(_ category: Category, to newName: String, completion: ((Bool) -> Void)?) {
+        self.api.renameCategory(category, withName: newName) { (newCategory, error) in
+            guard error == nil else {
+                completion?(false)
+                return
+            }
+            
+            category.name = newName
+            completion?(true)
+        }
+    }
+    
     public func deleteCategory(withID id: Int, andChildren deleteChildren: Bool, completion: ((Bool) -> Void)?) {
         self.api.deleteCategory(withID: id, andChildren: deleteChildren) { (error) in
             guard error == nil else {

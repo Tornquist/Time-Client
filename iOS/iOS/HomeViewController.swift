@@ -119,22 +119,15 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
                 completion(false)
                 return
             }
-            
-            print("NAME: \(name!)")
-            completion(true)
-            
-            //            Time.shared.store.addCategory(withName: name!, to: category) { (success) in
-            //                // Need to update specific rows for clean animation out of swipe gesture
-            //                DispatchQueue.main.async {
-            //                    if success {
-            //                        //                        self.tableView.beginUpdates()
-            //                        //                        self.tableView.insertRows(at: [IndexPath(row: Time.shared.store.categories.count-1, section: 0)], with: .automatic)
-            //                        //                        self.tableView.endUpdates()
-            //                        self.tableView.reloadData()
-            //                    }
-            //                    completion(success)
-            //                }
-            //            }
+
+            Time.shared.store.renameCategory(category, to: name!) { (success) in
+                DispatchQueue.main.async {
+                    if (success) {
+                        self.tableView.reloadData()
+                    }
+                    completion(success)
+                }
+            }
         }
         renameConfirmAction.isEnabled = false
         
