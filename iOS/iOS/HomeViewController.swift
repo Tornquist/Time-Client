@@ -59,10 +59,6 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     func addChildTo(category: TimeSDK.Category, completion: @escaping (Bool) -> Void) {
         let alert = UIAlertController(title: "Create Category", message: "Under \(category.id)", preferredStyle: .alert)
         
-        alert.addTextField { (textField : UITextField!) -> Void in
-            textField.placeholder = "Name"
-        }
-        
         let create = UIAlertAction(title: "Create", style: .default) { _ -> Void in
             let nameTextField = alert.textFields![0] as UITextField
             let name = nameTextField.text
@@ -84,6 +80,14 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
             }
         }
+        create.isEnabled = false
+        
+        alert.addTextField { (textField : UITextField!) -> Void in
+            textField.placeholder = "Name"
+            NotificationCenter.default.addObserver(forName: UITextField.textDidChangeNotification, object: textField, queue: OperationQueue.main) { (notification) in
+                create.isEnabled = textField.text?.count ?? 0 > 0
+            }
+        }
         
         let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in completion(false) })
         alert.addAction(create)
@@ -94,6 +98,83 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         } else {
             DispatchQueue.main.async {
                 self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    func edit(category: TimeSDK.Category, completion: @escaping (Bool) -> Void) {
+        let moveTitle = NSLocalizedString("Move Item", comment: "")
+        let moveDescription = NSLocalizedString("Select a destination.\n\nMoving a category will also move its children. Moving to a new account may change access permissions.", comment: "")
+        let moveAlert = UIAlertController(title: moveTitle, message: moveDescription, preferredStyle: .alert)
+        moveAlert.addAction(UIAlertAction(title: NSLocalizedString("Select Destination", comment: ""), style: .default, handler: { _ in completion(true) }))
+        moveAlert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(false) }))
+        
+        let renameTitle = NSLocalizedString("Rename Item", comment: "")
+        let renameDescription = NSLocalizedString("Enter a new name for \"\(category.name)\"", comment: "")
+        let renameAlert = UIAlertController(title: renameTitle, message: renameDescription, preferredStyle: .alert)
+        let renameConfirmAction = UIAlertAction(title: NSLocalizedString("Confirm", comment: ""), style: .default) { _ -> Void in
+            let nameTextField = renameAlert.textFields![0] as UITextField
+            let name = nameTextField.text
+            guard name != nil && name!.count > 0 else {
+                completion(false)
+                return
+            }
+            
+            print("NAME: \(name!)")
+            completion(true)
+            
+            //            Time.shared.store.addCategory(withName: name!, to: category) { (success) in
+            //                // Need to update specific rows for clean animation out of swipe gesture
+            //                DispatchQueue.main.async {
+            //                    if success {
+            //                        //                        self.tableView.beginUpdates()
+            //                        //                        self.tableView.insertRows(at: [IndexPath(row: Time.shared.store.categories.count-1, section: 0)], with: .automatic)
+            //                        //                        self.tableView.endUpdates()
+            //                        self.tableView.reloadData()
+            //                    }
+            //                    completion(success)
+            //                }
+            //            }
+        }
+        renameConfirmAction.isEnabled = false
+        
+        let renameCancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(false) })
+        renameAlert.addTextField { (textField : UITextField!) -> Void in
+            textField.placeholder = "New Name"
+            NotificationCenter.default.addObserver(forName: UITextField.textDidChangeNotification, object: textField, queue: OperationQueue.main) { (notification) in
+                renameConfirmAction.isEnabled = textField.text?.count ?? 0 > 0
+            }
+        }
+        renameAlert.addAction(renameConfirmAction)
+        renameAlert.addAction(renameCancelAction)
+        
+        let editTitle = NSLocalizedString("Edit \"\(category.name)\"", comment: "")
+        let editMenuAlert = UIAlertController(title: editTitle, message: nil, preferredStyle: .alert)
+        editMenuAlert.addAction(UIAlertAction(title: NSLocalizedString("Rename", comment: ""), style: .default, handler: { _ in
+            if Thread.current.isMainThread {
+                self.present(renameAlert, animated: true, completion: nil)
+            } else {
+                DispatchQueue.main.async {
+                    self.present(renameAlert, animated: true, completion: nil)
+                }
+            }
+        }))
+        editMenuAlert.addAction(UIAlertAction(title: NSLocalizedString("Move", comment: ""), style: .default, handler: { _ in
+            if Thread.current.isMainThread {
+                self.present(moveAlert, animated: true, completion: nil)
+            } else {
+                DispatchQueue.main.async {
+                    self.present(moveAlert, animated: true, completion: nil)
+                }
+            }
+        }))
+        editMenuAlert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(false) }))
+        
+        if Thread.current.isMainThread {
+            self.present(editMenuAlert, animated: true, completion: nil)
+        } else {
+            DispatchQueue.main.async {
+                self.present(editMenuAlert, animated: true, completion: nil)
             }
         }
     }
@@ -226,8 +307,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         let isRoot = category.parentID == nil
         
         let edit = UIContextualAction(style: .normal, title: "Edit", handler: { (action, view, completion) in
-            print("EDIT")
-            completion(true)
+            self.edit(category: category, completion: completion)
         })
         
         let delete = UIContextualAction(style: .destructive, title: "Delete", handler: { (action, view, completion) in
