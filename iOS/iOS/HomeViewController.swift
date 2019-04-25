@@ -12,8 +12,12 @@ import TimeSDK
 class HomeViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var signOutButton: UIBarButtonItem!
+    var cancelButton: UIBarButtonItem!
     var refreshControl: UIRefreshControl!
     @IBOutlet weak var tableView: UITableView!
+    
+    var moving: Bool = false
+    var movingCategory: TimeSDK.Category? = nil
     
     // Table View Display Variables
     var accountDisplay: [Int: Bool] = [:]
@@ -27,7 +31,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func configureTheme() {
         self.signOutButton = UIBarButtonItem(title: NSLocalizedString("Sign Out", comment: ""), style: .plain, target: self, action: #selector(signOutPressed(_:)))
-        self.navigationItem.leftBarButtonItem = self.signOutButton
+        self.cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelPressed(_:)))
         
         let topConstraint = NSLayoutConstraint(item: self.view, attribute: .top, relatedBy: .equal, toItem: self.tableView, attribute: .top, multiplier: 1, constant: 0)
         let bottomConstraint = NSLayoutConstraint(item: self.view, attribute: .bottom, relatedBy: .equal, toItem: self.tableView, attribute: .bottom, multiplier: 1, constant: 0)
@@ -36,6 +40,13 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         self.refreshControl = UIRefreshControl()
         self.refreshControl.addTarget(self, action: #selector(handleRefresh(_:)), for: .valueChanged)
         self.tableView.addSubview(self.refreshControl)
+        
+        self.refreshNavigation()
+    }
+    
+    func refreshNavigation() {
+        self.navigationItem.leftBarButtonItem = self.moving ? self.cancelButton: self.signOutButton
+        self.navigationItem.title = self.moving ? NSLocalizedString("Select Target", comment: "") : nil
     }
     
     // MARK: - Data Methods and Actions
@@ -102,11 +113,52 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
+    func move(category: TimeSDK.Category, to newParent: TimeSDK.Category) {
+        let title = NSLocalizedString("Confirm Move", comment: "")
+        let destinationDescription = newParent.parentID != nil ? newParent.name : NSLocalizedString("Account \(newParent.accountID)", comment: "")
+        let description = NSLocalizedString("Are you sure you wish to move \"\(category.name)\" to \"\(destinationDescription)\"?", comment: "")
+        let alert = UIAlertController(title: title, message: description, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Move", comment: ""), style: .default, handler: { _ in
+            Time.shared.store.moveCategory(category, to: newParent) { (success) in
+                self.moving = false
+                self.movingCategory = nil
+                DispatchQueue.main.async {
+                    self.refreshNavigation()
+                    self.tableView.reloadData()
+                }
+            }
+        }))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in
+            self.moving = false
+            self.movingCategory = nil
+            DispatchQueue.main.async {
+                self.refreshNavigation()
+                self.tableView.reloadData()
+            }
+        }))
+        
+        if Thread.current.isMainThread {
+            self.present(alert, animated: true, completion: nil)
+        } else {
+            DispatchQueue.main.async {
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
     func edit(category: TimeSDK.Category, completion: @escaping (Bool) -> Void) {
         let moveTitle = NSLocalizedString("Move Item", comment: "")
         let moveDescription = NSLocalizedString("Select a destination.\n\nMoving a category will also move its children. Moving to a new account may change access permissions.", comment: "")
         let moveAlert = UIAlertController(title: moveTitle, message: moveDescription, preferredStyle: .alert)
-        moveAlert.addAction(UIAlertAction(title: NSLocalizedString("Select Destination", comment: ""), style: .default, handler: { _ in completion(true) }))
+        moveAlert.addAction(UIAlertAction(title: NSLocalizedString("Select Destination", comment: ""), style: .default, handler: { _ in
+            self.moving = true
+            self.movingCategory = category
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+                self.refreshNavigation()
+                completion(true)
+            }
+        }))
         moveAlert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(false) }))
         
         let renameTitle = NSLocalizedString("Rename Item", comment: "")
@@ -254,6 +306,13 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         self.dismiss(animated: true, completion: nil)
     }
     
+    @IBAction func cancelPressed(_ sender: Any) {
+        self.moving = false
+        self.movingCategory = nil
+        self.refreshNavigation()
+        self.tableView.reloadData()
+    }
+    
     // MARK: - Table View
     @objc func handleRefresh(_ refreshControl: UIRefreshControl) {
         self.loadData(refresh: true)
@@ -275,9 +334,17 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
             return cell
         }
         
+        var backgroundColor: UIColor = .white
+        if self.moving && self.movingCategory != nil {
+            let isValidTarget = self.canMove(self.movingCategory!, to: category)
+            let isSelf = self.movingCategory?.id == category.id
+            backgroundColor = isSelf ? .green : (isValidTarget ? .white : .lightGray)
+        }
+        
         if category.parentID == nil {
             let cell = tableView.dequeueReusableCell(withIdentifier: "accountCell", for: indexPath)
             cell.textLabel?.text = "ACCOUNT \(category.accountID)"
+            cell.backgroundColor = backgroundColor
             return cell
         }
             
@@ -287,6 +354,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         let padding = String(repeating: "    ", count: displayDepth)
         cell.textLabel?.text = "\(category.id)"
         cell.detailTextLabel?.text = padding + category.name
+        cell.backgroundColor = backgroundColor
         
         return cell
     }
@@ -319,9 +387,21 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let tree = self.getTree(for: indexPath.section) else { return }
-        let accountID = tree.node.accountID
-        self.accountDisplay[accountID] = !(self.accountDisplay[accountID] ?? true)
-        self.tableView.reloadData()
+        if !self.moving {
+            let accountID = tree.node.accountID
+            self.accountDisplay[accountID] = !(self.accountDisplay[accountID] ?? true)
+            self.tableView.reloadData()
+        } else {
+            guard
+                let potentialParent = self.getCategory(for: indexPath),
+                self.movingCategory != nil,
+                self.canMove(self.movingCategory!, to: potentialParent)
+            else {
+                return
+            }
+            
+            self.move(category: self.movingCategory!, to: potentialParent)
+        }
     }
     
     // MARK: - TableView <-> Data store support methods
@@ -332,7 +412,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         let accountID = tree.node.accountID
         let show = self.accountDisplay[accountID] ?? true
         let headerRows = 1
-        let itemRows = show ? tree.numChildren : 0
+        let itemRows = show || self.moving ? tree.numChildren : 0
         
         return headerRows + itemRows
     }
@@ -355,5 +435,22 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         let category = tree.getChild(withOffset: indexPath.row - 1)
         return category
+    }
+    
+    func canMove(_ category: TimeSDK.Category, to potentialParent: TimeSDK.Category) -> Bool {
+        // Cannot move to self.
+        guard category.id != potentialParent.id else { return false }
+        
+        // Different accounts mean different trees. Automatic pass.
+        guard category.accountID == potentialParent.accountID else { return true }
+        
+        // Must have reference to move, and potential parent cannot be a child of moving node
+        guard let tree = Time.shared.store.categoryTrees[category.accountID],
+            let categoryTree = tree.findItem(withID: category.id),
+            categoryTree.findItem(withID: potentialParent.id) == nil
+            else { return false }
+        
+        // Cannot move to same parent
+        return potentialParent.id != categoryTree.parent?.node.id
     }
 }

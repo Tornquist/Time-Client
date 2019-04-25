@@ -11,7 +11,7 @@ import Foundation
 public class CategoryTree {
     public var node: Category
     public var children: [CategoryTree]
-    var parent: CategoryTree?
+    public var parent: CategoryTree?
     
     public var numChildren: Int {
         return children.map({ $0.numChildren }).reduce(0, { $0 + $1 }) + children.count

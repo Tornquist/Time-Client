@@ -84,6 +84,33 @@ public class Store {
         }
     }
     
+    public func moveCategory(_ category: Category, to newParent: Category, completion: ((Bool) -> Void)?) {
+        self.api.moveCategory(category, toParent: newParent) { (updatedCategory, error) in
+            if error == nil {
+                category.parentID = newParent.id
+                if let sourceTree = self.categoryTrees[category.accountID],
+                    let destinationTree = self.categoryTrees[newParent.accountID],
+                    let categoryTree = sourceTree.findItem(withID: category.id),
+                    let parentTree = destinationTree.findItem(withID: newParent.id) {
+                    
+                    let allCategories = categoryTree.asList()
+                    allCategories.forEach({ $0.accountID = newParent.accountID })
+                    
+                    if categoryTree.parent != nil {
+                        categoryTree.parent!.children = categoryTree.parent!.children.filter({ child in
+                            return child.node.id != category.id
+                        })
+                    }
+                    parentTree.children.append(categoryTree)
+                    categoryTree.parent = parentTree
+                    parentTree.sortChildren()
+                }
+            }
+            
+            completion?(error == nil)
+        }
+    }
+    
     public func deleteCategory(withID id: Int, andChildren deleteChildren: Bool, completion: ((Bool) -> Void)?) {
         self.api.deleteCategory(withID: id, andChildren: deleteChildren) { (error) in
             guard error == nil else {
