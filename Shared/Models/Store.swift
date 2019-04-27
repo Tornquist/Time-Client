@@ -64,8 +64,21 @@ public class Store {
         self.api.createCategory(withName: name, under: parent) { (category, error) in
             if category != nil {
                 self.categories.append(category!)
-                self.staleTrees = true
-                self.staleAccountIDs = true
+                
+                let newTree = CategoryTree(category!)
+                
+                let accountID = parent.accountID
+                if let accountTree = self.categoryTrees[accountID],
+                    let parentTree = accountTree.findItem(withID: parent.id) {
+                    
+                    parentTree.children.append(newTree)
+                    newTree.parent = parentTree
+                    parentTree.sortChildren()
+                    
+                    accountTree.recalculateChildren(recursively: true)
+                } else {
+                    self.staleTrees = true
+                }
             }
             
             completion?(error == nil)
@@ -104,6 +117,9 @@ public class Store {
                     parentTree.children.append(categoryTree)
                     categoryTree.parent = parentTree
                     parentTree.sortChildren()
+                    
+                    destinationTree.recalculateChildren(recursively: true)
+                    sourceTree.recalculateChildren(recursively: true)
                 }
             }
             
@@ -138,6 +154,7 @@ public class Store {
                 })
                 if let safeChildren = categoryTree.parent?.children.filter({ $0.node.id != categoryTree.node.id }) {
                     categoryTree.parent?.children = safeChildren
+                    categoryTree.parent?.recalculateChildren()
                 }
                 self.categories = filteredCategories
             } else {
@@ -152,9 +169,12 @@ public class Store {
                         child.parent = categoryTree.parent
                     })
                     categoryTree.parent?.sortChildren()
+                    categoryTree.parent?.recalculateChildren()
                 }
                 self.categories = filteredCategories
             }
+            
+            tree.recalculateChildren(recursively: true)
             completion?(true)
         }
     }

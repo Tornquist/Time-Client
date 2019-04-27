@@ -13,8 +13,12 @@ public class CategoryTree {
     public var children: [CategoryTree]
     public var parent: CategoryTree?
     
+    private var _numChildren: Int? = nil
     public var numChildren: Int {
-        return children.map({ $0.numChildren }).reduce(0, { $0 + $1 }) + children.count
+        if self._numChildren == nil {
+            self.recalculateChildren()
+        }
+        return self._numChildren!
     }
     
     public var depth: Int {
@@ -56,6 +60,12 @@ public class CategoryTree {
             return treeA.node.name.lowercased() < treeB.node.name.lowercased()
         }
         self.children.forEach({ $0.sortChildren() })
+    }
+    
+    public func recalculateChildren(recursively: Bool = false) {
+        if recursively { self.children.forEach({ $0.recalculateChildren(recursively: recursively) }) }
+        
+        self._numChildren = children.map({ $0.numChildren }).reduce(0, { $0 + $1 }) + children.count
     }
     
     public static func generateFrom(_ categories: [Category]) -> [CategoryTree] {
