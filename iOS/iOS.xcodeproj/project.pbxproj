@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D806B91222772507005DC715 /* HomeViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D806B91122772507005DC715 /* HomeViewController+Alerts.swift */; };
 		D855812321BDE9A200DCB577 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D855812221BDE9A200DCB577 /* AppDelegate.swift */; };
 		D855812521BDE9A200DCB577 /* LandingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D855812421BDE9A200DCB577 /* LandingViewController.swift */; };
 		D855812821BDE9A200DCB577 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D855812621BDE9A200DCB577 /* Main.storyboard */; };
@@ -34,6 +35,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D806B91122772507005DC715 /* HomeViewController+Alerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeViewController+Alerts.swift"; sourceTree = "<group>"; };
 		D855811F21BDE9A200DCB577 /* Time-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Time-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D855812221BDE9A200DCB577 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D855812421BDE9A200DCB577 /* LandingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingViewController.swift; sourceTree = "<group>"; };
@@ -96,6 +98,7 @@
 				D855812421BDE9A200DCB577 /* LandingViewController.swift */,
 				D85B0A492246DD1A00835E55 /* LoginViewController.swift */,
 				D85B0A4B2246DD2100835E55 /* HomeViewController.swift */,
+				D806B91122772507005DC715 /* HomeViewController+Alerts.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -172,6 +175,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D806B91222772507005DC715 /* HomeViewController+Alerts.swift in Sources */,
 				D85B0A4C2246DD2100835E55 /* HomeViewController.swift in Sources */,
 				D85B0A4A2246DD1A00835E55 /* LoginViewController.swift in Sources */,
 				D855812521BDE9A200DCB577 /* LandingViewController.swift in Sources */,

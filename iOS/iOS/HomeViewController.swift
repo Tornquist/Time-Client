@@ -68,58 +68,27 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func addChildTo(category: TimeSDK.Category, completion: @escaping (Bool) -> Void) {
-        let alert = UIAlertController(title: "Create Category", message: "Under \(category.id)", preferredStyle: .alert)
-        
-        let create = UIAlertAction(title: "Create", style: .default) { _ -> Void in
-            let nameTextField = alert.textFields![0] as UITextField
-            let name = nameTextField.text
-            guard name != nil && name!.count > 0 else {
-                completion(false)
-                return
-            }
+        self.showAlertFor(addingChildTo: category) { (name) in
+            guard name != nil else { return }
             
             Time.shared.store.addCategory(withName: name!, to: category) { (success) in
                 // Need to update specific rows for clean animation out of swipe gesture
                 DispatchQueue.main.async {
                     if success {
-//                        self.tableView.beginUpdates()
-//                        self.tableView.insertRows(at: [IndexPath(row: Time.shared.store.categories.count-1, section: 0)], with: .automatic)
-//                        self.tableView.endUpdates()
+                        // self.tableView.beginUpdates()
+                        // self.tableView.insertRows(at: [IndexPath(row: Time.shared.store.categories.count-1, section: 0)], with: .automatic)
+                        // self.tableView.endUpdates()
                         self.tableView.reloadData()
                     }
                     completion(success)
                 }
             }
         }
-        create.isEnabled = false
-        
-        alert.addTextField { (textField : UITextField!) -> Void in
-            textField.placeholder = "Name"
-            NotificationCenter.default.addObserver(forName: UITextField.textDidChangeNotification, object: textField, queue: OperationQueue.main) { (notification) in
-                create.isEnabled = textField.text?.count ?? 0 > 0
-            }
-        }
-        
-        let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in completion(false) })
-        alert.addAction(create)
-        alert.addAction(cancel)
-
-        if Thread.current.isMainThread {
-            self.present(alert, animated: true, completion: nil)
-        } else {
-            DispatchQueue.main.async {
-                self.present(alert, animated: true, completion: nil)
-            }
-        }
     }
     
     func move(category: TimeSDK.Category, to newParent: TimeSDK.Category) {
-        let title = NSLocalizedString("Confirm Move", comment: "")
-        let destinationDescription = newParent.parentID != nil ? newParent.name : NSLocalizedString("Account \(newParent.accountID)", comment: "")
-        let description = NSLocalizedString("Are you sure you wish to move \"\(category.name)\" to \"\(destinationDescription)\"?", comment: "")
-        let alert = UIAlertController(title: title, message: description, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Move", comment: ""), style: .default, handler: { _ in
-            Time.shared.store.moveCategory(category, to: newParent) { (success) in
+        self.showAlertFor(confirmingMoveOf: category, to: newParent) { (confirmed) in
+            let complete = {
                 self.moving = false
                 self.movingCategory = nil
                 DispatchQueue.main.async {
@@ -127,175 +96,55 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
                     self.tableView.reloadData()
                 }
             }
-        }))
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in
-            self.moving = false
-            self.movingCategory = nil
-            DispatchQueue.main.async {
-                self.refreshNavigation()
-                self.tableView.reloadData()
-            }
-        }))
-        
-        if Thread.current.isMainThread {
-            self.present(alert, animated: true, completion: nil)
-        } else {
-            DispatchQueue.main.async {
-                self.present(alert, animated: true, completion: nil)
+            
+            if confirmed {
+                Time.shared.store.moveCategory(category, to: newParent) { (success) in
+                    complete()
+                }
+            } else {
+                complete()
             }
         }
     }
     
     func edit(category: TimeSDK.Category, completion: @escaping (Bool) -> Void) {
-        let moveTitle = NSLocalizedString("Move Item", comment: "")
-        let moveDescription = NSLocalizedString("Select a destination.\n\nMoving a category will also move its children. Moving to a new account may change access permissions.", comment: "")
-        let moveAlert = UIAlertController(title: moveTitle, message: moveDescription, preferredStyle: .alert)
-        moveAlert.addAction(UIAlertAction(title: NSLocalizedString("Select Destination", comment: ""), style: .default, handler: { _ in
-            self.moving = true
-            self.movingCategory = category
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-                self.refreshNavigation()
-                completion(true)
-            }
-        }))
-        moveAlert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(false) }))
-        
-        let renameTitle = NSLocalizedString("Rename Item", comment: "")
-        let renameDescription = NSLocalizedString("Enter a new name for \"\(category.name)\"", comment: "")
-        let renameAlert = UIAlertController(title: renameTitle, message: renameDescription, preferredStyle: .alert)
-        let renameConfirmAction = UIAlertAction(title: NSLocalizedString("Confirm", comment: ""), style: .default) { _ -> Void in
-            let nameTextField = renameAlert.textFields![0] as UITextField
-            let name = nameTextField.text
-            guard name != nil && name!.count > 0 else {
-                completion(false)
-                return
-            }
-
-            Time.shared.store.renameCategory(category, to: name!) { (success) in
+        self.showAlertFor(editing: category) { (willMove, newName) in
+            if willMove {
+                self.moving = true
+                self.movingCategory = category
                 DispatchQueue.main.async {
-                    if (success) {
-                        self.tableView.reloadData()
+                    self.tableView.reloadData()
+                    self.refreshNavigation()
+                    completion(true)
+                }
+            } else if newName != nil {
+                Time.shared.store.renameCategory(category, to: newName!) { (success) in
+                    DispatchQueue.main.async {
+                        if (success) {
+                            self.tableView.reloadData()
+                        }
+                        completion(success)
                     }
-                    completion(success)
                 }
-            }
-        }
-        renameConfirmAction.isEnabled = false
-        
-        let renameCancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(false) })
-        renameAlert.addTextField { (textField : UITextField!) -> Void in
-            textField.placeholder = "New Name"
-            NotificationCenter.default.addObserver(forName: UITextField.textDidChangeNotification, object: textField, queue: OperationQueue.main) { (notification) in
-                renameConfirmAction.isEnabled = textField.text?.count ?? 0 > 0
-            }
-        }
-        renameAlert.addAction(renameConfirmAction)
-        renameAlert.addAction(renameCancelAction)
-        
-        let editTitle = NSLocalizedString("Edit \"\(category.name)\"", comment: "")
-        let editMenuAlert = UIAlertController(title: editTitle, message: nil, preferredStyle: .alert)
-        editMenuAlert.addAction(UIAlertAction(title: NSLocalizedString("Rename", comment: ""), style: .default, handler: { _ in
-            if Thread.current.isMainThread {
-                self.present(renameAlert, animated: true, completion: nil)
             } else {
-                DispatchQueue.main.async {
-                    self.present(renameAlert, animated: true, completion: nil)
-                }
-            }
-        }))
-        editMenuAlert.addAction(UIAlertAction(title: NSLocalizedString("Move", comment: ""), style: .default, handler: { _ in
-            if Thread.current.isMainThread {
-                self.present(moveAlert, animated: true, completion: nil)
-            } else {
-                DispatchQueue.main.async {
-                    self.present(moveAlert, animated: true, completion: nil)
-                }
-            }
-        }))
-        editMenuAlert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(false) }))
-        
-        if Thread.current.isMainThread {
-            self.present(editMenuAlert, animated: true, completion: nil)
-        } else {
-            DispatchQueue.main.async {
-                self.present(editMenuAlert, animated: true, completion: nil)
+                completion(false)
             }
         }
     }
     
     func delete(tree: CategoryTree, completion: @escaping (Bool) -> Void) {
-        let category = tree.node
-        
-        // Initial Question
-        let startingTitle = NSLocalizedString("Delete", comment: "")
-        let startingMessage = NSLocalizedString("Are you sure you wish to remove the category \"\(category.name)\"?\n\nAny entries attached to deleted categories will also be removed.", comment: "")
-        
-        let deleteCategoryText = NSLocalizedString("Delete Selected Category", comment: "")
-        let deleteCategoryAndChildrenText = NSLocalizedString("Delete Category and Children", comment: "")
-        let cancelText = NSLocalizedString("Cancel", comment: "")
-        
-        // Confirmation Support
-        let confirmAction = { (all: Bool) in
-            let deleteTitle = NSLocalizedString("Confirm Delete", comment: "")
-            let confirmText = NSLocalizedString("Delete", comment: "")
-            let cancelText = NSLocalizedString("Cancel", comment: "")
-            
-            let entriesOnCategory = all ? 0 : 0 // Needs to dynamically build based on children
-            let entriesPlural = entriesOnCategory == 1 ? NSLocalizedString("entry", comment: "") : NSLocalizedString("entries", comment: "")
-            
-            let numChildren = tree.numChildren
-            let childrenPlural = numChildren == 1 ? NSLocalizedString("child", comment: "") : NSLocalizedString("children", comment: "")
-            
-            let deleteSelectedMainMessage = NSLocalizedString("Category \"\(category.name)\" will be removed.", comment: "")
-            let deleteAllMainMessage = NSLocalizedString("Category \"\(category.name)\" and its children will be removed.", comment: "")
-            
-            let entryMessage = NSLocalizedString("\(entriesOnCategory) \(entriesPlural) will be removed.", comment: "")
-            let childrenMessage = NSLocalizedString("\(numChildren) \(childrenPlural) will be reassigned to the parent of \"\(category.name)\"", comment: "")
-            
-            var actionMessage: [String] = []
-            actionMessage.append(all ? deleteAllMainMessage : deleteSelectedMainMessage)
-            actionMessage.append(entryMessage)
-            if !all { actionMessage.append(childrenMessage) }
-            let deleteMessage = actionMessage.joined(separator: "\n\n")
-            
-            let trueAction = {
-                Time.shared.store.deleteCategory(withID: category.id, andChildren: all, completion: { success in
-                    DispatchQueue.main.async {
-                        self.tableView.reloadData()
-                        completion(false)
-                    }
-                })
+        self.showAlertFor(deleting: tree) { (delete, andChildren) in
+            guard delete else {
+                completion(false)
+                return
             }
-            
-            let alert = UIAlertController(title: deleteTitle, message: deleteMessage, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: confirmText, style: .destructive, handler: { _ in trueAction() }))
-            alert.addAction(UIAlertAction(title: cancelText, style: .cancel, handler: { _ in completion(false) }))
-            
-            if Thread.current.isMainThread {
-                self.present(alert, animated: true, completion: nil)
-            } else {
+
+            Time.shared.store.deleteCategory(withID: tree.node.id, andChildren: andChildren, completion: { success in
                 DispatchQueue.main.async {
-                    self.present(alert, animated: true, completion: nil)
+                    self.tableView.reloadData()
+                    completion(false)
                 }
-            }
-        }
-        
-        // Initial Alert
-        let startingAlert = UIAlertController(title: startingTitle, message: startingMessage, preferredStyle: .alert)
-        let deleteCategory = UIAlertAction(title: deleteCategoryText, style: .destructive, handler: { _ in confirmAction(false) })
-        let deleteCategoryAndChildren = UIAlertAction(title: deleteCategoryAndChildrenText, style: .destructive, handler: { _ in confirmAction(true) })
-        let cancelAll = UIAlertAction(title: cancelText, style: .cancel, handler: { _ in completion(false) })
-        startingAlert.addAction(deleteCategory)
-        startingAlert.addAction(deleteCategoryAndChildren)
-        startingAlert.addAction(cancelAll)
-        
-        if Thread.current.isMainThread {
-            self.present(startingAlert, animated: true, completion: nil)
-        } else {
-            DispatchQueue.main.async {
-                self.present(startingAlert, animated: true, completion: nil)
-            }
+            })
         }
     }
     
