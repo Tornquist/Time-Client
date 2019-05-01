@@ -176,12 +176,14 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let category = self.getCategory(for: indexPath) else {
+        guard let tree = self.getTree(for: indexPath.section),
+            let categoryTree = tree.getChild(withOffset: indexPath.row) else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
             cell.textLabel?.text = "ERROR"
             cell.detailTextLabel?.text = "ERROR"
             return cell
         }
+        let category = categoryTree.node
         
         var backgroundColor: UIColor = .white
         if self.moving && self.movingCategory != nil {
@@ -237,8 +239,9 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let tree = self.getTree(for: indexPath.section) else { return }
         if !self.moving {
-            let accountID = tree.node.accountID
-            self.accountDisplay[accountID] = !(self.accountDisplay[accountID] ?? true)
+            guard let categoryTree = tree.getChild(withOffset: indexPath.row) else { return }
+            
+            categoryTree.toggleExpanded()
             self.tableView.reloadData()
         } else {
             guard
@@ -258,12 +261,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     func getTableViewRows(for section: Int) -> Int {
         guard let tree = self.getTree(for: section) else { return 0 }
         
-        let accountID = tree.node.accountID
-        let show = self.accountDisplay[accountID] ?? true
-        let headerRows = 1
-        let itemRows = show || self.moving ? tree.numChildren : 0
-        
-        return headerRows + itemRows
+        return tree.numberOfDisplayRows(overrideExpanded: self.moving)
     }
     
     func getTree(for section: Int) -> CategoryTree? {
@@ -283,7 +281,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         if indexPath.row == 0 { return tree.node }
         
         let category = tree.getChild(withOffset: indexPath.row - 1)
-        return category
+        return category!.node
     }
     
     func canMove(_ category: TimeSDK.Category, to potentialParent: TimeSDK.Category) -> Bool {

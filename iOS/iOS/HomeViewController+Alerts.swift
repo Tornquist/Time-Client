@@ -151,7 +151,7 @@ extension HomeViewController {
             let entriesOnCategory = all ? 0 : 0 // Needs to dynamically build based on children
             let entriesPlural = entriesOnCategory == 1 ? NSLocalizedString("entry", comment: "") : NSLocalizedString("entries", comment: "")
             
-            let numChildren = tree.numChildren
+            let numChildren = tree.children.count
             let childrenPlural = numChildren == 1 ? NSLocalizedString("child", comment: "") : NSLocalizedString("children", comment: "")
             
             let deleteSelectedMainMessage = NSLocalizedString("Category \"\(category.name)\" will be removed.", comment: "")

@@ -74,8 +74,7 @@ public class Store {
                     parentTree.children.append(newTree)
                     newTree.parent = parentTree
                     parentTree.sortChildren()
-                    
-                    accountTree.recalculateChildren(recursively: true)
+                    parentTree.toggleExpanded(forceTo: true)
                 } else {
                     self.staleTrees = true
                 }
@@ -118,8 +117,11 @@ public class Store {
                     categoryTree.parent = parentTree
                     parentTree.sortChildren()
                     
-                    destinationTree.recalculateChildren(recursively: true)
-                    sourceTree.recalculateChildren(recursively: true)
+                    var parent = categoryTree.parent
+                    while parent != nil {
+                        parent?.toggleExpanded(forceTo: true)
+                        parent = parent?.parent
+                    }
                 }
             }
             
@@ -154,7 +156,6 @@ public class Store {
                 })
                 if let safeChildren = categoryTree.parent?.children.filter({ $0.node.id != categoryTree.node.id }) {
                     categoryTree.parent?.children = safeChildren
-                    categoryTree.parent?.recalculateChildren()
                 }
                 self.categories = filteredCategories
             } else {
@@ -169,12 +170,9 @@ public class Store {
                         child.parent = categoryTree.parent
                     })
                     categoryTree.parent?.sortChildren()
-                    categoryTree.parent?.recalculateChildren()
                 }
                 self.categories = filteredCategories
             }
-            
-            tree.recalculateChildren(recursively: true)
             completion?(true)
         }
     }
