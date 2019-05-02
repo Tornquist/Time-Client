@@ -167,7 +167,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let tree = self.getTree(for: section) else { return 0 }
-        return tree.numberOfDisplayRows(overrideExpanded: self.moving)
+        return tree.numberOfDisplayRows(overrideExpanded: self.moving, includeRoot: true)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -229,12 +229,27 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let categoryTree = self.getTree(for: indexPath) else { return }
         
-        if !self.moving {
-            categoryTree.toggleExpanded()
-            self.tableView.reloadData()
-        } else {
+        if self.moving {
             guard Time.shared.store.canMove(self.movingCategory!, to: categoryTree.node) else { return }
             self.move(category: self.movingCategory!, to: categoryTree.node)
+        } else {
+            let startingDisplayRows = categoryTree.numberOfDisplayRows()
+            categoryTree.toggleExpanded()
+            let endingDisplayRows = categoryTree.numberOfDisplayRows()
+            
+            guard startingDisplayRows != endingDisplayRows else { return }
+            
+            let impact = max(startingDisplayRows, endingDisplayRows)
+            let range: CountableClosedRange = 1...impact
+            let modifyPaths = range.map {
+                IndexPath(row: indexPath.row + $0, section: indexPath.section)
+            }
+            
+            if startingDisplayRows > endingDisplayRows {
+                self.tableView.deleteRows(at: modifyPaths, with: .automatic)
+            } else {
+                self.tableView.insertRows(at: modifyPaths, with: .automatic)
+            }
         }
     }
     

@@ -47,11 +47,11 @@ public class CategoryTree {
         }
     }
     
-    public func numberOfDisplayRows(overrideExpanded showAll: Bool = false) -> Int {
+    public func numberOfDisplayRows(overrideExpanded showAll: Bool = false, includeRoot: Bool = false) -> Int {
         // Unless root rows counted through parent.children
-        let selfRows = self.parent == nil ? 1 : 0
+        let selfRows = includeRoot && self.parent == nil ? 1 : 0
         let childRows = showAll || self.expanded
-            ? self.children.count + self.children.map({ $0.numberOfDisplayRows(overrideExpanded: showAll) }).reduce(0, { $0 + $1 })
+            ? self.children.count + self.children.map({ $0.numberOfDisplayRows(overrideExpanded: showAll, includeRoot: includeRoot) }).reduce(0, { $0 + $1 })
             : 0
         return selfRows + childRows
     }
