@@ -16,11 +16,8 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     var refreshControl: UIRefreshControl!
     @IBOutlet weak var tableView: UITableView!
     
-    var moving: Bool = false
+    var moving: Bool { return self.movingCategory != nil }
     var movingCategory: TimeSDK.Category? = nil
-    
-    // Table View Display Variables
-    var accountDisplay: [Int: Bool] = [:]
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -89,7 +86,6 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     func move(category: TimeSDK.Category, to newParent: TimeSDK.Category) {
         self.showAlertFor(confirmingMoveOf: category, to: newParent) { (confirmed) in
             let complete = {
-                self.moving = false
                 self.movingCategory = nil
                 DispatchQueue.main.async {
                     self.refreshNavigation()
@@ -110,7 +106,6 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     func edit(category: TimeSDK.Category, completion: @escaping (Bool) -> Void) {
         self.showAlertFor(editing: category) { (willMove, newName) in
             if willMove {
-                self.moving = true
                 self.movingCategory = category
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
@@ -156,7 +151,6 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     @IBAction func cancelPressed(_ sender: Any) {
-        self.moving = false
         self.movingCategory = nil
         self.refreshNavigation()
         self.tableView.reloadData()
@@ -172,12 +166,12 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.getTableViewRows(for: section)
+        guard let tree = self.getTree(for: section) else { return 0 }
+        return tree.numberOfDisplayRows(overrideExpanded: self.moving)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let tree = self.getTree(for: indexPath.section),
-            let categoryTree = tree.getChild(withOffset: indexPath.row) else {
+        guard let categoryTree = self.getTree(for: indexPath) else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
             cell.textLabel?.text = "ERROR"
             cell.detailTextLabel?.text = "ERROR"
@@ -186,8 +180,8 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         let category = categoryTree.node
         
         var backgroundColor: UIColor = .white
-        if self.moving && self.movingCategory != nil {
-            let isValidTarget = self.canMove(self.movingCategory!, to: category)
+        if self.moving {
+            let isValidTarget = Time.shared.store.canMove(self.movingCategory!, to: category)
             let isSelf = self.movingCategory?.id == category.id
             backgroundColor = isSelf ? .green : (isValidTarget ? .white : .lightGray)
         }
@@ -200,8 +194,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
             
         let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
-        let trueDepth = self.getTree(for: indexPath.section)?.findItem(withID: category.id)?.depth ?? 1
-        let displayDepth = trueDepth - 1 // Will not show account cell
+        let displayDepth = categoryTree.depth - 1 // Will not show account cell
         let padding = String(repeating: "    ", count: displayDepth)
         cell.textLabel?.text = "\(category.id)"
         cell.detailTextLabel?.text = padding + category.name
@@ -211,10 +204,8 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        guard
-            let tree = self.getTree(for: indexPath.section),
-            let category = self.getCategory(for: indexPath)
-        else { return nil }
+        guard let categoryTree = self.getTree(for: indexPath) else { return nil }
+        let category = categoryTree.node
         
         let isRoot = category.parentID == nil
         
@@ -223,7 +214,6 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         })
         
         let delete = UIContextualAction(style: .destructive, title: "Delete", handler: { (action, view, completion) in
-            guard let categoryTree = tree.findItem(withID: category.id) else { return completion(false) }
             self.delete(tree: categoryTree, completion: completion)
         })
         
@@ -237,32 +227,18 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let tree = self.getTree(for: indexPath.section) else { return }
+        guard let categoryTree = self.getTree(for: indexPath) else { return }
+        
         if !self.moving {
-            guard let categoryTree = tree.getChild(withOffset: indexPath.row) else { return }
-            
             categoryTree.toggleExpanded()
             self.tableView.reloadData()
         } else {
-            guard
-                let potentialParent = self.getCategory(for: indexPath),
-                self.movingCategory != nil,
-                self.canMove(self.movingCategory!, to: potentialParent)
-            else {
-                return
-            }
-            
-            self.move(category: self.movingCategory!, to: potentialParent)
+            guard Time.shared.store.canMove(self.movingCategory!, to: categoryTree.node) else { return }
+            self.move(category: self.movingCategory!, to: categoryTree.node)
         }
     }
     
     // MARK: - TableView <-> Data store support methods
-    
-    func getTableViewRows(for section: Int) -> Int {
-        guard let tree = self.getTree(for: section) else { return 0 }
-        
-        return tree.numberOfDisplayRows(overrideExpanded: self.moving)
-    }
     
     func getTree(for section: Int) -> CategoryTree? {
         guard section < Time.shared.store.accountIDs.count else { return nil }
@@ -272,32 +248,8 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         return tree
     }
     
-    func getCategory(for indexPath: IndexPath) -> TimeSDK.Category? {
-        guard let tree = self.getTree(for: indexPath.section) else {
-            return nil
-        }
-        
-        // Starts with Root
-        if indexPath.row == 0 { return tree.node }
-        
-        let category = tree.getChild(withOffset: indexPath.row - 1)
-        return category!.node
-    }
-    
-    func canMove(_ category: TimeSDK.Category, to potentialParent: TimeSDK.Category) -> Bool {
-        // Cannot move to self.
-        guard category.id != potentialParent.id else { return false }
-        
-        // Different accounts mean different trees. Automatic pass.
-        guard category.accountID == potentialParent.accountID else { return true }
-        
-        // Must have reference to move, and potential parent cannot be a child of moving node
-        guard let tree = Time.shared.store.categoryTrees[category.accountID],
-            let categoryTree = tree.findItem(withID: category.id),
-            categoryTree.findItem(withID: potentialParent.id) == nil
-            else { return false }
-        
-        // Cannot move to same parent
-        return potentialParent.id != categoryTree.parent?.node.id
+    func getTree(for indexPath: IndexPath) -> CategoryTree? {
+        guard let tree = self.getTree(for: indexPath.section) else { return nil }
+        return tree.getChild(withOffset: indexPath.row, overrideExpanded: self.moving)
     }
 }

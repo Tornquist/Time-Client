@@ -87,7 +87,9 @@ public class CategoryTree {
         return found
     }
     
-    public func findItem(withID id: Int) -> CategoryTree? {
+    // MARK: - Store and Support Operations
+    
+    func findItem(withID id: Int) -> CategoryTree? {
         if node.id == id { return self }
         let found = children.map({ $0.findItem(withID: id) }).reduce(nil, { $0 ?? $1 })
         return found
@@ -99,18 +101,13 @@ public class CategoryTree {
         self.children.append(newTree)
     }
     
-    func asList() -> [Category] {
+    func listCategories() -> [Category] {
         var list = [self.node]
-        self.children.forEach({ list.append(contentsOf: $0.asList()) })
+        self.children.forEach({ list.append(contentsOf: $0.listCategories()) })
         return list
     }
     
-//    public func getChild(withOffset offset: Int) -> Category? {
-//        let list = self.asList()
-//        return list.count - 1 > offset ? list[offset + 1] : nil
-//    }
-    
-    public func sortChildren() {
+    func sortChildren() {
         // Default (and only) sorting method is alphabetically (ignoring case)
         self.children.sort { (treeA, treeB) -> Bool in
             return treeA.node.name.lowercased() < treeB.node.name.lowercased()

@@ -96,6 +96,24 @@ public class Store {
         }
     }
     
+    public func canMove(_ category: Category, to potentialParent: Category) -> Bool {
+        // Cannot move to self.
+        guard category.id != potentialParent.id else { return false }
+        
+        // Different accounts mean different trees. Automatic pass.
+        guard category.accountID == potentialParent.accountID else { return true }
+        
+        // Must have reference to move, and potential parent cannot be a child of moving node
+        guard
+            let accountTree = self.categoryTrees[category.accountID],
+            let categoryTree = accountTree.findItem(withID: category.id),
+            categoryTree.findItem(withID: potentialParent.id) == nil
+            else { return false }
+        
+        // Cannot move to same parent
+        return potentialParent.id != categoryTree.parent?.node.id
+    }
+    
     public func moveCategory(_ category: Category, to newParent: Category, completion: ((Bool) -> Void)?) {
         self.api.moveCategory(category, toParent: newParent) { (updatedCategory, error) in
             if error == nil {
@@ -105,7 +123,7 @@ public class Store {
                     let categoryTree = sourceTree.findItem(withID: category.id),
                     let parentTree = destinationTree.findItem(withID: newParent.id) {
                     
-                    let allCategories = categoryTree.asList()
+                    let allCategories = categoryTree.listCategories()
                     allCategories.forEach({ $0.accountID = newParent.accountID })
                     
                     if categoryTree.parent != nil {
@@ -147,7 +165,7 @@ public class Store {
             }
             
             if deleteChildren {
-                let allChildren = categoryTree.asList()
+                let allChildren = categoryTree.listCategories()
                 let filteredCategories = self.categories.filter({ (category) -> Bool in
                     let inFilterSet = allChildren.contains(where: { (referenceCategory) -> Bool in
                         return referenceCategory.id == category.id
