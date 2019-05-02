@@ -64,7 +64,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
-    func addChildTo(category: TimeSDK.Category, completion: @escaping (Bool) -> Void) {
+    func addChildTo(category: TimeSDK.Category, at indexPath: IndexPath, completion: @escaping (Bool) -> Void) {
         self.showAlertFor(addingChildTo: category) { (name) in
             guard name != nil else { return }
             
@@ -103,7 +103,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
-    func edit(category: TimeSDK.Category, completion: @escaping (Bool) -> Void) {
+    func edit(category: TimeSDK.Category, at indexPath: IndexPath, completion: @escaping (Bool) -> Void) {
         self.showAlertFor(editing: category) { (willMove, newName) in
             if willMove {
                 self.movingCategory = category
@@ -116,7 +116,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
                 Time.shared.store.renameCategory(category, to: newName!) { (success) in
                     DispatchQueue.main.async {
                         if (success) {
-                            self.tableView.reloadData()
+                            self.tableView.reloadRows(at: [indexPath], with: .automatic)
                         }
                         completion(success)
                     }
@@ -127,7 +127,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
-    func delete(tree: CategoryTree, completion: @escaping (Bool) -> Void) {
+    func delete(tree: CategoryTree, at indexPath: IndexPath, completion: @escaping (Bool) -> Void) {
         self.showAlertFor(deleting: tree) { (delete, andChildren) in
             guard delete else {
                 completion(false)
@@ -210,15 +210,15 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         let isRoot = category.parentID == nil
         
         let edit = UIContextualAction(style: .normal, title: "Edit", handler: { (action, view, completion) in
-            self.edit(category: category, completion: completion)
+            self.edit(category: category, at: indexPath, completion: completion)
         })
         
         let delete = UIContextualAction(style: .destructive, title: "Delete", handler: { (action, view, completion) in
-            self.delete(tree: categoryTree, completion: completion)
+            self.delete(tree: categoryTree, at: indexPath, completion: completion)
         })
         
         let add = UIContextualAction(style: .normal, title: "Add", handler: { (action, view, completion) in
-            self.addChildTo(category: category, completion: completion)
+            self.addChildTo(category: category, at: indexPath, completion: completion)
         })
         
         let config = UISwipeActionsConfiguration(actions: isRoot ? [add] : [add, edit, delete])
@@ -245,11 +245,13 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
                 IndexPath(row: indexPath.row + $0, section: indexPath.section)
             }
             
-            if startingDisplayRows > endingDisplayRows {
-                self.tableView.deleteRows(at: modifyPaths, with: .automatic)
-            } else {
-                self.tableView.insertRows(at: modifyPaths, with: .automatic)
-            }
+            self.tableView.performBatchUpdates({
+                if startingDisplayRows > endingDisplayRows {
+                    self.tableView.deleteRows(at: modifyPaths, with: .automatic)
+                } else {
+                    self.tableView.insertRows(at: modifyPaths, with: .automatic)
+                }
+            }, completion: nil)
         }
     }
     
