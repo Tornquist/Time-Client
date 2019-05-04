@@ -143,16 +143,85 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func delete(tree: CategoryTree, at indexPath: IndexPath, completion: @escaping (Bool) -> Void) {
-        self.showAlertFor(deleting: tree) { (delete, andChildren) in
+        self.showAlertFor(deleting: tree) { (delete, removeChildren) in
             guard delete else {
                 completion(false)
                 return
             }
 
-            Time.shared.store.deleteCategory(withID: tree.node.id, andChildren: andChildren, completion: { success in
+            // Display Properties
+            let startingExpanded = tree.expanded
+            let startingDisplayCount = tree.numberOfDisplayRows()
+
+            let hasDirectChildren = tree.children.count > 0
+            let showingChildren = hasDirectChildren && startingDisplayCount > 0
+            
+            let parent: CategoryTree? = tree.parent
+            let children: [CategoryTree] = tree.children
+            var parentRowStart: Int? = nil
+            if let offset = tree.parent?.getOffset(withChild: tree.node) {
+                parentRowStart = indexPath.row - offset
+            }
+            
+            let parentProperties = parent != nil && parentRowStart != nil
+            
+            // Determine Actions
+            let animateCellOnly = !hasDirectChildren
+            let animateAwayChildren = removeChildren && showingChildren
+            
+            let animateChildren = !removeChildren && parentProperties && hasDirectChildren
+            let animateUpHiddenChildren = !startingExpanded && animateChildren
+            let animateUpVisibleChildren = startingExpanded && animateChildren
+            
+            let canAnimate = animateCellOnly || removeChildren || animateUpHiddenChildren || animateUpVisibleChildren
+            
+            Time.shared.store.deleteCategory(withID: tree.node.id, andChildren: removeChildren, completion: { success in
                 DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                    completion(false)
+                    guard success && canAnimate else {
+                        self.tableView.reloadData()
+                        completion(false)
+                        return
+                    }
+                    
+                    var cleanAnimation = true
+                    self.tableView.performBatchUpdates({
+                        // Delete main node
+                        self.tableView.deleteRows(at: [indexPath], with: .automatic)
+                        completion(true)
+                        
+                        if animateAwayChildren {
+                            let range: CountableClosedRange = 1...startingDisplayCount
+                            let childrenPaths = range.map { IndexPath(row: indexPath.row + $0, section: indexPath.section) }
+                            self.tableView.deleteRows(at: childrenPaths, with: .automatic)
+
+                        } else if animateUpHiddenChildren {
+                            // Insert child nodes in a collapsed state
+                            children.forEach({ $0.toggleExpanded(forceTo: false) })
+                            let offsets = children.map({ parent!.getOffset(withChild: $0.node) })
+                            let allFound = offsets.reduce(true, { $0 && ($1 != nil) })
+                            guard allFound else { cleanAnimation = false; return }
+                            
+                            let insertPaths = offsets.map({ IndexPath(row: parentRowStart! + $0!, section: indexPath.section) })
+                            self.tableView.insertRows(at: insertPaths, with: .automatic)
+
+                        } else if animateUpVisibleChildren {
+                            
+                            let currentDisplayRows = parent!.numberOfDisplayRows()
+                            let range: CountableClosedRange = 1...currentDisplayRows
+                            let updatePaths = range.map { i -> IndexPath in
+                                // While in batch update, index paths will be offset. Shift to avoid hitting
+                                // path being deleted. Following this block, the +1 is no longer needed.
+                                var row = parentRowStart! + i
+                                if row >= indexPath.row { row = row + 1 }
+                                return IndexPath(row: row, section: indexPath.section)
+                            }
+                            self.tableView.reloadRows(at: updatePaths, with: .automatic)
+                        }
+                    }, completion: { _ in
+                        if !cleanAnimation {
+                            self.tableView.reloadData()
+                        }
+                    })
                 }
             })
         }

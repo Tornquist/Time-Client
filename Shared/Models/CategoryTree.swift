@@ -88,6 +88,8 @@ public class CategoryTree {
     }
     
     internal func getOffset(withChild targetChild: Category, overrideExpanded showAll: Bool = false) -> (Int, Bool) {
+        guard self.node.id != targetChild.id else { return (0, true) }
+        
         var runningOffset = 0
         var foundTarget = false
         
