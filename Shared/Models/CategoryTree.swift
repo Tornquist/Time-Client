@@ -87,6 +87,34 @@ public class CategoryTree {
         return found
     }
     
+    internal func getOffset(withChild targetChild: Category, overrideExpanded showAll: Bool = false) -> (Int, Bool) {
+        var runningOffset = 0
+        var foundTarget = false
+        
+        self.children.enumerated().forEach { (i, child) in
+            guard !foundTarget else { return }
+
+            let inChildTree = child.findItem(withID: targetChild.id) != nil
+            if inChildTree {
+                let (finalAdjustment, _) = child.getOffset(withChild: targetChild, overrideExpanded: showAll)
+                runningOffset = runningOffset + finalAdjustment
+                foundTarget = true
+            } else {
+                let displayCostOfChild = 1
+                let displayedChildrenOfChild = child.numberOfDisplayRows(overrideExpanded: showAll)
+                runningOffset = runningOffset + displayCostOfChild + displayedChildrenOfChild
+            }
+        }
+        
+        return (runningOffset, foundTarget)
+    }
+    
+    public func getOffset(withChild targetChild: Category, overrideExpanded showAll: Bool = false) -> Int? {
+        let (offset, foundTarget) = self.getOffset(withChild: targetChild, overrideExpanded: showAll)
+        // If found, count self (+1) to offset from minimum of 0 if found as first child
+        return foundTarget ? offset + 1 : nil
+    }
+    
     // MARK: - Store and Support Operations
     
     func findItem(withID id: Int) -> CategoryTree? {

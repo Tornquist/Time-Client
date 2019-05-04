@@ -60,7 +60,7 @@ public class Store {
         }
     }
     
-    public func addCategory(withName name: String, to parent: Category, completion: ((Bool) -> Void)?) {
+    public func addCategory(withName name: String, to parent: Category, completion: ((Bool, Category?) -> Void)?) {
         self.api.createCategory(withName: name, under: parent) { (category, error) in
             if category != nil {
                 self.categories.append(category!)
@@ -74,13 +74,12 @@ public class Store {
                     parentTree.children.append(newTree)
                     newTree.parent = parentTree
                     parentTree.sortChildren()
-                    parentTree.toggleExpanded(forceTo: true)
                 } else {
                     self.staleTrees = true
                 }
             }
             
-            completion?(error == nil)
+            completion?(error == nil, category)
         }
     }
     

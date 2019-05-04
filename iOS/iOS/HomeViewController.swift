@@ -64,18 +64,33 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
-    func addChildTo(category: TimeSDK.Category, at indexPath: IndexPath, completion: @escaping (Bool) -> Void) {
+    func addChildTo(rootOf tree: CategoryTree, at indexPath: IndexPath, completion: @escaping (Bool) -> Void) {
+        let category = tree.node
         self.showAlertFor(addingChildTo: category) { (name) in
             guard name != nil else { return }
             
-            Time.shared.store.addCategory(withName: name!, to: category) { (success) in
-                // Need to update specific rows for clean animation out of swipe gesture
+            Time.shared.store.addCategory(withName: name!, to: category) { (success, newCategory) in
                 DispatchQueue.main.async {
                     if success {
-                        // self.tableView.beginUpdates()
-                        // self.tableView.insertRows(at: [IndexPath(row: Time.shared.store.categories.count-1, section: 0)], with: .automatic)
-                        // self.tableView.endUpdates()
-                        self.tableView.reloadData()
+                        let alreadyExpanded = tree.expanded
+                        if alreadyExpanded && newCategory != nil, let offset = tree.getOffset(withChild: newCategory!) {
+                            self.tableView.performBatchUpdates({
+                                let newPath = IndexPath(row: indexPath.row + offset, section: indexPath.section)
+                                self.tableView.insertRows(at: [newPath], with: .automatic)
+                            }, completion: nil)
+                        } else if !alreadyExpanded {
+                            tree.toggleExpanded(forceTo: true)
+                            let numRows = tree.numberOfDisplayRows()
+                            let range: CountableClosedRange = 1...numRows
+                            let insertPaths = range.map {
+                                IndexPath(row: indexPath.row + $0, section: indexPath.section)
+                            }
+                            self.tableView.performBatchUpdates({
+                                self.tableView.insertRows(at: insertPaths, with: .automatic)
+                            }, completion: nil)
+                        } else {
+                            self.tableView.reloadData()
+                        }
                     }
                     completion(success)
                 }
@@ -218,7 +233,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         })
         
         let add = UIContextualAction(style: .normal, title: "Add", handler: { (action, view, completion) in
-            self.addChildTo(category: category, at: indexPath, completion: completion)
+            self.addChildTo(rootOf: categoryTree, at: indexPath, completion: completion)
         })
         
         let config = UISwipeActionsConfiguration(actions: isRoot ? [add] : [add, edit, delete])
