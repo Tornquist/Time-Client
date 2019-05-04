@@ -133,12 +133,6 @@ public class Store {
                     parentTree.children.append(categoryTree)
                     categoryTree.parent = parentTree
                     parentTree.sortChildren()
-                    
-                    var parent = categoryTree.parent
-                    while parent != nil {
-                        parent?.toggleExpanded(forceTo: true)
-                        parent = parent?.parent
-                    }
                 }
             }
             

@@ -110,6 +110,15 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
             
             if confirmed {
                 Time.shared.store.moveCategory(category, to: newParent) { (success) in
+                    if success,
+                        let destinationTree = Time.shared.store.categoryTrees[newParent.accountID],
+                        let movedTree = destinationTree.findItem(withID: category.id ) {
+                        var parent = movedTree.parent
+                        while parent != nil {
+                            parent?.toggleExpanded(forceTo: true)
+                            parent = parent?.parent
+                        }
+                    }
                     complete()
                 }
             } else {

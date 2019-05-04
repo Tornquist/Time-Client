@@ -119,7 +119,7 @@ public class CategoryTree {
     
     // MARK: - Store and Support Operations
     
-    func findItem(withID id: Int) -> CategoryTree? {
+    public func findItem(withID id: Int) -> CategoryTree? {
         if node.id == id { return self }
         let found = children.map({ $0.findItem(withID: id) }).reduce(nil, { $0 ?? $1 })
         return found
