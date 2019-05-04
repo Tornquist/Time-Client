@@ -133,6 +133,7 @@ extension HomeViewController {
     
     func showAlertFor(deleting tree: CategoryTree, completion: @escaping (Bool, Bool) -> Void) {
         let category = tree.node
+        let hasChildren = tree.children.count > 0
         
         // Initial Question
         let startingTitle = NSLocalizedString("Delete", comment: "")
@@ -163,7 +164,7 @@ extension HomeViewController {
             var actionMessage: [String] = []
             actionMessage.append(all ? deleteAllMainMessage : deleteSelectedMainMessage)
             actionMessage.append(entryMessage)
-            if !all { actionMessage.append(childrenMessage) }
+            if !all && hasChildren { actionMessage.append(childrenMessage) }
             let deleteMessage = actionMessage.joined(separator: "\n\n")
             
             let trueAction = { completion(true, all) }
@@ -187,7 +188,7 @@ extension HomeViewController {
         let deleteCategoryAndChildren = UIAlertAction(title: deleteCategoryAndChildrenText, style: .destructive, handler: { _ in confirmAction(true) })
         let cancelAll = UIAlertAction(title: cancelText, style: .cancel, handler: { _ in completion(false, false) })
         startingAlert.addAction(deleteCategory)
-        startingAlert.addAction(deleteCategoryAndChildren)
+        if hasChildren { startingAlert.addAction(deleteCategoryAndChildren) }
         startingAlert.addAction(cancelAll)
         
         if Thread.current.isMainThread {
