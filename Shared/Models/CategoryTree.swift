@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class CategoryTree {
+public class CategoryTree: Equatable {
     
     // MARK: - Tree Properties
     
@@ -26,9 +26,10 @@ public class CategoryTree {
     
     // MARK: - Init
     
-    init(_ node: Category) {
+    init(_ node: Category, _ children: [CategoryTree] = []) {
         self.node = node
-        self.children = []
+        self.children = children
+        self.children.forEach({ $0.parent = self })
         self.parent = nil
     }
     
@@ -175,5 +176,24 @@ public class CategoryTree {
         treeRoots.forEach({ $0.sortChildren() })
         
         return treeRoots
+    }
+    
+    // MARK: - Equatable
+    
+    public static func ==(lhs: CategoryTree, rhs: CategoryTree) -> Bool {
+        guard lhs.node.id == rhs.node.id else { return false }
+        guard lhs.node.accountID == rhs.node.accountID else { return false }
+        guard lhs.children.count == rhs.children.count else { return false }
+        
+        let sortedLhsChildren = lhs.children.sorted { $0.id < $1.id }
+        let sortedRhsChildren = rhs.children.sorted { $0.id < $1.id }
+        
+        let childrenEqual = sortedLhsChildren.enumerated().map({ (i, _) -> Bool in
+            let lhsChild = sortedLhsChildren[i]
+            let rhsChild = sortedRhsChildren[i]
+            return lhsChild == rhsChild
+        }).reduce(true, { $0 && $1 })
+        
+        return childrenEqual
     }
 }

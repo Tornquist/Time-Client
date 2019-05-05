@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class Category: Codable {
+public class Category: Codable, Equatable {
     public var id: Int
     public var parentID: Int?
     public var accountID: Int
@@ -27,5 +27,13 @@ public class Category: Codable {
         self.parentID = parentID
         self.accountID = accountID
         self.name = name
+    }
+    
+    public static func ==(lhs: Category, rhs: Category) -> Bool {
+        // Name is not included. Equality is based on structure
+        // alone, not display values.
+        return lhs.id == rhs.id
+            && lhs.parentID == rhs.parentID
+            && lhs.accountID == rhs.accountID
     }
 }
