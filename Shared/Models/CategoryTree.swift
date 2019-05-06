@@ -90,32 +90,40 @@ public class CategoryTree: Equatable {
     
     internal func getOffset(withChild targetChild: Category, overrideExpanded showAll: Bool = false) -> (Int, Bool) {
         guard self.node.id != targetChild.id else { return (0, true) }
+        guard self.expanded || showAll else { return (0, false) }
         
         var runningOffset = 0
         var foundTarget = false
+        var visibleTarget = true
         
         self.children.enumerated().forEach { (i, child) in
             guard !foundTarget else { return }
 
             let inChildTree = child.findItem(withID: targetChild.id) != nil
+            let displayCostOfChild = 1
+            
             if inChildTree {
-                let (finalAdjustment, _) = child.getOffset(withChild: targetChild, overrideExpanded: showAll)
-                runningOffset = runningOffset + finalAdjustment
+                let (finalAdjustment, visible) = child.getOffset(withChild: targetChild, overrideExpanded: showAll)
+                guard visible else {
+                    visibleTarget = false
+                    return
+                }
+                
+                runningOffset = runningOffset + displayCostOfChild + finalAdjustment
                 foundTarget = true
             } else {
-                let displayCostOfChild = 1
                 let displayedChildrenOfChild = child.numberOfDisplayRows(overrideExpanded: showAll)
                 runningOffset = runningOffset + displayCostOfChild + displayedChildrenOfChild
             }
         }
         
-        return (runningOffset, foundTarget)
+        return (runningOffset, foundTarget && visibleTarget)
     }
     
-    public func getOffset(withChild targetChild: Category, overrideExpanded showAll: Bool = false) -> Int? {
+    public func getOffset(withChild targetChild: Category, overrideExpanded showAll: Bool = false) -> Int? {       
         let (offset, foundTarget) = self.getOffset(withChild: targetChild, overrideExpanded: showAll)
         // If found, count self (+1) to offset from minimum of 0 if found as first child
-        return foundTarget ? offset + 1 : nil
+        return foundTarget ? offset : nil
     }
     
     // MARK: - Store and Support Operations
