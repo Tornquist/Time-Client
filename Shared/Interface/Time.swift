@@ -20,10 +20,12 @@ public class Time {
     
     let api: API
     let tokenIdentifier: String
+    public var store: Store
     
     init(withAPI apiClient: API, andTokenIdentifier tokenIdentifier: String = "token") {
         self.api = apiClient
         self.tokenIdentifier = tokenIdentifier
+        self.store = Store(api: self.api)
     }
     
     public func initialize(completionHandler: ((Error?) -> ())? = nil) {
