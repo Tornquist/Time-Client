@@ -28,6 +28,8 @@
 		D8437C6421FCF3D400974B03 /* APIRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8437C6321FCF3D400974B03 /* APIRequest.swift */; };
 		D8500CAD227E2BF3009052DC /* Test_CategoryTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8500CAC227E2BF3009052DC /* Test_CategoryTree.swift */; };
 		D8500CAE227E2BF3009052DC /* Test_CategoryTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8500CAC227E2BF3009052DC /* Test_CategoryTree.swift */; };
+		D8500CB022810C88009052DC /* Test_Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8500CAF22810C88009052DC /* Test_Store.swift */; };
+		D8500CB122810C88009052DC /* Test_Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8500CAF22810C88009052DC /* Test_Store.swift */; };
 		D855818421BDEB6400DCB577 /* Time_Shared.h in Headers */ = {isa = PBXBuildFile; fileRef = D855818221BDEB6400DCB577 /* Time_Shared.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D85581AD21BEABC300DCB577 /* EntryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85581AB21BEABC300DCB577 /* EntryType.swift */; };
 		D85581D821C14D6700DCB577 /* TimeSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D855818021BDEB6400DCB577 /* TimeSDK.framework */; };
@@ -114,6 +116,7 @@
 		D8437C6121F9EB5D00974B03 /* TimeError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeError.swift; sourceTree = "<group>"; };
 		D8437C6321FCF3D400974B03 /* APIRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRequest.swift; sourceTree = "<group>"; };
 		D8500CAC227E2BF3009052DC /* Test_CategoryTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_CategoryTree.swift; sourceTree = "<group>"; };
+		D8500CAF22810C88009052DC /* Test_Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_Store.swift; sourceTree = "<group>"; };
 		D855818021BDEB6400DCB577 /* TimeSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TimeSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D855818221BDEB6400DCB577 /* Time_Shared.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Time_Shared.h; sourceTree = "<group>"; };
 		D855818321BDEB6400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -197,6 +200,7 @@
 				D837025B21CA846A0095B19F /* Time.swift */,
 				D8437C6121F9EB5D00974B03 /* TimeError.swift */,
 				D87F5A9A22636C1700DD5DEA /* Time+Validation.swift */,
+				D87F5AA82264AC9300DD5DEA /* Store.swift */,
 			);
 			path = Interface;
 			sourceTree = "<group>";
@@ -247,7 +251,6 @@
 		D85581AA21BEAB8800DCB577 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				D87F5AA82264AC9300DD5DEA /* Store.swift */,
 				D837025321CA7EAB0095B19F /* Token.swift */,
 				D837025821CA83050095B19F /* User.swift */,
 				D811B17C21EA4269009F6C8E /* Account.swift */,
@@ -294,6 +297,7 @@
 				D811B17521E38CD3009F6C8E /* Test_Authentication.swift */,
 				D87F5AA32263DBCF00DD5DEA /* Test_Registration.swift */,
 				D87F5A9F22636EAC00DD5DEA /* Test_TimeValidation.swift */,
+				D8500CAF22810C88009052DC /* Test_Store.swift */,
 			);
 			name = Interface;
 			sourceTree = "<group>";
@@ -550,6 +554,7 @@
 				D8437C6021F4C8C800974B03 /* Test_TokenStore.swift in Sources */,
 				D811B17B21E77ECF009F6C8E /* Test_API_Users.swift in Sources */,
 				D811B17721E38D76009F6C8E /* Test_Authentication.swift in Sources */,
+				D8500CB022810C88009052DC /* Test_Store.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -583,6 +588,7 @@
 				D85B0A782246F2ED00835E55 /* Test_TokenStore.swift in Sources */,
 				D85B0A792246F2ED00835E55 /* Test_API_Users.swift in Sources */,
 				D85B0A7A2246F2ED00835E55 /* Test_Authentication.swift in Sources */,
+				D8500CB122810C88009052DC /* Test_Store.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
