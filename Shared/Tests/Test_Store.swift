@@ -56,22 +56,9 @@ class Test_Store: XCTestCase {
         // Starting Configuration
         // rootA
         // rootB
-        
-        // Goal Ending Configuration
-        // rootA
-        //   A
-        //      1
-        //         Z
-        //      2
-        //   B
-        //      3
-        //   C
-        // rootB
-        //   D
-        //   E
     }
     
-    func test_0_initializingAStore() {
+    func test_00_initializingAStore() {
         self.store = Store(api: self.api)
         
         XCTAssertEqual(self.store.categories.count, 0)
@@ -79,7 +66,7 @@ class Test_Store: XCTestCase {
         XCTAssertEqual(self.store.accountIDs.count, 0)
     }
     
-    func test_1_fetchingData() {
+    func test_01_fetchingData() {
         self.store = Store(api: self.api)
         
         let categoriesExpectation = self.expectation(description: "getCategories")
@@ -94,7 +81,7 @@ class Test_Store: XCTestCase {
         XCTAssertEqual(self.store.categoryTrees.count, 2)
     }
     
-    func test_2_softFetchingDataSkipsNetwork() {
+    func test_02_softFetchingDataSkipsNetwork() {
         let startTime = CFAbsoluteTimeGetCurrent()
         var timeElapsed: CFAbsoluteTime! = nil
         
@@ -109,7 +96,7 @@ class Test_Store: XCTestCase {
         XCTAssertEqual(timeElapsed, 0, accuracy: 0.0001)
     }
     
-    func test_3_canForceRefreshData() {
+    func test_03_canForceRefreshData() {
         let startTime = CFAbsoluteTimeGetCurrent()
         var timeElapsed: CFAbsoluteTime! = nil
         
@@ -126,7 +113,20 @@ class Test_Store: XCTestCase {
         XCTAssertLessThan(timeElapsed, 0.100)
     }
     
-    func test_4_addingCategories() {
+    
+    // After test 4
+    // rootA
+    //   A
+    //      1
+    //         Z
+    //      2
+    //   B
+    //      3
+    //   C
+    // rootB
+    //   D
+    //   E
+    func test_04_addingCategories() {
         self.continueAfterFailure = false
         
         guard self.store.accountIDs.count == 2 else {
@@ -273,7 +273,19 @@ class Test_Store: XCTestCase {
         XCTAssertEqual(treeA.children[0].children[0].children[0].node, categoryZ)
     }
     
-    func test_5_renamingCategories() {
+    // After test 5
+    // rootA
+    //   A
+    //      2
+    //      New Name
+    //         Z
+    //   B
+    //      3
+    //   C
+    // rootB
+    //   D
+    //   E
+    func test_05_renamingCategories() {
         guard self.store.accountIDs.count == 2,
             let tree = self.store.categoryTrees[
                 self.store.accountIDs.sorted()[0]
@@ -304,7 +316,7 @@ class Test_Store: XCTestCase {
         XCTAssertEqual(categoryTree.node.name, newName)
     }
     
-    func test_6_canMove() {
+    func test_06_canMove() {
         guard self.store.accountIDs.count == 2,
             let rootA = self.store.categoryTrees[self.store.accountIDs.sorted()[0]],
             let rootB = self.store.categoryTrees[self.store.accountIDs.sorted()[1]]
@@ -396,5 +408,208 @@ class Test_Store: XCTestCase {
                 XCTAssert(self.store.canMove(tree.node, to: destination.node), "\(tree.node.name) -> \(destination.node.name)")
             })
         }
+    }
+    
+    // After test 7
+    // rootA
+    //   B
+    //      3
+    //   C
+    // rootB
+    //   D
+    //     A
+    //        2
+    //        New Name
+    //           Z
+    //   E
+    func test_07_movingCategories() {
+        self.continueAfterFailure = false
+        
+        guard self.store.accountIDs.count == 2,
+            let rootA = self.store.categoryTrees[self.store.accountIDs.sorted()[0]],
+            let rootB = self.store.categoryTrees[self.store.accountIDs.sorted()[1]],
+            rootA.children.count >= 1 && rootA.children[0].node.name == "A" &&
+            rootB.children.count >= 1 && rootB.children[0].node.name == "D"
+            else {
+                XCTFail("Expected prerequisites to be met")
+                return
+        }
+        
+        let treeA = rootA.children[0]
+        let treeD = rootB.children[0]
+        
+        let moveExpectation = self.expectation(description: "move")
+        self.store.moveCategory(treeA.node, to: treeD.node) { (success) in
+            XCTAssert(success)
+            moveExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Removed from rootA children
+        XCTAssertEqual(rootA.children.count, 2)
+        XCTAssertEqual(rootA.children[0].node.name, "B")
+        XCTAssertEqual(rootA.children[1].node.name, "C")
+        
+        // No impact on top-level rootB
+        XCTAssertEqual(rootB.children.count, 2)
+        XCTAssertEqual(rootB.children[0].node.name, "D")
+        XCTAssertEqual(rootB.children[1].node.name, "E")
+        
+        // Added as child to D
+        XCTAssertEqual(rootB.children[0].children.count, 1)
+        XCTAssertEqual(rootB.children[0].children[0].node.name, "A")
+        
+        // Updated references
+        XCTAssert(treeA.parent === treeD)
+        XCTAssertEqual(treeA.node.parentID, treeD.id)
+        XCTAssertEqual(treeA.node.accountID, treeD.node.accountID)
+        
+        let movedChildren = treeA.listCategories()
+        movedChildren.forEach({ XCTAssertEqual($0.accountID, treeD.node.accountID) })
+    }
+    
+    // After test 8
+    // rootA
+    //   C
+    // rootB
+    //   B
+    //      3
+    //   D
+    //     A
+    //        2
+    //        New Name
+    //           Z
+    //   E
+    func test_08_movingCategoriesResorts() {
+        self.continueAfterFailure = false
+        
+        guard self.store.accountIDs.count == 2,
+            let rootA = self.store.categoryTrees[self.store.accountIDs.sorted()[0]],
+            let rootB = self.store.categoryTrees[self.store.accountIDs.sorted()[1]],
+            rootA.children.count >= 0 && rootA.children[0].node.name == "B" &&
+            rootB.children.count >= 0 && rootB.children[0].node.name == "D"
+            else {
+                XCTFail("Expected prerequisites to be met")
+                return
+        }
+        
+        let treeB = rootA.children[0]
+        
+        let moveExpectation = self.expectation(description: "move")
+        self.store.moveCategory(treeB.node, to: rootB.node) { (success) in
+            XCTAssert(success)
+            moveExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        XCTAssert(treeB.parent === rootB)
+        XCTAssertEqual(rootB.children.count, 3)
+        XCTAssertEqual(rootB.children[0].node, treeB.node)
+    }
+    
+    // After test 9
+    // rootA
+    //   C
+    // rootB
+    //   B
+    //      3
+    //   D
+    //      2
+    //      New Name
+    //         Z
+    //   E
+    func test_09_deletingCategoriesAndNotChildren() {
+        self.continueAfterFailure = false
+        
+        guard self.store.accountIDs.count == 2,
+            let rootA = self.store.categoryTrees[self.store.accountIDs.sorted()[0]],
+            let rootB = self.store.categoryTrees[self.store.accountIDs.sorted()[1]],
+            rootA.children.count >= 1 && rootA.children[0].node.name == "C" &&
+            rootB.children.count >= 2 && rootB.children[0].node.name == "B"
+                                      && rootB.children[1].node.name == "D" &&
+            rootB.children[1].children.count >= 0 && rootB.children[1].children[0].node.name == "A" &&
+            rootB.children[1].children[0].children.count >= 2
+            else {
+                XCTFail("Expected prerequisites to be met")
+                return
+        }
+        
+        let treeD = rootB.children[1]
+        let treeA = treeD.children[0]
+        let tree1 = treeA.children[0]
+        let tree2 = treeA.children[1]
+        
+        let deleteID = treeA.node.id
+        
+        let deleteExpectation = self.expectation(description: "delete")
+        self.store.deleteCategory(withID: deleteID, andChildren: false) { (success) in
+            XCTAssert(success)
+            deleteExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        XCTAssertEqual(treeD.children.count, 2)
+        XCTAssert(tree1.parent === treeD)
+        XCTAssert(tree2.parent === treeD)
+        
+        let categoryA = self.store.categories.first(where: { $0.id == deleteID})
+        XCTAssertNil(categoryA)
+    }
+    
+    // After test 10
+    // rootA
+    //   C
+    // rootB
+    //   B
+    //      3
+    //   E
+    func test_10_deletingCategoriesAndChildren() {
+        self.continueAfterFailure = false
+        
+        guard self.store.accountIDs.count == 2,
+            let rootA = self.store.categoryTrees[self.store.accountIDs.sorted()[0]],
+            let rootB = self.store.categoryTrees[self.store.accountIDs.sorted()[1]] else {
+            XCTFail("Missing account trees"); return
+        }
+        guard rootA.children.count >= 1 && rootA.children[0].node.name == "C" else {
+            XCTFail("Unexpected rootA structure"); return
+        }
+        guard rootA.children.count >= 1 && rootA.children[0].node.name == "C" else {
+            XCTFail("Unexpected rootB structure"); return
+        }
+        guard rootB.children.count >= 3 && rootB.children[0].node.name == "B"
+            && rootB.children[1].node.name == "D" else {
+            XCTFail("Unexpected rootB -> D structure"); return
+        }
+        guard rootB.children[1].children.count >= 2
+            && rootB.children[1].children[0].node.name == "2"
+            && rootB.children[1].children[1].node.name == "New Name" else { // Renamed earlier
+            XCTFail("Unexpected D -> 2 and D -> New Name structure"); return
+        }
+        guard rootB.children[1].children[1].children.count > 0 else {
+            XCTFail("Missing child of 'New Name'"); return
+        }
+        
+        let treeD = rootB.children[1]
+        let tree2 = treeD.children[0]
+        let treeNewName = treeD.children[1]
+        let treeZ = treeNewName.children[0]
+        
+        let deleteID = treeD.node.id
+        let removedIDs = [deleteID, treeNewName.id, tree2.id, treeZ.id]
+        
+        let deleteExpectation = self.expectation(description: "delete")
+        self.store.deleteCategory(withID: deleteID, andChildren: true) { (success) in
+            XCTAssert(success)
+            deleteExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        XCTAssertEqual(rootB.children.count, 2)
+        
+        let persistedObjects = removedIDs.compactMap({ removedID in
+            return self.store.categories.first(where: { $0.id == removedID })
+        })
+        XCTAssertEqual(persistedObjects.count, 0)
     }
 }
