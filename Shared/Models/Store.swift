@@ -52,9 +52,14 @@ public class Store {
         
         self.api.getCategories { (categories, error) in
             if categories != nil {
-                self.categories = categories!
-                self.staleTrees = true
-                self.staleAccountIDs = true
+                let existingData = self.categories.sorted(by: { $0.id < $1.id })
+                let newData = categories!.sorted(by: { $0.id < $1.id })
+                let sameData = existingData == newData
+                if !sameData {
+                    self.categories = categories!
+                    self.staleTrees = true
+                    self.staleAccountIDs = true
+                }
             }
             completionHandler(categories, error)
         }
