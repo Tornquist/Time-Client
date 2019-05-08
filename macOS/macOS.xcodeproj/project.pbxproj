@@ -118,6 +118,7 @@
 				TargetAttributes = {
 					D855813F21BDEA2400DCB577 = {
 						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1020;
 						SystemCapabilities = {
 							com.apple.Sandbox = {
 								enabled = 1;
@@ -311,7 +312,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nathantornquist.Time-macOS";
 				PRODUCT_NAME = "Time-macOS";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -330,7 +331,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nathantornquist.Time-macOS";
 				PRODUCT_NAME = "Time-macOS";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
