@@ -132,7 +132,7 @@ class API: APIQueueDelegate {
             
             if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
                 if (httpStatus.statusCode == 401) {
-                    if let responseObject = try? JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject],
+                    if let responseObject = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject],
                         let message = responseObject["message"] as? String {
                      
                         let isFailedRefresh = message == "Refresh expired"
