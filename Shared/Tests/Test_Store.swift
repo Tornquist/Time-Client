@@ -72,6 +72,7 @@ class Test_Store: XCTestCase {
     }
     
     func test_02_creatingAccounts() {
+        // Create through store --> Updates store
         let accountAExpectation = self.expectation(description: "createAccountA")
         self.store.createAccount { (newAccount, error) in
             if error != nil { XCTFail("Unable to create account A")}
@@ -83,13 +84,27 @@ class Test_Store: XCTestCase {
         XCTAssertEqual(self.store.accountIDs.count, 1)
         XCTAssertEqual(self.store.categoryTrees.count, 1)
         
+        // Create outside of store --> Does not update store
         let accountBExpectation = self.expectation(description: "createAccountB")
-        self.store.createAccount { (newAccount, error) in
+        self.store.api.createAccount() { (newAccount, error) in
             if error != nil { XCTFail("Unable to create account B")}
             accountBExpectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
         
+        XCTAssertEqual(self.store.categories.count, 1)
+        XCTAssertEqual(self.store.accountIDs.count, 1)
+        XCTAssertEqual(self.store.categoryTrees.count, 1)
+        
+        // Getting categories will invalidate trees
+        let getCategoriesExpectation = self.expectation(description: "getCategories")
+        self.store.getCategories(refresh: true) { (_, error) in
+            XCTAssertNil(error)
+            getCategoriesExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Invalidation will regenerate trees on next pass, and return correct values
         XCTAssertEqual(self.store.categories.count, 2)
         XCTAssertEqual(self.store.accountIDs.count, 2)
         XCTAssertEqual(self.store.categoryTrees.count, 2)
@@ -188,6 +203,8 @@ class Test_Store: XCTestCase {
             else { XCTFail("Creating category C failed") }
             createC.fulfill()
         }
+        
+        waitForExpectations(timeout: 5, handler: nil)
         
         let createD = self.expectation(description: "createD")
         self.store.addCategory(withName: "D", to: rootB) { (s, new) in
