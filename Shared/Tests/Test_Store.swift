@@ -46,16 +46,6 @@ class Test_Store: XCTestCase {
         let login = self.expectation(description: "loginUser")
         api.getToken(withEmail: email, andPassword: password) { _,_ in login.fulfill() }
         waitForExpectations(timeout: 5, handler: nil)
-        
-        let aA = self.expectation(description: "accountA")
-        api.createAccount { _,_ in aA.fulfill() }
-        let aB = self.expectation(description: "accountB")
-        api.createAccount { _,_ in aB.fulfill() }
-        waitForExpectations(timeout: 5, handler: nil)
-        
-        // Starting Configuration
-        // rootA
-        // rootB
     }
     
     func test_00_initializingAStore() {
@@ -76,12 +66,51 @@ class Test_Store: XCTestCase {
         }
         waitForExpectations(timeout: 5, handler: nil)
         
+        XCTAssertEqual(self.store.categories.count, 0)
+        XCTAssertEqual(self.store.accountIDs.count, 0)
+        XCTAssertEqual(self.store.categoryTrees.count, 0)
+    }
+    
+    func test_02_creatingAccounts() {
+        // Create through store --> Updates store
+        let accountAExpectation = self.expectation(description: "createAccountA")
+        self.store.createAccount { (newAccount, error) in
+            if error != nil { XCTFail("Unable to create account A")}
+            accountAExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        XCTAssertEqual(self.store.categories.count, 1)
+        XCTAssertEqual(self.store.accountIDs.count, 1)
+        XCTAssertEqual(self.store.categoryTrees.count, 1)
+        
+        // Create outside of store --> Does not update store
+        let accountBExpectation = self.expectation(description: "createAccountB")
+        self.store.api.createAccount() { (newAccount, error) in
+            if error != nil { XCTFail("Unable to create account B")}
+            accountBExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        XCTAssertEqual(self.store.categories.count, 1)
+        XCTAssertEqual(self.store.accountIDs.count, 1)
+        XCTAssertEqual(self.store.categoryTrees.count, 1)
+        
+        // Getting categories will invalidate trees
+        let getCategoriesExpectation = self.expectation(description: "getCategories")
+        self.store.getCategories(refresh: true) { (_, error) in
+            XCTAssertNil(error)
+            getCategoriesExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Invalidation will regenerate trees on next pass, and return correct values
         XCTAssertEqual(self.store.categories.count, 2)
         XCTAssertEqual(self.store.accountIDs.count, 2)
         XCTAssertEqual(self.store.categoryTrees.count, 2)
     }
     
-    func test_02_softFetchingDataSkipsNetwork() {
+    func test_03_softFetchingDataSkipsNetwork() {
         let startTime = CFAbsoluteTimeGetCurrent()
         var timeElapsed: CFAbsoluteTime! = nil
         
@@ -96,7 +125,7 @@ class Test_Store: XCTestCase {
         XCTAssertEqual(timeElapsed, 0, accuracy: 0.0001)
     }
     
-    func test_03_canForceRefreshData() {
+    func test_04_canForceRefreshData() {
         let startTime = CFAbsoluteTimeGetCurrent()
         var timeElapsed: CFAbsoluteTime! = nil
         
@@ -126,7 +155,7 @@ class Test_Store: XCTestCase {
     // rootB
     //   D
     //   E
-    func test_04_addingCategories() {
+    func test_05_addingCategories() {
         self.continueAfterFailure = false
         
         guard self.store.accountIDs.count == 2 else {
@@ -174,6 +203,8 @@ class Test_Store: XCTestCase {
             else { XCTFail("Creating category C failed") }
             createC.fulfill()
         }
+        
+        waitForExpectations(timeout: 5, handler: nil)
         
         let createD = self.expectation(description: "createD")
         self.store.addCategory(withName: "D", to: rootB) { (s, new) in
@@ -285,7 +316,7 @@ class Test_Store: XCTestCase {
     // rootB
     //   D
     //   E
-    func test_05_renamingCategories() {
+    func test_06_renamingCategories() {
         guard self.store.accountIDs.count == 2,
             let tree = self.store.categoryTrees[
                 self.store.accountIDs.sorted()[0]
@@ -316,7 +347,7 @@ class Test_Store: XCTestCase {
         XCTAssertEqual(categoryTree.node.name, newName)
     }
     
-    func test_06_canMove() {
+    func test_07_canMove() {
         guard self.store.accountIDs.count == 2,
             let rootA = self.store.categoryTrees[self.store.accountIDs.sorted()[0]],
             let rootB = self.store.categoryTrees[self.store.accountIDs.sorted()[1]]
@@ -422,7 +453,7 @@ class Test_Store: XCTestCase {
     //        New Name
     //           Z
     //   E
-    func test_07_movingCategories() {
+    func test_08_movingCategories() {
         self.continueAfterFailure = false
         
         guard self.store.accountIDs.count == 2,
@@ -480,7 +511,7 @@ class Test_Store: XCTestCase {
     //        New Name
     //           Z
     //   E
-    func test_08_movingCategoriesResorts() {
+    func test_09_movingCategoriesResorts() {
         self.continueAfterFailure = false
         
         guard self.store.accountIDs.count == 2,
@@ -518,7 +549,7 @@ class Test_Store: XCTestCase {
     //      New Name
     //         Z
     //   E
-    func test_09_deletingCategoriesAndNotChildren() {
+    func test_10_deletingCategoriesAndNotChildren() {
         self.continueAfterFailure = false
         
         guard self.store.accountIDs.count == 2,
@@ -563,7 +594,7 @@ class Test_Store: XCTestCase {
     //   B
     //      3
     //   E
-    func test_10_deletingCategoriesAndChildren() {
+    func test_11_deletingCategoriesAndChildren() {
         self.continueAfterFailure = false
         
         guard self.store.accountIDs.count == 2,

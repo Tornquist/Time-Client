@@ -99,23 +99,33 @@ class Test_API_Categories: XCTestCase {
             return
         }
         
-        let categoriesExpectation = self.expectation(description: "getCategories")
-        api.getCategories { (categories, error) in
-            XCTAssertNil(error)
-            XCTAssertEqual(categories?.count ?? 0, 1)
-            
-            if let category = categories?[0] {
-                XCTAssertEqual(category.accountID, newAccount!.id)
-                XCTAssertEqual(category.name, "root")
-                XCTAssertNil(category.parentID)
+        let completionBuilder = { (expectation: XCTestExpectation, store: Bool) -> (([TimeSDK.Category]?, Error?) -> ()) in
+            return { (categories: [TimeSDK.Category]?, error: Error?) -> () in
+                XCTAssertNil(error)
+                XCTAssertEqual(categories?.count ?? 0, 1)
                 
-                self.categories.append(category)
-            } else {
-                XCTFail("Expected a category to be created")
+                if let category = categories?[0] {
+                    XCTAssertEqual(category.accountID, newAccount!.id)
+                    XCTAssertEqual(category.name, "root")
+                    XCTAssertNil(category.parentID)
+                    
+                    if store {
+                        self.categories.append(category)
+                    }
+                } else {
+                    XCTFail("Expected a category to be created")
+                }
+                
+                expectation.fulfill()
             }
-            
-            categoriesExpectation.fulfill()
         }
+        
+        let allCategoriesExpectation = self.expectation(description: "getAllCategories")
+        api.getCategories(completionHandler: completionBuilder(allCategoriesExpectation, true))
+        
+        let specificCategoriesExpectation = self.expectation(description: "getSomeCategories")
+        api.getCategories(forAccountID: newAccount!.id, completionHandler: completionBuilder(specificCategoriesExpectation, false))
+
         waitForExpectations(timeout: 5, handler: nil)
     }
     

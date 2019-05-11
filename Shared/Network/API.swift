@@ -40,8 +40,8 @@ class API: APIQueueDelegate {
         var success: Bool
     }
 
-    func GET<T>(_ pathComponent: String, auth: Bool = true, completion: @escaping (T?, Error?) -> (), sideEffects: ((T) -> ())? = nil) where T : Decodable {
-        self.timeRequest(path: pathComponent, method: .GET, body: nil, encoding: nil, authorized: auth, completion: completion, sideEffects: sideEffects)
+    func GET<T>(_ pathComponent: String, urlComponents: [String:String] = [:], auth: Bool = true, completion: @escaping (T?, Error?) -> (), sideEffects: ((T) -> ())? = nil) where T : Decodable {
+        self.timeRequest(path: pathComponent, urlComponents: urlComponents, method: .GET, body: nil, encoding: nil, authorized: auth, completion: completion, sideEffects: sideEffects)
     }
 
     func POST<T>(_ pathComponent: String, _ body: [String: Any]? = nil, auth: Bool = true, encoding: HttpEncoding? = nil, completion: @escaping (T?, Error?) -> (), sideEffects: ((T) -> ())? = nil) where T : Decodable {
@@ -66,13 +66,24 @@ class API: APIQueueDelegate {
         self.timeRequest(path: pathComponent, method: .DELETE, body: body, encoding: encoding, authorized: true, completion: internalCompletion, sideEffects: nil)
     }
 
-    func timeRequest<T>(path pathComponent: String, method: HttpMethod, body: [String: Any]?, encoding: HttpEncoding?, authorized: Bool, completion: @escaping (T?, Error?) -> (), sideEffects: ((T) -> ())? = nil) where T : Decodable {
+    func timeRequest<T>(path pathComponent: String, urlComponents: [String:String] = [:], method: HttpMethod, body: [String: Any]?, encoding: HttpEncoding?, authorized: Bool, completion: @escaping (T?, Error?) -> (), sideEffects: ((T) -> ())? = nil) where T : Decodable {
         // Build URL
         guard var url = URL(string: self.baseURL) else {
             complexCompletion(nil, TimeError.unableToSendRequest("Cannot build URL"), completion, sideEffects)
             return
         }
+        
         url.appendPathComponent(pathComponent)
+        
+        if urlComponents.count > 0 {
+            var components = URLComponents(string: url.absoluteString)
+            components?.queryItems = urlComponents.map { (item) -> URLQueryItem in URLQueryItem(name: item.key, value: item.value) }
+            guard let componentsURL = components?.url else {
+                complexCompletion(nil, TimeError.unableToSendRequest("Cannot build URL with components"), completion, sideEffects)
+                return
+            }
+            url = componentsURL
+        }
         
         // Build Body and Headers
         guard encoding == nil && body == nil || encoding != nil && body != nil else {
