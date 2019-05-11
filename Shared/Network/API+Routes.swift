@@ -76,6 +76,10 @@ extension API {
         GET("/categories", completion: completionHandler)
     }
     
+    func getCategories(forAccountID accountID: Int, completionHandler: @escaping ([Category]?, Error?) -> ()) {
+        GET("/categories", urlComponents: ["account_id": String(accountID)], completion: completionHandler)
+    }
+    
     func createCategory(withName name: String, under parent: Category, completionHandler: @escaping (Category?, Error?) -> ()) {
         let body: [String: Any] = ["name": name, "parent_id": parent.id, "account_id": parent.accountID]
         

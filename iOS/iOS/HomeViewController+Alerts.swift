@@ -10,10 +10,32 @@ import UIKit
 import TimeSDK
 
 extension HomeViewController {
-    func showAlertFor(addingChildTo category: TimeSDK.Category, completion: @escaping (String?) -> Void) {
-        let alert = UIAlertController(title: "Create Category", message: "Under \(category.id)", preferredStyle: .alert)
+    func showAlertForCreatingANewAccount(completion: @escaping (Bool) -> Void) {
+        let title = NSLocalizedString("Create Account", comment: "")
+        let message = NSLocalizedString("Are you sure you would like to create a new account?", comment: "")
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
-        let create = UIAlertAction(title: "Create", style: .default) { _ -> Void in
+        let create = UIAlertAction(title: NSLocalizedString("Create", comment: ""), style: .default) { _ in completion(true) }
+        let cancel = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel) { _ in completion(false) }
+        
+        alert.addAction(create)
+        alert.addAction(cancel)
+        
+        if Thread.current.isMainThread {
+            self.present(alert, animated: true, completion: nil)
+        } else {
+            DispatchQueue.main.async {
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    func showAlertFor(addingChildTo category: TimeSDK.Category, completion: @escaping (String?) -> Void) {
+        let title = NSLocalizedString("Create Category", comment: "")
+        let message = NSLocalizedString("Under \(category.id)", comment: "")
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        
+        let create = UIAlertAction(title: NSLocalizedString("Create", comment: ""), style: .default) { _ -> Void in
             let nameTextField = alert.textFields![0] as UITextField
             let name = nameTextField.text
             guard name != nil && name!.count > 0 else {
@@ -26,13 +48,13 @@ extension HomeViewController {
         create.isEnabled = false
         
         alert.addTextField { (textField : UITextField!) -> Void in
-            textField.placeholder = "Name"
+            textField.placeholder = NSLocalizedString("Name", comment: "")
             NotificationCenter.default.addObserver(forName: UITextField.textDidChangeNotification, object: textField, queue: OperationQueue.main) { (notification) in
                 create.isEnabled = textField.text?.count ?? 0 > 0
             }
         }
         
-        let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in completion(nil) })
+        let cancel = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(nil) })
         alert.addAction(create)
         alert.addAction(cancel)
         

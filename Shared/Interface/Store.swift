@@ -44,6 +44,37 @@ public class Store {
         self.api = api
     }
     
+    public func createAccount(completion: ((Account?, Error?) -> ())?) {
+        self.api.createAccount { (newAccount, error) in
+            guard error == nil && newAccount != nil else {
+                let returnError = error ?? TimeError.unableToDecodeResponse
+                completion?(nil, returnError)
+                return
+            }
+
+            self._accountIDs.append(newAccount!.id)
+            
+            self.api.getCategories(forAccountID: newAccount!.id, completionHandler: { (newCategories, categoryError) in
+                guard categoryError == nil && newCategories != nil && newCategories!.count >= 1 else {
+                    completion?(newAccount, TimeError.requestFailed("Could not load new categories"))
+                    return
+                }
+                
+                self.categories.append(contentsOf: newCategories!)
+                
+                let newTrees = CategoryTree.generateFrom(newCategories!)
+                let tree = newTrees.first(where: { $0.node.accountID == newAccount!.id })
+                if tree != nil {
+                    self._categoryTrees[newAccount!.id] = tree!
+                } else {
+                    self.staleTrees = true
+                }
+                
+                completion?(newAccount, nil)
+            })
+        }
+    }
+    
     public func getCategories(refresh: Bool = false, completionHandler: @escaping ([Category]?, Error?) -> ()) {
         guard categories.count == 0 || refresh else {
             completionHandler(self.categories, nil)

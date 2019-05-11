@@ -13,6 +13,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     var signOutButton: UIBarButtonItem!
     var cancelButton: UIBarButtonItem!
+    var addButton: UIBarButtonItem!
     var refreshControl: UIRefreshControl!
     @IBOutlet weak var tableView: UITableView!
     
@@ -29,6 +30,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     func configureTheme() {
         self.signOutButton = UIBarButtonItem(title: NSLocalizedString("Sign Out", comment: ""), style: .plain, target: self, action: #selector(signOutPressed(_:)))
         self.cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelPressed(_:)))
+        self.addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addPressed(_:)))
         
         let topConstraint = NSLayoutConstraint(item: self.view!, attribute: .top, relatedBy: .equal, toItem: self.tableView, attribute: .top, multiplier: 1, constant: 0)
         let bottomConstraint = NSLayoutConstraint(item: self.view!, attribute: .bottom, relatedBy: .equal, toItem: self.tableView, attribute: .bottom, multiplier: 1, constant: 0)
@@ -43,6 +45,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func refreshNavigation() {
         self.navigationItem.leftBarButtonItem = self.moving ? self.cancelButton: self.signOutButton
+        self.navigationItem.rightBarButtonItem = self.moving ? nil : self.addButton
         self.navigationItem.title = self.moving ? NSLocalizedString("Select Target", comment: "") : nil
     }
     
@@ -59,6 +62,28 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
                 self.tableView.reloadData()
                 if self.refreshControl.isRefreshing {
                     self.refreshControl.endRefreshing()
+                }
+            }
+        }
+    }
+    
+    func createAccount() {
+        self.showAlertForCreatingANewAccount { (create) in
+            guard create else { return }
+            
+            Time.shared.store.createAccount() { (newAccount, error) in
+                guard error == nil && newAccount != nil else {
+                    // Invalid State, needs hard data refresh
+                    self.loadData(refresh: true)
+                    return
+                }
+                
+                DispatchQueue.main.async {
+                    self.tableView.performBatchUpdates({
+                        // Sections currently sorted by ID -> Always added to end
+                        let indexSet = IndexSet(arrayLiteral: Time.shared.store.accountIDs.count - 1)
+                        self.tableView.insertSections(indexSet, with: .automatic)
+                    }, completion: nil)
                 }
             }
         }
@@ -247,6 +272,10 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         self.movingCategory = nil
         self.refreshNavigation()
         self.tableView.reloadData()
+    }
+    
+    @IBAction func addPressed(_ sender: Any) {
+        self.createAccount()
     }
     
     // MARK: - Table View
