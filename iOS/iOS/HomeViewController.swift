@@ -52,7 +52,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     // MARK: - Data Methods and Actions
     
     func loadData(refresh: Bool = false) {
-        Time.shared.store.getCategories(refresh: true) { (categories, error) in
+        let completion: (Error?) -> Void = { error in
             guard error == nil else {
                 // Show error
                 return
@@ -65,6 +65,9 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
             }
         }
+        
+        Time.shared.store.getCategories(refresh: refresh) { (categories, error) in completion(error) }
+        Time.shared.store.getEntries(refresh: refresh) { (entries, error) in completion(error) }
     }
     
     func createAccount() {
@@ -325,25 +328,62 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         return cell
     }
     
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard let categoryTree = self.getTree(for: indexPath) else { return nil }
         let category = categoryTree.node
         
         let isRoot = category.parentID == nil
         
-        let edit = UIContextualAction(style: .normal, title: "Edit", handler: { (action, view, completion) in
+        let editTitle = NSLocalizedString("Edit", comment: "")
+        let edit = UIContextualAction(style: .normal, title: editTitle, handler: { (action, view, completion) in
             self.edit(category: category, at: indexPath, completion: completion)
         })
         
-        let delete = UIContextualAction(style: .destructive, title: "Delete", handler: { (action, view, completion) in
+        let deleteTitle = NSLocalizedString("Delete", comment: "")
+        let delete = UIContextualAction(style: .destructive, title: deleteTitle, handler: { (action, view, completion) in
             self.delete(tree: categoryTree, at: indexPath, completion: completion)
         })
         
-        let add = UIContextualAction(style: .normal, title: "Add", handler: { (action, view, completion) in
+        let addTitle = NSLocalizedString("Add", comment: "")
+        let add = UIContextualAction(style: .normal, title: addTitle, handler: { (action, view, completion) in
             self.addChildTo(rootOf: categoryTree, at: indexPath, completion: completion)
         })
         
         let config = UISwipeActionsConfiguration(actions: isRoot ? [add] : [add, edit, delete])
+        config.performsFirstActionWithFullSwipe = false
+        return config
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        guard let categoryTree = self.getTree(for: indexPath) else { return nil }
+        let category = categoryTree.node
+        
+        let isRoot = category.parentID == nil
+        guard !isRoot else { return UISwipeActionsConfiguration(actions: []) }
+
+        let startTitle = NSLocalizedString("Start", comment: "")
+        let stopTitle = NSLocalizedString("Stop", comment: "")
+        let isOpen = Time.shared.store.isRangeOpen(for: category)
+        let performStart = isOpen == false
+        let startStopTitle = performStart ? startTitle : stopTitle
+        let startStop = UIContextualAction(style: .normal, title: startStopTitle, handler: { (action, view, completion) in
+            Time.shared.store.toggleRange(for: category) { (success) in
+                DispatchQueue.main.async {
+                    completion(success)
+                }
+            }
+        })
+        
+        let recordTitle = NSLocalizedString("Record", comment: "")
+        let record = UIContextualAction(style: .normal, title: recordTitle, handler: { (action, view, completion) in
+            Time.shared.store.recordEvent(for: category) { (success) in
+                DispatchQueue.main.async {
+                    completion(success)
+                }
+            }
+        })
+        
+        let config = UISwipeActionsConfiguration(actions: isOpen != nil ? [startStop, record] : [record])
         config.performsFirstActionWithFullSwipe = false
         return config
     }
