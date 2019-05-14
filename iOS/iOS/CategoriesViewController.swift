@@ -1,5 +1,5 @@
 //
-//  HomeViewController.swift
+//  CategoriesViewController.swift
 //  iOS
 //
 //  Created by Nathan Tornquist on 3/23/19.
@@ -9,7 +9,7 @@
 import UIKit
 import TimeSDK
 
-class HomeViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class CategoriesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var signOutButton: UIBarButtonItem!
     var cancelButton: UIBarButtonItem!

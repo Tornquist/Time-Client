@@ -25,16 +25,16 @@
             </objects>
             <point key="canvasLocation" x="188" y="45"/>
         </scene>
-        <!--Home View Controller-->
+        <!--Categories View Controller-->
         <scene sceneID="YCM-Z8-WfC">
             <objects>
-                <viewController id="M4D-jS-VP3" customClass="HomeViewController" customModule="Time_iOS" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="categoriesView" id="M4D-jS-VP3" customClass="CategoriesViewController" customModule="Time_iOS" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="1q4-ji-hZl">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="6xa-i1-OzY">
-                                <rect key="frame" x="0.0" y="64" width="375" height="603"/>
+                                <rect key="frame" x="0.0" y="20" width="375" height="647"/>
                                 <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="categoryCell" textLabel="LFp-Pg-der" detailTextLabel="KUi-rp-OXi" style="IBUITableViewCellStyleValue2" id="3g1-VD-fMn">
@@ -101,23 +101,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ep7-oX-oFi" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1753" y="401"/>
-        </scene>
-        <!--Navigation Controller-->
-        <scene sceneID="lcL-hx-Q3B">
-            <objects>
-                <navigationController storyboardIdentifier="homeView" id="ZGO-mp-sel" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="s4i-4P-knQ">
-                        <rect key="frame" x="0.0" y="20" width="375" height="44"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </navigationBar>
-                    <connections>
-                        <segue destination="M4D-jS-VP3" kind="relationship" relationship="rootViewController" id="Cuk-cz-tGQ"/>
-                    </connections>
-                </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Ssb-Jz-Jfn" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="956" y="402"/>
+            <point key="canvasLocation" x="956" y="407"/>
         </scene>
         <!--Login View Controller-->
         <scene sceneID="jLH-D9-4au">
@@ -211,6 +195,22 @@
                 </tapGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="956" y="-306.29685157421289"/>
+        </scene>
+        <!--Entries View Controller-->
+        <scene sceneID="9Ek-dJ-x6p">
+            <objects>
+                <viewController storyboardIdentifier="entriesView" id="Gzh-4Q-bzh" customClass="EntriesViewController" customModule="Time_iOS" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8jP-ML-SfB">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <viewLayoutGuide key="safeArea" id="Vt3-bf-Arx"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="P6X-d3-OE6"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="tyv-Pf-rWZ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1719" y="406"/>
         </scene>
     </scenes>
 </document>

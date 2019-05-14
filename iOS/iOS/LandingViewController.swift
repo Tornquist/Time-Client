@@ -37,13 +37,44 @@ class LandingViewController: UIViewController {
         guard viewLoaded && self.initialized else { return }
         
         let action = {
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            let viewName = self.authenticated ? "homeView" : "loginView"
-            let controller = storyboard.instantiateViewController(withIdentifier: viewName)
-            self.present(controller, animated: false, completion: nil)
+            if self.authenticated {
+                let controller = self.buildTabBarController()
+                self.present(controller, animated: false, completion: nil)
+            } else {
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                let controller = storyboard.instantiateViewController(withIdentifier: "loginView")
+                self.present(controller, animated: false, completion: nil)
+            }
         }
         
         if Thread.isMainThread { action() }
         else { DispatchQueue.main.async { action() } }
+    }
+    
+    func buildTabBarController() -> UIViewController {
+        let tabBarVC = UITabBarController()
+        
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let categoriesVC = storyboard.instantiateViewController(withIdentifier: "categoriesView")
+        let entriesVC = storyboard.instantiateViewController(withIdentifier: "entriesView")
+        
+        let categoriesNavVC = UINavigationController(rootViewController: categoriesVC)
+        let entriesNavVC = UINavigationController(rootViewController: entriesVC)
+        
+        categoriesNavVC.tabBarItem = UITabBarItem(
+            title: NSLocalizedString("Categories", comment: ""),
+            image: UIImage(named: "icon_categories"),
+            selectedImage: UIImage(named: "icon_categories_selected")
+        )
+        
+        entriesNavVC.tabBarItem = UITabBarItem(
+            title: NSLocalizedString("Entries", comment: ""),
+            image: UIImage(named: "icon_entries"),
+            selectedImage: UIImage(named: "icon_entries_selected")
+        )
+        
+        tabBarVC.setViewControllers([categoriesNavVC, entriesNavVC], animated: false)
+        
+        return tabBarVC
     }
 }
