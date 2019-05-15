@@ -20,10 +20,16 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     var moving: Bool { return self.movingCategory != nil }
     var movingCategory: TimeSDK.Category? = nil
     
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        self.configureTheme()
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        self.configureTheme()
+        self.refreshNavigation()
         self.loadData()
     }
     
@@ -52,22 +58,24 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     // MARK: - Data Methods and Actions
     
     func loadData(refresh: Bool = false) {
+        var categoriesDone = false
+        var entriesDone = false
+        
         let completion: (Error?) -> Void = { error in
-            guard error == nil else {
-                // Show error
-                return
-            }
-            
             DispatchQueue.main.async {
-                self.tableView.reloadData()
-                if self.refreshControl.isRefreshing {
-                    self.refreshControl.endRefreshing()
+                if categoriesDone && entriesDone {
+                    if self.refreshControl.isRefreshing {
+                        self.refreshControl.endRefreshing()
+                    }
                 }
+                
+                // TODO: Show errors as-needed
+                self.tableView.reloadData()
             }
         }
         
-        Time.shared.store.getCategories(refresh: refresh) { (categories, error) in completion(error) }
-        Time.shared.store.getEntries(refresh: refresh) { (entries, error) in completion(error) }
+        Time.shared.store.getCategories(refresh: refresh) { (categories, error) in categoriesDone = true; completion(error) }
+        Time.shared.store.getEntries(refresh: refresh) { (entries, error) in entriesDone = true; completion(error) }
     }
     
     func createAccount() {
