@@ -15,6 +15,8 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
     var refreshControl: UIRefreshControl!
     @IBOutlet weak var tableView: UITableView!
     
+    var entries: [Entry] = []
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -52,20 +54,32 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         var entriesDone = false
         
         let completion: (Error?) -> Void = { error in
-            DispatchQueue.main.async {
-                if categoriesDone && entriesDone {
+            // TODO: Show errors as-needed
+            if categoriesDone && entriesDone {
+                self.refreshEntries()
+                
+                DispatchQueue.main.async {
                     if self.refreshControl.isRefreshing {
                         self.refreshControl.endRefreshing()
                     }
                 }
-                
-                // TODO: Show errors as-needed
-                self.tableView.reloadData()
             }
         }
         
         Time.shared.store.getCategories(refresh: refresh) { (categories, error) in categoriesDone = true; completion(error) }
         Time.shared.store.getEntries(refresh: refresh) { (entries, error) in entriesDone = true; completion(error) }
+    }
+    
+    func refreshEntries() {
+        let tempEntries = Time.shared.store.entries
+        let sortedEntries = tempEntries.sorted { (a, b) -> Bool in
+            return a.startedAt > b.startedAt
+        }
+        self.entries = sortedEntries
+        
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
     }
     
     // MARK: - Events
@@ -85,12 +99,12 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return Time.shared.store.entries.count
+        return self.entries.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "entryCell", for: indexPath)
-        let entry = Time.shared.store.entries[indexPath.row]
+        let entry = self.entries[indexPath.row]
         
         guard
             let category = Time.shared.store.categories.first(where: { $0.id == entry.categoryID }),
