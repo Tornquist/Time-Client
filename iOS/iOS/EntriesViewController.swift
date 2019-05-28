@@ -82,6 +82,23 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
+    func edit(entry: Entry, completion: @escaping (Bool) -> Void) {
+        self.showAlertFor(editing: entry) { (shouldEdit) in
+            // Actions based on response
+            completion(false)
+        }
+    }
+    
+    func stop(entry: Entry, completion: @escaping (Bool) -> Void) {
+        print("Stop")
+        completion(false)
+    }
+    
+    func delete(entry: Entry, completion: @escaping (Bool) -> Void) {
+        print("Delete")
+        completion(false)
+    }
+    
     // MARK: - Events
     
     @IBAction func signOutPressed(_ sender: Any) {
@@ -145,11 +162,36 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        return nil
+        let entry = self.entries[indexPath.row]
+        
+        let editTitle = NSLocalizedString("Edit", comment: "")
+        let edit = UIContextualAction(style: .normal, title: editTitle, handler: { (action, view, completion) in
+            self.edit(entry: entry, completion: completion)
+        })
+        
+        let deleteTitle = NSLocalizedString("Delete", comment: "")
+        let delete = UIContextualAction(style: .destructive, title: deleteTitle, handler: { (action, view, completion) in
+            self.delete(entry: entry, completion: completion)
+        })
+
+        let config = UISwipeActionsConfiguration(actions: [edit, delete])
+        config.performsFirstActionWithFullSwipe = false
+        return config
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        return nil
+        let entry = self.entries[indexPath.row]
+        
+        let stopTitle = NSLocalizedString("Stop", comment: "")
+        let stop = UIContextualAction(style: .normal, title: stopTitle, handler: { (action, view, completion) in
+            self.stop(entry: entry, completion: completion)
+        })
+        
+        let isRunning = entry.type == .range && entry.endedAt == nil
+        
+        let config = UISwipeActionsConfiguration(actions: isRunning ? [stop] : [])
+        config.performsFirstActionWithFullSwipe = false
+        return config
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
