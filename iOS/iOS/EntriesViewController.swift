@@ -95,8 +95,15 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func delete(entry: Entry, completion: @escaping (Bool) -> Void) {
-        print("Delete")
-        completion(false)
+        self.showAlertFor(deleting: entry) { (delete) in
+            guard delete else { completion(false); return }
+            
+            Time.shared.store.delete(entry: entry) { deleted in
+                DispatchQueue.main.async {
+                    completion(delete)
+                }
+            }
+        }
     }
     
     // MARK: - Events

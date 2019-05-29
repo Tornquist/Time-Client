@@ -248,6 +248,8 @@ public class Store {
         }
     }
     
+    // MARK: Category Interface
+    
     public func recordEvent(for category: TimeSDK.Category, completion: ((Bool) -> Void)?) {
         self.api.recordEvent(for: category) { (newEntry, error) in
             guard error == nil && newEntry != nil else {
@@ -300,6 +302,18 @@ public class Store {
         
         let openEntry = self.entries.first(where: { $0.categoryID == category.id && $0.type == .range && $0.endedAt == nil })
         return openEntry != nil
+    }
+    
+    // MARK: Entry Interface
+    
+    public func delete(entry: Entry, completion: ((Bool) -> Void)?) {
+        self.api.deleteEntry(withID: entry.id) { (error) in
+            if error == nil,
+                let index = self.entries.firstIndex(where: { $0.id == entry.id }) {
+                self.entries.remove(at: index)
+            }
+            completion?(error == nil)
+        }
     }
     
     // MARK: - Support/Lifecycle Methods
