@@ -89,9 +89,13 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    func stop(entry: Entry, completion: @escaping (Bool) -> Void) {
-        print("Stop")
-        completion(false)
+    func stop(entry: Entry, at indexPath: IndexPath, completion: @escaping (Bool) -> Void) {
+        Time.shared.store.stop(entry: entry) { (success) in
+            DispatchQueue.main.async {
+                self.tableView.reloadRows(at: [indexPath], with: .right)
+                completion(false)
+            }
+        }
     }
     
     func delete(entry: Entry, completion: @escaping (Bool) -> Void) {
@@ -191,7 +195,7 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         let stopTitle = NSLocalizedString("Stop", comment: "")
         let stop = UIContextualAction(style: .normal, title: stopTitle, handler: { (action, view, completion) in
-            self.stop(entry: entry, completion: completion)
+            self.stop(entry: entry, at: indexPath, completion: completion)
         })
         
         let isRunning = entry.type == .range && entry.endedAt == nil

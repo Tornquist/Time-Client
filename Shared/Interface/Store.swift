@@ -306,6 +306,20 @@ public class Store {
     
     // MARK: Entry Interface
     
+    public func stop(entry: Entry, completion: ((Bool) -> Void)?) {
+        guard entry.type == .range
+           && entry.endedAt == nil
+        else { completion?(false); return }
+        
+        let endDate = Date()
+        self.api.updateEntry(with: entry.id, setEndedAt: endDate) { (updatedEntry, error) in
+            if error == nil && updatedEntry != nil {
+                entry.endedAt = updatedEntry!.endedAt
+            }
+            completion?(error == nil)
+        }
+    }
+    
     public func delete(entry: Entry, completion: ((Bool) -> Void)?) {
         self.api.deleteEntry(withID: entry.id) { (error) in
             if error == nil,
