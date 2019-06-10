@@ -307,16 +307,24 @@ public class Store {
     // MARK: Entry Interface
     
     public func stop(entry: Entry, completion: ((Bool) -> Void)?) {
-        guard entry.type == .range
-           && entry.endedAt == nil
-        else { completion?(false); return }
+        self.update(entry: entry, setEndedAt: Date(), completion: completion)
+    }
+    
+    public func update(entry: Entry, setCategory category: Category? = nil, setType type: EntryType? = nil, setStartedAt startedAt: Date? = nil, setEndedAt endedAt: Date? = nil, completion: ((Bool) -> Void)?) {
+        guard category != nil || type != nil || startedAt != nil || endedAt != nil else { completion?(true); return }
+        guard endedAt == nil || (endedAt != nil && (entry.type == .range || type == .range)) else { completion?(false); return }
         
-        let endDate = Date()
-        self.api.updateEntry(with: entry.id, setEndedAt: endDate) { (updatedEntry, error) in
-            if error == nil && updatedEntry != nil {
-                entry.endedAt = updatedEntry!.endedAt
+        self.api.updateEntry(with: entry.id, setCategory: category, setType: type, setStartedAt: startedAt, setEndedAt: endedAt) { (updatedEntry, error) in
+            guard error == nil && updatedEntry != nil else {
+                completion?(false)
+                return
             }
-            completion?(error == nil)
+            
+            entry.categoryID = updatedEntry!.categoryID
+            entry.type = updatedEntry!.type
+            entry.startedAt = updatedEntry!.startedAt
+            entry.endedAt = updatedEntry!.endedAt
+            completion?(true)
         }
     }
     
