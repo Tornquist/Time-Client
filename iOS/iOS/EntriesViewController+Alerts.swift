@@ -9,7 +9,10 @@
 import UIKit
 import TimeSDK
 
-extension EntriesViewController {
+extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
+    
+    // MARK: - Edit Tree
+    
     func showAlertFor(editing entry: Entry, completion: @escaping (Bool) -> Void) {
         let category = Time.shared.store.categories.first(where: { $0.id == entry.categoryID })
         let type = entry.type.rawValue.capitalized
@@ -20,8 +23,7 @@ extension EntriesViewController {
         
         let moveTitle = NSLocalizedString("Move to new category", comment: "")
         let moveAction = UIAlertAction(title: moveTitle, style: .default, handler: { _ in
-            print("move")
-            completion(false)
+            self.showAlertFor(moving: entry, completion: completion)
         })
         
         let changeTargetName = (entry.type == .range ? EntryType.event : EntryType.range).rawValue
@@ -58,6 +60,79 @@ extension EntriesViewController {
         }
     }
     
+    private func showAlertFor(moving entry: Entry, completion: @escaping (Bool) -> Void) {
+        let title = NSLocalizedString("Move entry to:", comment: "")
+        let message = "\n\n\n\n\n\n" // Replace with custom view
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        
+        let picker = UIPickerView(frame: CGRect(x: 5, y: 20, width: 250, height: 140))
+        self.categoryPickerData = self.generateCategoryPickerData()
+        picker.delegate = self
+        picker.dataSource = self
+        alert.view.addSubview(picker)
+        if let startingIndex = self.categoryPickerData.firstIndex(where: { (object) -> Bool in
+            return (object.1 as? CategoryTree)?.node.id == entry.categoryID
+            }) {
+            picker.selectRow(startingIndex, inComponent: 0, animated: false)
+        }
+
+        let cancelTitle = NSLocalizedString("Cancel", comment: "")
+        let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in
+            print("cancel")
+            completion(false)
+        }
+        let moveTitle = NSLocalizedString("Move", comment: "")
+        let moveAction = UIAlertAction(title: moveTitle, style: .default) { _ in
+            let row = picker.selectedRow(inComponent: 0)
+            let item = self.categoryPickerData[row]
+            let tree = item.1 as? CategoryTree
+            let categoryID = tree?.node.id
+            print("Move to \(categoryID)")
+            completion(false)
+        }
+        
+        alert.addAction(moveAction)
+        alert.addAction(cancelAction)
+        
+        if Thread.current.isMainThread {
+            self.present(alert, animated: true, completion: nil)
+        } else {
+            DispatchQueue.main.async {
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    private func generateCategoryPickerData() -> [(String, Any?)] {
+        let accountIDs = Time.shared.store.accountIDs.sorted()
+        let nodeCounts = accountIDs.map({
+            Time.shared.store.categoryTrees[$0]?.numberOfDisplayRows(overrideExpanded: true, includeRoot: true)
+        })
+        let nodes: [[CategoryTree?]] = nodeCounts.enumerated().map { (i, count) in
+            guard count != nil else { return [] }
+            let range = 0..<count!
+            return range.map({ (j) -> CategoryTree? in
+                return Time.shared.store.categoryTrees[accountIDs[i]]?.getChild(withOffset: j, overrideExpanded: true)
+            })
+        }
+        let pickerData = nodes.flatMap { (accountTree) -> [(String, CategoryTree?)] in
+            return accountTree.map({ (node) -> (String, CategoryTree?) in
+                guard node != nil else { return ("", nil) }
+                if node != nil && node!.node.parentID == nil {
+                    return ("Account \(node!.node.accountID)", node)
+                }
+                let depth = node?.depth ?? 0
+                let spacers = String(repeating: "_", count: depth)
+                return (spacers + (node?.node.name ?? ""), node)
+            })
+        }
+        return pickerData.map { (rowData) -> (String, Any?) in
+            return (rowData.0, rowData.1 as Any)
+        }
+    }
+    
+    // MARK: - Delete
+    
     func showAlertFor(deleting entry: Entry, completion: @escaping (Bool) -> Void) {
         let category = Time.shared.store.categories.first(where: { $0.id == entry.categoryID })
         let type = entry.type.rawValue.capitalized
@@ -84,5 +159,19 @@ extension EntriesViewController {
                 self.present(alert, animated: true, completion: nil)
             }
         }
+    }
+    
+    // MARK: - Picker View
+    
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return self.categoryPickerData.count
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return self.categoryPickerData[row].0
     }
 }

@@ -16,7 +16,10 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet weak var tableView: UITableView!
     
     var entries: [Entry] = []
-
+    
+    // +Alerts Support
+    var categoryPickerData: [(String,Any?)] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
