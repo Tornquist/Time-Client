@@ -13,7 +13,7 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
     
     // MARK: - Edit Tree
     
-    func showAlertFor(editing entry: Entry, completion: @escaping (Bool) -> Void) {
+    func showAlertFor(editing entry: Entry, completion: @escaping (Int?, EntryType?, Date?, Date?) -> Void) {
         let category = Time.shared.store.categories.first(where: { $0.id == entry.categoryID })
         let type = entry.type.rawValue.capitalized
         let title = category != nil
@@ -29,21 +29,20 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
         let changeTargetName = (entry.type == .range ? EntryType.event : EntryType.range).rawValue
         let changeTitle = NSLocalizedString("Convert to \(changeTargetName)", comment: "")
         let changeAction = UIAlertAction(title: changeTitle, style: .default, handler: { _ in
-            print("change")
-            completion(false)
+            let newType: EntryType = entry.type == .range ? .event : .range
+            completion(nil, newType, nil, nil)
         })
         
         let plural = entry.type == .range && entry.endedAt != nil
         let updateTitle = NSLocalizedString("Update time\(plural ? "s" : "")", comment: "")
         let updateAction = UIAlertAction(title: updateTitle, style: .default) { _ in
             print("update")
-            completion(false)
+            completion(nil, nil, nil, nil)
         }
         
         let cancelTitle = NSLocalizedString("Cancel", comment: "")
         let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in
-            print("cancel")
-            completion(false)
+            completion(nil, nil, nil, nil)
         }
         
         alert.addAction(moveAction)
@@ -60,7 +59,7 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
         }
     }
     
-    private func showAlertFor(moving entry: Entry, completion: @escaping (Bool) -> Void) {
+    private func showAlertFor(moving entry: Entry, completion: @escaping (Int?, EntryType?, Date?, Date?) -> Void) {
         let title = NSLocalizedString("Move entry to:", comment: "")
         let message = "\n\n\n\n\n\n" // Replace with custom view
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -78,8 +77,7 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
 
         let cancelTitle = NSLocalizedString("Cancel", comment: "")
         let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in
-            print("cancel")
-            completion(false)
+            completion(nil, nil, nil, nil)
         }
         let moveTitle = NSLocalizedString("Move", comment: "")
         let moveAction = UIAlertAction(title: moveTitle, style: .default) { _ in
@@ -87,8 +85,7 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
             let item = self.categoryPickerData[row]
             let tree = item.1 as? CategoryTree
             let categoryID = tree?.node.id
-            print("Move to \(categoryID)")
-            completion(false)
+            completion(categoryID, nil, nil, nil)
         }
         
         alert.addAction(moveAction)

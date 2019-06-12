@@ -86,9 +86,22 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func edit(entry: Entry, completion: @escaping (Bool) -> Void) {
-        self.showAlertFor(editing: entry) { (shouldEdit) in
-            // Actions based on response
-            completion(false)
+        self.showAlertFor(editing: entry) { (newCategoryID, newEntryType, newStartDate, newEndDate) in
+            let newCategory = newCategoryID != nil
+                ? Time.shared.store.categories.first(where: { $0.id == newCategoryID! })
+                : nil
+            Time.shared.store.update(
+                entry: entry,
+                setCategory: newCategory,
+                setType: newEntryType,
+                setStartedAt: newStartDate,
+                setEndedAt: newEndDate
+            ) { (success) in
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                    completion(false)
+                }
+            }
         }
     }
     
