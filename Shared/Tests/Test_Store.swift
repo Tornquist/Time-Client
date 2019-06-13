@@ -789,4 +789,186 @@ class Test_Store: XCTestCase {
         let newEvent = self.store.entries.first(where: { $0.categoryID == category.id && $0.type == .event })
         XCTAssertNotNil(newEvent)
     }
+    
+    func test_19_canChangeEventTypes() {
+        guard
+            self.store.accountIDs.count == 2,
+            let rootA = self.store.categoryTrees[self.store.accountIDs.sorted()[0]],
+            rootA.children.count > 0
+            else {
+                XCTFail("Missing setup info")
+                return
+        }
+        let category = rootA.children[0].node
+        
+        // Starts closed
+        XCTAssertFalse(self.store.isRangeOpen(for: category) ?? true)
+        
+        let recordExpectation = self.expectation(description: "recordEvent")
+        self.store.recordEvent(for: category) { (success) in
+            XCTAssert(success)
+            recordExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Grab last entry --> Entries are not sorted
+        let newEntry = self.store.entries[self.store.entries.count - 1]
+        
+        let changeTypeExpectation = self.expectation(description: "toggleType")
+        self.store.update(entry: newEntry, setType: .range) { (success) in
+            XCTAssert(success)
+            changeTypeExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Range is open
+        XCTAssertTrue(self.store.isRangeOpen(for: category) ?? false)
+    }
+    
+    func test_20_canExplicitlyStopAnOpenEvent() {
+        guard
+            self.store.accountIDs.count == 2,
+            let rootA = self.store.categoryTrees[self.store.accountIDs.sorted()[0]],
+            rootA.children.count > 0,
+            let entry = self.store.entries.last
+            else {
+                XCTFail("Missing setup info")
+                return
+        }
+        let category = rootA.children[0].node
+        
+        // Starts open
+        XCTAssertTrue(self.store.isRangeOpen(for: category) ?? false)
+        
+        let changeEndTimeExpectation = self.expectation(description: "toggleEnd")
+        let endDate = Date()
+        self.store.update(entry: entry, setEndedAt: endDate) { (success) in
+            XCTAssert(success)
+            changeEndTimeExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Ends closed
+        XCTAssertFalse(self.store.isRangeOpen(for: category) ?? true)
+        
+        // Ends with correct date
+        XCTAssertEqual(entry.endedAt?.timeIntervalSinceReferenceDate ?? 0, endDate.timeIntervalSinceReferenceDate, accuracy: 0.01)
+    }
+    
+    func test_21_canStopAnOpenEventUsingAnAlias() {
+        guard
+            self.store.accountIDs.count == 2,
+            let rootA = self.store.categoryTrees[self.store.accountIDs.sorted()[0]],
+            rootA.children.count > 0
+            else {
+                XCTFail("Missing setup info")
+                return
+        }
+        let category = rootA.children[0].node
+        
+        // Starts closed
+        XCTAssertFalse(self.store.isRangeOpen(for: category) ?? true)
+        
+        let toggleOpenExpectation = self.expectation(description: "toggleOpen")
+        self.store.toggleRange(for: category) { (success) in
+            XCTAssert(success)
+            toggleOpenExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+       
+        // Grab last entry --> Entries are not sorted
+        let newEntry = self.store.entries[self.store.entries.count - 1]
+        
+        // Range is open
+        XCTAssertTrue(self.store.isRangeOpen(for: category) ?? false)
+       
+        let stopExpectation = self.expectation(description: "stopRange")
+        self.store.stop(entry: newEntry) { (success) in
+            XCTAssert(success)
+            stopExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Ends closed
+        XCTAssertFalse(self.store.isRangeOpen(for: category) ?? true)
+    }
+    
+    func test_22_canMoveAnEntry() {
+        guard
+            self.store.accountIDs.count == 2,
+            let rootA = self.store.categoryTrees[self.store.accountIDs.sorted()[0]],
+            let rootB = self.store.categoryTrees[self.store.accountIDs.sorted()[1]],
+            rootA.children.count > 0,
+            rootB.children.count > 0,
+            let entry = self.store.entries.last
+            else {
+                XCTFail("Missing setup info")
+                return
+        }
+
+        let category = rootA.children[0].node
+        let otherCategory = rootB.children[0].node
+        
+        XCTAssertEqual(entry.categoryID, category.id)
+        
+        let moveExpectation = self.expectation(description: "moveEntry")
+        self.store.update(entry: entry, setCategory: otherCategory) { (success) in
+            XCTAssert(success)
+            moveExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        XCTAssertEqual(entry.categoryID, otherCategory.id)
+    }
+    
+    func test_23_updatingNoValuesMakesNoChanges() {
+        guard
+            let entry = self.store.entries.last
+            else {
+                XCTFail("Missing setup info")
+                return
+        }
+        
+        let updateExpectation = self.expectation(description: "emptyUpdate")
+        self.store.update(entry: entry) { (success) in
+            XCTAssert(success)
+            updateExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_24_updatingTheEndTimeOnAnEventFails() {
+        guard
+            let entry = self.store.entries.last
+            else {
+                XCTFail("Missing setup info")
+                return
+        }
+        
+        let updateExpectation = self.expectation(description: "badUpdate")
+        self.store.update(entry: entry, setType: .event, setEndedAt: Date()) { (success) in
+            XCTAssertFalse(success)
+            updateExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_25_deletingEntries() {
+        guard
+            let entry = self.store.entries.last
+            else {
+                XCTFail("Missing setup info")
+                return
+        }
+        
+        let deleteExpectation = self.expectation(description: "deleteEntry")
+        self.store.delete(entry: entry) { (success) in
+            XCTAssert(success)
+            deleteExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        let foundItem = self.store.entries.first(where: { $0.id == entry.id })
+        XCTAssertNil(foundItem)
+    }
 }
