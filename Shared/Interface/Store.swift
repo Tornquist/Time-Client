@@ -26,6 +26,9 @@ public class Store {
         return self._accountIDs
     }
 
+    private var _hasFetchedEntries: Bool = false
+    public var entries: [Entry] = []
+    
     public var categories: [Category] = []
     
     private var _categoryTrees: [Int: CategoryTree] = [:]
@@ -39,10 +42,11 @@ public class Store {
         return self._categoryTrees
     }
     
-    
     init(api: API) {
         self.api = api
     }
+    
+    // MARK: - Accounts
     
     public func createAccount(completion: ((Account?, Error?) -> ())?) {
         self.api.createAccount { (newAccount, error) in
@@ -75,8 +79,10 @@ public class Store {
         }
     }
     
+    // MARK: - Categories
+    
     public func getCategories(refresh: Bool = false, completionHandler: @escaping ([Category]?, Error?) -> ()) {
-        guard categories.count == 0 || refresh else {
+        guard self.categories.count == 0 || refresh else {
             completionHandler(self.categories, nil)
             return
         }
@@ -223,6 +229,116 @@ public class Store {
             completion?(true)
         }
     }
+    
+    // MARK: - Entries
+    
+    public func getEntries(refresh: Bool = false, completion: (([Entry]?, Error?) -> ())?) {
+        guard !self._hasFetchedEntries || refresh else {
+            completion?(self.entries, nil)
+            return
+        }
+        
+        self.api.getEntries { (entries, error) in
+            if entries != nil {
+                self._hasFetchedEntries = true
+                self.entries = entries!
+            }
+            
+            completion?(entries, error)
+        }
+    }
+    
+    // MARK: Category Interface
+    
+    public func recordEvent(for category: TimeSDK.Category, completion: ((Bool) -> Void)?) {
+        self.api.recordEvent(for: category) { (newEntry, error) in
+            guard error == nil && newEntry != nil else {
+                completion?(false)
+                return
+            }
+            
+            self.entries.append(newEntry!)
+            completion?(true)
+        }
+    }
+    
+    public func toggleRange(for category: TimeSDK.Category, completion: ((Bool) -> Void)?) {
+        let isOpen = self.isRangeOpen(for: category)
+        guard isOpen != nil else {
+            self.getEntries { (entries, error) in
+                guard error == nil else {
+                    completion?(false)
+                    return
+                }
+                self.toggleRange(for: category, completion: completion)
+            }
+            return
+        }
+        
+        let action: EntryAction = isOpen! ? .stop : .start
+        self.api.updateRange(for: category, with: action) { (entry, error) in
+            guard error == nil && entry != nil else {
+                completion?(false)
+                return
+            }
+            
+            if action == .start {
+                self.entries.append(entry!)
+            } else {
+                if let updatedEntry = self.entries.first(where: { $0.id == entry!.id }) {
+                    updatedEntry.endedAt = entry!.endedAt
+                } else {
+                    self.entries.append(entry!)
+                }
+            }
+            
+            completion?(true)
+        }
+        
+    }
+    
+    public func isRangeOpen(for category: TimeSDK.Category) -> Bool? {
+        guard self._hasFetchedEntries else { return nil }
+        
+        let openEntry = self.entries.first(where: { $0.categoryID == category.id && $0.type == .range && $0.endedAt == nil })
+        return openEntry != nil
+    }
+    
+    // MARK: Entry Interface
+    
+    public func stop(entry: Entry, completion: ((Bool) -> Void)?) {
+        self.update(entry: entry, setEndedAt: Date(), completion: completion)
+    }
+    
+    public func update(entry: Entry, setCategory category: Category? = nil, setType type: EntryType? = nil, setStartedAt startedAt: Date? = nil, setEndedAt endedAt: Date? = nil, completion: ((Bool) -> Void)?) {
+        guard category != nil || type != nil || startedAt != nil || endedAt != nil else { completion?(true); return }
+        guard endedAt == nil || (endedAt != nil && (entry.type == .range || type == .range)) else { completion?(false); return }
+        
+        self.api.updateEntry(with: entry.id, setCategory: category, setType: type, setStartedAt: startedAt, setEndedAt: endedAt) { (updatedEntry, error) in
+            guard error == nil && updatedEntry != nil else {
+                completion?(false)
+                return
+            }
+            
+            entry.categoryID = updatedEntry!.categoryID
+            entry.type = updatedEntry!.type
+            entry.startedAt = updatedEntry!.startedAt
+            entry.endedAt = updatedEntry!.endedAt
+            completion?(true)
+        }
+    }
+    
+    public func delete(entry: Entry, completion: ((Bool) -> Void)?) {
+        self.api.deleteEntry(withID: entry.id) { (error) in
+            if error == nil,
+                let index = self.entries.firstIndex(where: { $0.id == entry.id }) {
+                self.entries.remove(at: index)
+            }
+            completion?(error == nil)
+        }
+    }
+    
+    // MARK: - Support/Lifecycle Methods
     
     private func regenerateTrees() {
         let trees = CategoryTree.generateFrom(self.categories)

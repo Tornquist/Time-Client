@@ -1,5 +1,5 @@
 //
-//  HomeViewController+Alerts.swift
+//  CategoriesViewController+Alerts.swift
 //  iOS
 //
 //  Created by Nathan Tornquist on 4/29/19.
@@ -9,7 +9,7 @@
 import UIKit
 import TimeSDK
 
-extension HomeViewController {
+extension CategoriesViewController {
     func showAlertForCreatingANewAccount(completion: @escaping (Bool) -> Void) {
         let title = NSLocalizedString("Create Account", comment: "")
         let message = NSLocalizedString("Are you sure you would like to create a new account?", comment: "")
