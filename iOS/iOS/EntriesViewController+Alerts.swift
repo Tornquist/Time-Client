@@ -33,11 +33,14 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
             completion(nil, newType, nil, nil)
         })
         
-        let plural = entry.type == .range && entry.endedAt != nil
-        let updateTitle = NSLocalizedString("Update time\(plural ? "s" : "")", comment: "")
-        let updateAction = UIAlertAction(title: updateTitle, style: .default) { _ in
-            print("update")
-            completion(nil, nil, nil, nil)
+        let updateStartTitle = NSLocalizedString("Update \(entry.type == .range ? "start" : "event") time", comment: "")
+        let updateStartAction = UIAlertAction(title: updateStartTitle, style: .default) { _ in
+            self.showAlertFor(updating: entry, startTime: true, completion: completion)
+        }
+        
+        let updateEndTitle = NSLocalizedString("Update end time", comment: "")
+        let updateEndAction = UIAlertAction(title: updateEndTitle, style: .default) { _ in
+            self.showAlertFor(updating: entry, startTime: false, completion: completion)
         }
         
         let cancelTitle = NSLocalizedString("Cancel", comment: "")
@@ -47,7 +50,10 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
         
         alert.addAction(moveAction)
         alert.addAction(changeAction)
-        alert.addAction(updateAction)
+        alert.addAction(updateStartAction)
+        if entry.type == .range && entry.endedAt != nil {
+            alert.addAction(updateEndAction)
+        }
         alert.addAction(cancelAction)
         
         if Thread.current.isMainThread {
@@ -86,6 +92,42 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
             let tree = item.1 as? CategoryTree
             let categoryID = tree?.node.id
             completion(categoryID, nil, nil, nil)
+        }
+        
+        alert.addAction(moveAction)
+        alert.addAction(cancelAction)
+        
+        if Thread.current.isMainThread {
+            self.present(alert, animated: true, completion: nil)
+        } else {
+            DispatchQueue.main.async {
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    private func showAlertFor(updating entry: Entry, startTime: Bool, completion: @escaping (Int?, EntryType?, Date?, Date?) -> Void) {
+        
+        let changeEventTitle = NSLocalizedString("Change event time", comment: "")
+        let changeStartTitle = NSLocalizedString("Change start time", comment: "")
+        let changeEndTitle = NSLocalizedString("Change end time", comment: "")
+        
+        let title = entry.type == .event ? changeEventTitle : (startTime ? changeStartTitle : changeEndTitle)
+        let message = "\n\n\n\n\n\n\n" // Replace with custom view
+        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+
+        let picker = UIDatePicker(frame: CGRect(x: 5, y: 30, width: 250, height: 160))
+        picker.date = startTime ? entry.startedAt : entry.endedAt ?? Date()
+        alert.view.addSubview(picker)
+        
+        let cancelTitle = NSLocalizedString("Cancel", comment: "")
+        let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in
+            completion(nil, nil, nil, nil)
+        }
+        let moveTitle = NSLocalizedString("Move", comment: "")
+        let moveAction = UIAlertAction(title: moveTitle, style: .default) { _ in
+            startTime ? completion(nil, nil, picker.date, nil) : completion(nil, nil, nil, picker.date)
         }
         
         alert.addAction(moveAction)

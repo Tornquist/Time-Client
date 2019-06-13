@@ -85,8 +85,14 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    func edit(entry: Entry, completion: @escaping (Bool) -> Void) {
+    func edit(entry: Entry, at indexPath: IndexPath,  completion: @escaping (Bool) -> Void) {
         self.showAlertFor(editing: entry) { (newCategoryID, newEntryType, newStartDate, newEndDate) in
+            guard newCategoryID != nil || newEntryType != nil || newStartDate != nil || newEndDate != nil else {
+                DispatchQueue.main.async {
+                    completion(false)
+                }
+                return
+            }
             let newCategory = newCategoryID != nil
                 ? Time.shared.store.categories.first(where: { $0.id == newCategoryID! })
                 : nil
@@ -98,7 +104,12 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
                 setEndedAt: newEndDate
             ) { (success) in
                 DispatchQueue.main.async {
-                    self.tableView.reloadData()
+                    if newStartDate != nil {
+                        self.refreshEntries() // Re-sort
+                        self.tableView.reloadData()
+                    } else {
+                        self.tableView.reloadRows(at: [indexPath], with: .right)
+                    }
                     completion(false)
                 }
             }
@@ -193,7 +204,7 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         let editTitle = NSLocalizedString("Edit", comment: "")
         let edit = UIContextualAction(style: .normal, title: editTitle, handler: { (action, view, completion) in
-            self.edit(entry: entry, completion: completion)
+            self.edit(entry: entry, at: indexPath, completion: completion)
         })
         
         let deleteTitle = NSLocalizedString("Delete", comment: "")
