@@ -115,12 +115,14 @@ extension API {
     }
     
     func recordEvent(for category: Category, completionHandler: @escaping (Entry?, Error?) -> ()) {
-        let body: [String: Any] = ["category_id": category.id, "type": EntryType.event.rawValue]
+        let timezone = TimeZone.autoupdatingCurrent.identifier
+        let body: [String: Any] = ["category_id": category.id, "type": EntryType.event.rawValue, "timezone": timezone]
         POST("/entries", body, auth: true, encoding: .json, completion: completionHandler)
     }
     
     func updateRange(for category: Category, with action: EntryAction, completionHandler: @escaping (Entry?, Error?) -> ()) {
-        let body: [String: Any] = ["category_id": category.id, "type": EntryType.range.rawValue, "action": action.rawValue]
+        let timezone = TimeZone.autoupdatingCurrent.identifier
+        let body: [String: Any] = ["category_id": category.id, "type": EntryType.range.rawValue, "action": action.rawValue, "timezone": timezone]
         POST("/entries", body, auth: true, encoding: .json, completion: completionHandler)
     }
     
@@ -128,13 +130,15 @@ extension API {
         GET("/entries/\(id)", completion: completionHandler)
     }
     
-    func updateEntry(with id: Int, setCategory category: Category? = nil, setType type: EntryType? = nil, setStartedAt startedAt: Date? = nil, setEndedAt endedAt: Date? = nil, completionHandler: @escaping (Entry?, Error?) -> ()) {
+    func updateEntry(with id: Int, setCategory category: Category? = nil, setType type: EntryType? = nil, setStartedAt startedAt: Date? = nil, setStartedAtTimezone startedAtTimezone: String? = nil, setEndedAt endedAt: Date? = nil, setEndedAtTimezone endedAtTimezone: String? = nil, completionHandler: @escaping (Entry?, Error?) -> ()) {
         
         var body: [String: Any] = [:]
         if category != nil { body["category_id"] = category!.id }
         if type != nil { body["type"] = type!.rawValue }
         if startedAt != nil { body["started_at"] = DateHelper.isoStringFrom(date: startedAt!) }
+        if startedAtTimezone != nil { body["started_at_timezone"] = startedAtTimezone }
         if endedAt != nil { body["ended_at"] = DateHelper.isoStringFrom(date: endedAt!) }
+        if endedAtTimezone != nil { body["ended_at_timezone"] = endedAtTimezone }
         
         PUT("/entries/\(id)", body, completion: completionHandler)
     }
