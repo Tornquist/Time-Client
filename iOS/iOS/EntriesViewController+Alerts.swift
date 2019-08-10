@@ -118,8 +118,15 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
 
         let picker = UIDatePicker(frame: CGRect(x: 5, y: 30, width: 250, height: 160))
+        picker.timeZone = (
+            startTime
+                ? (entry.startedAtTimezone != nil ? TimeZone(identifier: entry.startedAtTimezone!) : nil)
+                : (entry.endedAtTimezone != nil ? TimeZone(identifier: entry.endedAtTimezone!) : nil)
+            ) ?? TimeZone.autoupdatingCurrent
         picker.date = startTime ? entry.startedAt : entry.endedAt ?? Date()
         alert.view.addSubview(picker)
+        if !startTime { picker.minimumDate = entry.startedAt }
+        if startTime && entry.endedAt != nil { picker.maximumDate = entry.endedAt }
         
         let cancelTitle = NSLocalizedString("Cancel", comment: "")
         let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in

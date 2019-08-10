@@ -249,7 +249,7 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         let defaultTimezone = TimeZone.autoupdatingCurrent
         let safeTimezone = timezoneIdentifier ?? defaultTimezone.identifier
         if (self.dateFormatters[safeTimezone] == nil) {
-            let timezone = TimeZone.init(identifier: safeTimezone) ?? defaultTimezone
+            let timezone = TimeZone(identifier: safeTimezone) ?? defaultTimezone
             if (self.dateFormatters[timezone.identifier] == nil) {
                 let newFormatter = DateFormatter.init()
                 newFormatter.dateFormat = "MM/dd/YY hh:mm a zzz"
