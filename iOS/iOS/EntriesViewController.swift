@@ -16,6 +16,7 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet weak var tableView: UITableView!
     
     var entries: [Entry] = []
+    var dateFormatters: [String:DateFormatter] = [:]
     
     // +Alerts Support
     var categoryPickerData: [(String,Any?)] = []
@@ -183,15 +184,7 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         
         let displayName = displayNameParts.reversed().joined(separator: " > ")
-        
-        var timeText = ""
-        if entry.type == .event {
-            timeText = "@ \(entry.startedAt)"
-        } else if entry.endedAt == nil {
-            timeText = "\(entry.startedAt) - \(NSLocalizedString("Present", comment: ""))"
-        } else {
-            timeText = "\(entry.startedAt) - \(entry.endedAt!)"
-        }
+        let timeText = self.getTimeString(for: entry)
         
         cell.textLabel?.text = displayName
         cell.detailTextLabel?.text = timeText
@@ -233,5 +226,38 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    }
+    
+    // MARK: - Time Formatting
+    
+    func getTimeString(for entry: Entry) -> String {
+        let startedAtString = self.format(time: entry.startedAt, with: entry.startedAtTimezone)
+        let endedAtString = entry.endedAt != nil ? self.format(time: entry.endedAt!, with: entry.endedAtTimezone) : nil
+        
+        var timeText = ""
+        if entry.type == .event {
+            timeText = "@ \(startedAtString)"
+        } else if entry.endedAt == nil {
+            timeText = "\(startedAtString) - \(NSLocalizedString("Present", comment: ""))"
+        } else {
+            timeText = "\(startedAtString) - \(endedAtString!)"
+        }
+        return timeText
+    }
+    
+    func format(time: Date, with timezoneIdentifier: String?) -> String {
+        let defaultTimezone = TimeZone.autoupdatingCurrent
+        let safeTimezone = timezoneIdentifier ?? defaultTimezone.identifier
+        if (self.dateFormatters[safeTimezone] == nil) {
+            let timezone = TimeZone.init(identifier: safeTimezone) ?? defaultTimezone
+            if (self.dateFormatters[timezone.identifier] == nil) {
+                let newFormatter = DateFormatter.init()
+                newFormatter.dateFormat = "MM/dd/YY hh:mm a zzz"
+                newFormatter.timeZone = timezone
+                self.dateFormatters[safeTimezone] = newFormatter
+            }
+        }
+        
+        return self.dateFormatters[safeTimezone]!.string(from: time)
     }
 }
