@@ -32,7 +32,7 @@ before_install:
 
 install:
   # Clone API and merge current source with cached node_modules.
-  - git clone --depth 1 --single-branch --branch timezones git://github.com/Tornquist/Time-API.git api
+  - git clone --depth 1 git://github.com/Tornquist/Time-API.git api
   - cp -a api/. Time-API/
   - rm -rf api
   # Install API dependencies. Create and migrate database.
