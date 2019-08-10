@@ -13,7 +13,9 @@ public class Entry: Codable {
     public var type: EntryType
     public var categoryID: Int
     public var startedAt: Date
+    public var startedAtTimezone: String?
     public var endedAt: Date?
+    public var endedAtTimezone: String?
     
     enum CodingKeys: String, CodingKey
     {
@@ -21,15 +23,19 @@ public class Entry: Codable {
         case type
         case categoryID = "category_id"
         case startedAt = "started_at"
+        case startedAtTimezone = "started_at_timezone"
         case endedAt = "ended_at"
+        case endedAtTimezone = "ended_at_timezone"
     }
     
-    public init(id: Int, type: EntryType, categoryID: Int, startedAt: Date, endedAt: Date?) {
+    public init(id: Int, type: EntryType, categoryID: Int, startedAt: Date, startedAtTimezone: String? = nil, endedAt: Date?, endedAtTimezone: String? = nil) {
         self.id = id
         self.type = type
         self.categoryID = categoryID
         self.startedAt = startedAt
+        self.startedAtTimezone = startedAtTimezone
         self.endedAt = endedAt
+        self.endedAtTimezone = endedAtTimezone
     }
     
     public required convenience init(from decoder: Decoder) throws {
@@ -42,11 +48,13 @@ public class Entry: Codable {
         guard let startedAt: Date = DateHelper.dateFrom(isoString: startedAtString) else {
             throw TimeError.unableToDecodeResponse
         }
+        let startedAtTimezone: String? = try? container.decode(String.self, forKey: .startedAtTimezone)
         
         let endedAtString: String? = try? container.decode(String.self, forKey: .endedAt)
         let endedAt: Date? = endedAtString != nil ? DateHelper.dateFrom(isoString: endedAtString!) : nil
+        let endedAtTimezone: String? = try? container.decode(String.self, forKey: .endedAtTimezone)
 
-        self.init(id: id, type: type, categoryID: categoryID, startedAt: startedAt, endedAt: endedAt)
+        self.init(id: id, type: type, categoryID: categoryID, startedAt: startedAt, startedAtTimezone: startedAtTimezone, endedAt: endedAt, endedAtTimezone: endedAtTimezone)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -58,8 +66,10 @@ public class Entry: Codable {
         
         let startedAtString: String = DateHelper.isoStringFrom(date: self.startedAt)
         try container.encodeIfPresent(startedAtString, forKey: .startedAt)
+        try container.encodeIfPresent(self.startedAtTimezone, forKey: .startedAtTimezone)
         
         let endedAtString: String? = self.endedAt != nil ? DateHelper.isoStringFrom(date: self.endedAt!) : nil
         try container.encodeIfPresent(endedAtString, forKey: .endedAt)
+        try container.encodeIfPresent(self.endedAtTimezone, forKey: .endedAtTimezone)
     }
 }

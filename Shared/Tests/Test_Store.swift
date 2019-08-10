@@ -732,7 +732,7 @@ class Test_Store: XCTestCase {
         }
         waitForExpectations(timeout: 5, handler: nil)
         
-        XCTAssertEqual(timeElapsed, 0, accuracy: 0.0001)
+        XCTAssertEqual(timeElapsed, 0, accuracy: 0.0002)
     }
     
     func test_17_isOpenFalseAfterToggleOnOpen() {

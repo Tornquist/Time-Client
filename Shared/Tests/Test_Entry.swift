@@ -13,13 +13,17 @@ class Test_Entry: XCTestCase {
     
     func test_decodable() {
         let startString = "2019-02-25T03:09:53.394Z"
+        let startTimezone = "America/Chicago"
         let endString = "2019-02-27T02:08:53.394Z"
+        let endTimezone = "America/Chicago"
         let entryDictionary: [String: Any] = [
             "id": 15,
             "type": "range",
             "category_id": 16,
             "started_at": startString,
-            "ended_at": endString
+            "started_at_timezone": startTimezone,
+            "ended_at": endString,
+            "ended_at_timezone": endTimezone
         ]
         guard let entryData = try? JSONSerialization.data(
             withJSONObject: entryDictionary,
@@ -42,11 +46,13 @@ class Test_Entry: XCTestCase {
             DateHelper.dateFrom(isoString: startString)?.timeIntervalSinceReferenceDate ?? -200,
             accuracy: 1.0
         )
+        XCTAssertEqual(entry.startedAtTimezone, startTimezone)
         XCTAssertEqual(
             entry.endedAt?.timeIntervalSinceReferenceDate ?? -100,
             DateHelper.dateFrom(isoString: endString)?.timeIntervalSinceReferenceDate ?? -200,
             accuracy: 1.0
         )
+        XCTAssertEqual(entry.endedAtTimezone, endTimezone)
     }
     
     func test_decodableError() {
@@ -77,8 +83,9 @@ class Test_Entry: XCTestCase {
         let type = EntryType.event
         let categoryID = 17
         let startedAt = Date()
+        let startedAtTimezone = "America/Chicago"
         
-        let entry = Entry(id: id, type: type, categoryID: categoryID, startedAt: startedAt, endedAt: nil)
+        let entry = Entry(id: id, type: type, categoryID: categoryID, startedAt: startedAt, startedAtTimezone: startedAtTimezone, endedAt: nil)
         
         guard let encodedEntry = try? JSONEncoder().encode(entry) else {
             XCTFail("Entry could not be encoded")
@@ -98,5 +105,8 @@ class Test_Entry: XCTestCase {
             decodedEntry.startedAt.timeIntervalSinceReferenceDate,
             accuracy: 0.001
         )
+        XCTAssertEqual(entry.startedAtTimezone, startedAtTimezone)
+        XCTAssertNil(entry.endedAt)
+        XCTAssertNil(entry.endedAtTimezone)
     }
 }

@@ -25,6 +25,8 @@ class Test_API_Entries: XCTestCase {
     var email: String { return Test_API_Entries.email }
     var password: String { return Test_API_Entries.password }
     
+    var timezone: String { return TimeZone.autoupdatingCurrent.identifier }
+    
     static var account: Account! = nil
     var account: Account {
         get { return Test_API_Entries.account }
@@ -98,7 +100,9 @@ class Test_API_Entries: XCTestCase {
                 XCTAssertEqual(entry!.type, EntryType.event)
                 XCTAssertEqual(entry!.categoryID, self.category.id)
                 XCTAssertNotNil(entry!.startedAt)
+                XCTAssertEqual(entry!.startedAtTimezone, self.timezone)
                 XCTAssertNil(entry!.endedAt)
+                XCTAssertNil(entry!.endedAtTimezone)
             }
             expectation.fulfill()
         }
@@ -119,9 +123,11 @@ class Test_API_Entries: XCTestCase {
         api.updateRange(for: self.category, with: .start) { (entry, error) in
             XCTAssertNotNil(entry)
             if entry != nil {
-                XCTAssertEqual(entry?.type, EntryType.range)
-                XCTAssertNotNil(entry?.startedAt)
-                XCTAssertNil(entry?.endedAt)
+                XCTAssertEqual(entry!.type, EntryType.range)
+                XCTAssertNotNil(entry!.startedAt)
+                XCTAssertEqual(entry!.startedAtTimezone, self.timezone)
+                XCTAssertNil(entry!.endedAt)
+                XCTAssertNil(entry!.endedAtTimezone)
             }
             expectation.fulfill()
         }
@@ -142,9 +148,11 @@ class Test_API_Entries: XCTestCase {
         api.updateRange(for: self.category, with: .stop) { (entry, error) in
             XCTAssertNotNil(entry)
             if entry != nil {
-                XCTAssertEqual(entry?.type, EntryType.range)
-                XCTAssertNotNil(entry?.startedAt)
-                XCTAssertNotNil(entry?.endedAt)
+                XCTAssertEqual(entry!.type, EntryType.range)
+                XCTAssertNotNil(entry!.startedAt)
+                XCTAssertEqual(entry!.startedAtTimezone, self.timezone)
+                XCTAssertNotNil(entry!.endedAt)
+                XCTAssertEqual(entry!.endedAtTimezone, self.timezone)
             }
             
             Test_API_Entries.sharedEntry = entry
@@ -181,6 +189,9 @@ class Test_API_Entries: XCTestCase {
             return
         }
         
+        XCTAssertNotNil(se.endedAt)
+        XCTAssertNotNil(se.endedAtTimezone)
+        
         let expectation = self.expectation(description: "entry")
         api.updateEntry(with: se.id, setType: .event) { (updatedEvent, error) in
             XCTAssertEqual(se.id, updatedEvent?.id)
@@ -188,6 +199,7 @@ class Test_API_Entries: XCTestCase {
             XCTAssertEqual(se.categoryID, updatedEvent?.categoryID)
             XCTAssertEqual(se.startedAt, updatedEvent?.startedAt)
             XCTAssertNil(updatedEvent?.endedAt)
+            XCTAssertNil(updatedEvent?.endedAtTimezone)
             expectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
@@ -212,21 +224,52 @@ class Test_API_Entries: XCTestCase {
                 accuracy: 1.0
             )
             XCTAssertNil(updatedEvent?.endedAt)
+            
+            Test_API_Entries.sharedEntry = updatedEvent
             expectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_09_allowsMultipleFieldsToBeChanged() {
+    func test_09_allowsStartedAtTimezoneToBeUpdated() {
         guard let se = Test_API_Entries.sharedEntry else {
-            XCTFail("Dependent on test 5. Missing entry")
+            XCTFail("Dependent on test 8. Missing entry")
+            return
+        }
+        
+        XCTAssertEqual(se.startedAtTimezone, self.timezone)
+        
+        let newStartTimezone = "America/Indiana/Indianapolis"
+        
+        let expectation = self.expectation(description: "entry")
+        api.updateEntry(with: se.id, setStartedAtTimezone: newStartTimezone) { (updatedEvent, error) in
+            XCTAssertEqual(se.id, updatedEvent?.id)
+            XCTAssertEqual(updatedEvent?.type, EntryType.event)
+            XCTAssertEqual(se.categoryID, updatedEvent?.categoryID)
+            XCTAssertEqual(
+                se.startedAt.timeIntervalSinceReferenceDate,
+                updatedEvent?.startedAt.timeIntervalSinceReferenceDate ?? -200,
+                accuracy: 1.0
+            )
+            XCTAssertEqual(updatedEvent?.startedAtTimezone, newStartTimezone)
+            XCTAssertNil(updatedEvent?.endedAt)
+            XCTAssertNil(updatedEvent?.endedAtTimezone)
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_10_allowsMultipleFieldsToBeChanged() {
+        guard let se = Test_API_Entries.sharedEntry else {
+            XCTFail("Dependent on test 8. Missing entry")
             return
         }
         
         let newEnd = Date()
+        let newEndTimezone = "America/New_York"
         
         let expectation = self.expectation(description: "entry")
-        api.updateEntry(with: se.id, setType: .range, setEndedAt: newEnd) { (updatedEvent, error) in
+        api.updateEntry(with: se.id, setType: .range, setEndedAt: newEnd, setEndedAtTimezone: newEndTimezone) { (updatedEvent, error) in
             XCTAssertEqual(se.id, updatedEvent?.id)
             XCTAssertEqual(updatedEvent?.type, EntryType.range)
             XCTAssertEqual(se.categoryID, updatedEvent?.categoryID)
@@ -235,14 +278,15 @@ class Test_API_Entries: XCTestCase {
                 newEnd.timeIntervalSinceReferenceDate,
                 accuracy: 1.0
             )
+            XCTAssertEqual(updatedEvent?.endedAtTimezone, newEndTimezone)
             expectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_10_allowsCategoryToBeChanged() {
+    func test_11_allowsCategoryToBeChanged() {
         guard let se = Test_API_Entries.sharedEntry else {
-            XCTFail("Dependent on test 5. Missing entry")
+            XCTFail("Dependent on test 8. Missing entry")
             return
         }
         
@@ -280,9 +324,9 @@ class Test_API_Entries: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_11_deletingEntries() {
+    func test_12_deletingEntries() {
         guard let se = Test_API_Entries.sharedEntry else {
-            XCTFail("Dependent on test 5. Missing entry")
+            XCTFail("Dependent on test 8. Missing entry")
             return
         }
         
