@@ -310,11 +310,12 @@ public class Store {
         self.update(entry: entry, setEndedAt: Date(), completion: completion)
     }
     
-    public func update(entry: Entry, setCategory category: Category? = nil, setType type: EntryType? = nil, setStartedAt startedAt: Date? = nil, setEndedAt endedAt: Date? = nil, completion: ((Bool) -> Void)?) {
-        guard category != nil || type != nil || startedAt != nil || endedAt != nil else { completion?(true); return }
+    public func update(entry: Entry, setCategory category: Category? = nil, setType type: EntryType? = nil, setStartedAt startedAt: Date? = nil, setStartedAtTimezone startedAtTimezone: String? = nil, setEndedAt endedAt: Date? = nil, setEndedAtTimezone endedAtTimezone: String? = nil, completion: ((Bool) -> Void)?) {
+        guard category != nil || type != nil || startedAt != nil || startedAtTimezone != nil || endedAt != nil || endedAtTimezone != nil else { completion?(true); return }
         guard endedAt == nil || (endedAt != nil && (entry.type == .range || type == .range)) else { completion?(false); return }
+        guard endedAtTimezone == nil || (endedAtTimezone != nil && (entry.type == .range || type == .range)) else { completion?(false); return }
         
-        self.api.updateEntry(with: entry.id, setCategory: category, setType: type, setStartedAt: startedAt, setEndedAt: endedAt) { (updatedEntry, error) in
+        self.api.updateEntry(with: entry.id, setCategory: category, setType: type, setStartedAt: startedAt, setStartedAtTimezone: startedAtTimezone, setEndedAt: endedAt, setEndedAtTimezone: endedAtTimezone) { (updatedEntry, error) in
             guard error == nil && updatedEntry != nil else {
                 completion?(false)
                 return
@@ -323,7 +324,9 @@ public class Store {
             entry.categoryID = updatedEntry!.categoryID
             entry.type = updatedEntry!.type
             entry.startedAt = updatedEntry!.startedAt
+            entry.startedAtTimezone = updatedEntry!.startedAtTimezone
             entry.endedAt = updatedEntry!.endedAt
+            entry.endedAtTimezone = updatedEntry!.endedAtTimezone
             completion?(true)
         }
     }

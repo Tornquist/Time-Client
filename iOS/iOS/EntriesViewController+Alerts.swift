@@ -13,7 +13,7 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
     
     // MARK: - Edit Tree
     
-    func showAlertFor(editing entry: Entry, completion: @escaping (Int?, EntryType?, Date?, Date?) -> Void) {
+    func showAlertFor(editing entry: Entry, completion: @escaping (Int?, EntryType?, Date?, String?, Date?, String?) -> Void) {
         let category = Time.shared.store.categories.first(where: { $0.id == entry.categoryID })
         let type = entry.type.rawValue.capitalized
         let title = category != nil
@@ -30,7 +30,7 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
         let changeTitle = NSLocalizedString("Convert to \(changeTargetName)", comment: "")
         let changeAction = UIAlertAction(title: changeTitle, style: .default, handler: { _ in
             let newType: EntryType = entry.type == .range ? .event : .range
-            completion(nil, newType, nil, nil)
+            completion(nil, newType, nil, nil, nil, nil)
         })
         
         let updateStartTitle = NSLocalizedString("Update \(entry.type == .range ? "start" : "event") time", comment: "")
@@ -38,21 +38,33 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
             self.showAlertFor(updating: entry, startTime: true, completion: completion)
         }
         
+        let updateStartTimezoneTitle = NSLocalizedString("Update \(entry.type == .range ? "start" : "event") timezone", comment: "")
+        let updateStartTimezoneAction = UIAlertAction(title: updateStartTimezoneTitle, style: .default) { _ in
+            self.showAlertFor(updating: entry, startTimeTimezone: true, completion: completion)
+        }
+        
         let updateEndTitle = NSLocalizedString("Update end time", comment: "")
         let updateEndAction = UIAlertAction(title: updateEndTitle, style: .default) { _ in
             self.showAlertFor(updating: entry, startTime: false, completion: completion)
         }
         
+        let updateEndTimezoneTitle = NSLocalizedString("Update end timezone", comment: "")
+        let updateEndTimezoneAction = UIAlertAction(title: updateEndTimezoneTitle, style: .default) { _ in
+            self.showAlertFor(updating: entry, startTimeTimezone: false, completion: completion)
+        }
+        
         let cancelTitle = NSLocalizedString("Cancel", comment: "")
         let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in
-            completion(nil, nil, nil, nil)
+            completion(nil, nil, nil, nil, nil, nil)
         }
         
         alert.addAction(moveAction)
         alert.addAction(changeAction)
         alert.addAction(updateStartAction)
+        alert.addAction(updateStartTimezoneAction)
         if entry.type == .range && entry.endedAt != nil {
             alert.addAction(updateEndAction)
+            alert.addAction(updateEndTimezoneAction)
         }
         alert.addAction(cancelAction)
         
@@ -65,17 +77,17 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
         }
     }
     
-    private func showAlertFor(moving entry: Entry, completion: @escaping (Int?, EntryType?, Date?, Date?) -> Void) {
+    private func showAlertFor(moving entry: Entry, completion: @escaping (Int?, EntryType?, Date?, String?, Date?, String?) -> Void) {
         let title = NSLocalizedString("Move entry to:", comment: "")
         let message = "\n\n\n\n\n\n" // Replace with custom view
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
         let picker = UIPickerView(frame: CGRect(x: 5, y: 20, width: 250, height: 140))
-        self.categoryPickerData = self.generateCategoryPickerData()
+        self.pickerData = self.generateCategoryPickerData()
         picker.delegate = self
         picker.dataSource = self
         alert.view.addSubview(picker)
-        if let startingIndex = self.categoryPickerData.firstIndex(where: { (object) -> Bool in
+        if let startingIndex = self.pickerData.firstIndex(where: { (object) -> Bool in
             return (object.1 as? CategoryTree)?.node.id == entry.categoryID
             }) {
             picker.selectRow(startingIndex, inComponent: 0, animated: false)
@@ -83,15 +95,15 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
 
         let cancelTitle = NSLocalizedString("Cancel", comment: "")
         let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in
-            completion(nil, nil, nil, nil)
+            completion(nil, nil, nil, nil, nil, nil)
         }
         let moveTitle = NSLocalizedString("Move", comment: "")
         let moveAction = UIAlertAction(title: moveTitle, style: .default) { _ in
             let row = picker.selectedRow(inComponent: 0)
-            let item = self.categoryPickerData[row]
+            let item = self.pickerData[row]
             let tree = item.1 as? CategoryTree
             let categoryID = tree?.node.id
-            completion(categoryID, nil, nil, nil)
+            completion(categoryID, nil, nil, nil, nil, nil)
         }
         
         alert.addAction(moveAction)
@@ -106,8 +118,7 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
         }
     }
     
-    private func showAlertFor(updating entry: Entry, startTime: Bool, completion: @escaping (Int?, EntryType?, Date?, Date?) -> Void) {
-        
+    private func showAlertFor(updating entry: Entry, startTime: Bool, completion: @escaping (Int?, EntryType?, Date?, String?, Date?, String?) -> Void) {
         let changeEventTitle = NSLocalizedString("Change event time", comment: "")
         let changeStartTitle = NSLocalizedString("Change start time", comment: "")
         let changeEndTitle = NSLocalizedString("Change end time", comment: "")
@@ -130,11 +141,11 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
         
         let cancelTitle = NSLocalizedString("Cancel", comment: "")
         let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in
-            completion(nil, nil, nil, nil)
+            completion(nil, nil, nil, nil, nil, nil)
         }
         let moveTitle = NSLocalizedString("Move", comment: "")
         let moveAction = UIAlertAction(title: moveTitle, style: .default) { _ in
-            startTime ? completion(nil, nil, picker.date, nil) : completion(nil, nil, nil, picker.date)
+            startTime ? completion(nil, nil, picker.date, nil, nil, nil) : completion(nil, nil, nil, nil, picker.date, nil)
         }
         
         alert.addAction(moveAction)
@@ -146,6 +157,64 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
             DispatchQueue.main.async {
                 self.present(alert, animated: true, completion: nil)
             }
+        }
+    }
+    
+    private func showAlertFor(updating entry: Entry, startTimeTimezone: Bool, completion: @escaping (Int?, EntryType?, Date?, String?, Date?, String?) -> Void) {
+        let changeEventTitle = NSLocalizedString("Change event timezone", comment: "")
+        let changeStartTitle = NSLocalizedString("Change start timezone", comment: "")
+        let changeEndTitle = NSLocalizedString("Change end timezone", comment: "")
+        
+        let title = entry.type == .event ? changeEventTitle : (startTimeTimezone ? changeStartTitle : changeEndTitle)
+        let message = "\n\n\n\n\n\n\n" // Replace with custom view
+        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let picker = UIPickerView(frame: CGRect(x: 5, y: 20, width: 250, height: 140))
+        
+        self.pickerData = self.generateTimezonePickerData()
+        picker.delegate = self
+        picker.dataSource = self
+        alert.view.addSubview(picker)
+        let target = (startTimeTimezone ? entry.startedAtTimezone : entry.endedAtTimezone) ?? TimeZone.autoupdatingCurrent.identifier
+        if let startingIndex = self.pickerData.firstIndex(where: { (object) -> Bool in
+            return (object.1 as? String) == target
+        }) {
+            picker.selectRow(startingIndex, inComponent: 0, animated: false)
+        }
+        
+        let cancelTitle = NSLocalizedString("Cancel", comment: "")
+        let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in
+            completion(nil, nil, nil, nil, nil, nil)
+        }
+        let moveTitle = NSLocalizedString("Move", comment: "")
+        let moveAction = UIAlertAction(title: moveTitle, style: .default) { _ in
+            let row = picker.selectedRow(inComponent: 0)
+            let timezone = self.pickerData[row].1 as? String
+            startTimeTimezone ? completion(nil, nil, nil, timezone, nil, nil) : completion(nil, nil, nil, nil, nil, timezone)
+        }
+        
+        alert.addAction(moveAction)
+        alert.addAction(cancelAction)
+        
+        if Thread.current.isMainThread {
+            self.present(alert, animated: true, completion: nil)
+        } else {
+            DispatchQueue.main.async {
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    private func generateTimezonePickerData() -> [(String, Any?)] {
+        let all = TimeZone.knownTimeZoneIdentifiers
+        let labels = all.map({
+            $0.replacingOccurrences(of: "/", with: " > ")
+                .replacingOccurrences(of: "_", with: " ")
+        })
+        let values = all
+        let pickerData = Array(zip(labels, values))
+        return pickerData.map { (rowData) -> (String, Any?) in
+            return (rowData.0, rowData.1 as Any)
         }
     }
     
@@ -214,10 +283,10 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
     }
     
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return self.categoryPickerData.count
+        return self.pickerData.count
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return self.categoryPickerData[row].0
+        return self.pickerData[row].0
     }
 }
