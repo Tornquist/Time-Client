@@ -15,7 +15,9 @@ public class Store {
     private var staleTrees: Bool = false
     private var staleAccountIDs: Bool = false
     
-    private var _accountIDs: [Int] = []
+    private var _accountIDs: [Int] = [] {
+        didSet { self.accountsChanged() }
+    }
     public var accountIDs: [Int] {
         let hasCategories = self.categories.count != 0
         let hasAccountIDs = self._accountIDs.count > 0
@@ -27,9 +29,13 @@ public class Store {
     }
 
     private var _hasFetchedEntries: Bool = false
-    public var entries: [Entry] = []
+    public var entries: [Entry] = [] {
+        didSet { self.entriesChanged() }
+    }
     
-    public var categories: [Category] = []
+    public var categories: [Category] = [] {
+        didSet { self.categoriesChanged() }
+    }
     
     private var _categoryTrees: [Int: CategoryTree] = [:]
     public var categoryTrees: [Int:CategoryTree] {
@@ -133,6 +139,8 @@ public class Store {
             }
             
             category.name = newName
+            
+            self.categoriesChanged()
             completion?(true)
         }
     }
@@ -176,6 +184,8 @@ public class Store {
                     categoryTree.parent = parentTree
                     parentTree.sortChildren()
                 }
+                
+                self.categoriesChanged()
             }
             
             completion?(error == nil)
@@ -287,6 +297,7 @@ public class Store {
             } else {
                 if let updatedEntry = self.entries.first(where: { $0.id == entry!.id }) {
                     updatedEntry.endedAt = entry!.endedAt
+                    self.entriesChanged()
                 } else {
                     self.entries.append(entry!)
                 }
@@ -327,6 +338,8 @@ public class Store {
             entry.startedAtTimezone = updatedEntry!.startedAtTimezone
             entry.endedAt = updatedEntry!.endedAt
             entry.endedAtTimezone = updatedEntry!.endedAtTimezone
+            
+            self.entriesChanged()
             completion?(true)
         }
     }
@@ -358,5 +371,20 @@ public class Store {
     private func regenerateAccountIDs() {
         let sortedIDs = Array(Set(categories.map({ $0.accountID }))).sorted()
         self._accountIDs = sortedIDs
+        self.staleAccountIDs = false
+    }
+    
+    // MARK: - Archival Support
+    
+    private func accountsChanged() {
+        print("cache accounts")
+    }
+    
+    private func categoriesChanged() {
+        print("cache categories")
+    }
+    
+    private func entriesChanged() {
+        print("cache entries")
     }
 }
