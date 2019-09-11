@@ -12,6 +12,8 @@ public class Store {
     
     var api: API
     
+    private var hasInitialized: Bool = false
+    
     private var staleTrees: Bool = false
     private var staleAccountIDs: Bool = false
     
@@ -50,6 +52,8 @@ public class Store {
     
     init(api: API) {
         self.api = api
+        self.restoreDataFromDisk()
+        self.hasInitialized = true
     }
     
     // MARK: - Accounts
@@ -376,15 +380,95 @@ public class Store {
     
     // MARK: - Archival Support
     
+    private enum CacheType {
+        case accountIDs
+        case categories
+        case entries
+        
+        var filename: String {
+            switch self {
+            case .accountIDs:
+                return "account_ids.time"
+            case .categories:
+                return "categories.time"
+            case .entries:
+                return "entries.time"
+            }
+        }
+    }
+    
+    private func restoreDataFromDisk() {
+        if let accountIDData = self.fetchData(for: .accountIDs),
+            let accountIDs = try? JSONDecoder().decode([Int].self, from: accountIDData) {
+            self._accountIDs = accountIDs
+        }
+        
+        if let categoriesData = self.fetchData(for: .categories),
+            let categories = try? JSONDecoder().decode([Category].self, from: categoriesData) {
+            self.categories = categories
+            self.staleTrees = true
+        }
+        
+        if let entriesData = self.fetchData(for: .entries),
+            let entries = try? JSONDecoder().decode([Entry].self, from: entriesData) {
+            self.entries = entries
+            self._hasFetchedEntries = true
+        }
+    }
+    
     private func accountsChanged() {
+        guard self.hasInitialized else { return }
+        
         print("cache accounts")
+        if let data = try? JSONEncoder().encode(self._accountIDs) {
+            self.store(data, for: .accountIDs)
+        }
     }
     
     private func categoriesChanged() {
+        guard self.hasInitialized else { return }
+        
         print("cache categories")
+        if let data = try? JSONEncoder().encode(self.categories) {
+            self.store(data, for: .categories)
+        }
     }
     
     private func entriesChanged() {
+        guard self.hasInitialized else { return }
+        
         print("cache entries")
+        if let data = try? JSONEncoder().encode(self.entries) {
+            self.store(data, for: .entries)
+        }
+    }
+    
+    private func store(_ data: Data, for type: CacheType) {
+        guard let applicationSupportFolderURL = try? FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        ) else {
+            return
+        }
+        
+        let fullPath = applicationSupportFolderURL.appendingPathComponent(type.filename)
+        try? data.write(to: fullPath)
+    }
+    
+    private func fetchData(for type: CacheType) -> Data? {
+        guard let applicationSupportFolderURL = try? FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+            ) else {
+                return nil
+        }
+        
+        let fullPath = applicationSupportFolderURL.appendingPathComponent(type.filename)
+        let data = try? Data.init(contentsOf: fullPath)
+        return data
     }
 }
