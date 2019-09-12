@@ -18,7 +18,7 @@ public class Store {
     private var staleAccountIDs: Bool = false
     
     private var _accountIDs: [Int] = [] {
-        didSet { self.accountsChanged() }
+        didSet { self.changedData(for: .accountIDs) }
     }
     public var accountIDs: [Int] {
         let hasCategories = self.categories.count != 0
@@ -32,11 +32,11 @@ public class Store {
 
     private var _hasFetchedEntries: Bool = false
     public var entries: [Entry] = [] {
-        didSet { self.entriesChanged() }
+        didSet { self.changedData(for: .entries) }
     }
     
     public var categories: [Category] = [] {
-        didSet { self.categoriesChanged() }
+        didSet { self.changedData(for: .categories) }
     }
     
     private var _categoryTrees: [Int: CategoryTree] = [:]
@@ -144,7 +144,7 @@ public class Store {
             
             category.name = newName
             
-            self.categoriesChanged()
+            self.changedData(for: .categories)
             completion?(true)
         }
     }
@@ -189,7 +189,7 @@ public class Store {
                     parentTree.sortChildren()
                 }
                 
-                self.categoriesChanged()
+                self.changedData(for: .categories)
             }
             
             completion?(error == nil)
@@ -301,7 +301,7 @@ public class Store {
             } else {
                 if let updatedEntry = self.entries.first(where: { $0.id == entry!.id }) {
                     updatedEntry.endedAt = entry!.endedAt
-                    self.entriesChanged()
+                    self.changedData(for: .entries)
                 } else {
                     self.entries.append(entry!)
                 }
@@ -343,7 +343,7 @@ public class Store {
             entry.endedAt = updatedEntry!.endedAt
             entry.endedAtTimezone = updatedEntry!.endedAtTimezone
             
-            self.entriesChanged()
+            self.changedData(for: .entries)
             completion?(true)
         }
     }
@@ -398,11 +398,6 @@ public class Store {
     }
     
     private func restoreDataFromDisk() {
-        if let accountIDData = self.fetchData(for: .accountIDs),
-            let accountIDs = try? JSONDecoder().decode([Int].self, from: accountIDData) {
-            self._accountIDs = accountIDs
-        }
-        
         if let categoriesData = self.fetchData(for: .categories),
             let categories = try? JSONDecoder().decode([Category].self, from: categoriesData) {
             self.categories = categories
@@ -414,33 +409,31 @@ public class Store {
             self.entries = entries
             self._hasFetchedEntries = true
         }
-    }
-    
-    private func accountsChanged() {
-        guard self.hasInitialized else { return }
         
-        print("cache accounts")
-        if let data = try? JSONEncoder().encode(self._accountIDs) {
-            self.store(data, for: .accountIDs)
+        if let accountIDData = self.fetchData(for: .accountIDs),
+            let accountIDs = try? JSONDecoder().decode([Int].self, from: accountIDData) {
+            self._accountIDs = accountIDs
+        } else {
+            self.staleAccountIDs = true
         }
     }
     
-    private func categoriesChanged() {
+    private func changedData(for type: CacheType) {
         guard self.hasInitialized else { return }
         
-        print("cache categories")
-        if let data = try? JSONEncoder().encode(self.categories) {
-            self.store(data, for: .categories)
+        var data: Data? = nil
+        switch type {
+        case .accountIDs:
+            data = try? JSONEncoder().encode(self._accountIDs)
+        case .categories:
+            data = try? JSONEncoder().encode(self.categories)
+        case .entries:
+            data = try? JSONEncoder().encode(self.entries)
         }
-    }
-    
-    private func entriesChanged() {
-        guard self.hasInitialized else { return }
         
-        print("cache entries")
-        if let data = try? JSONEncoder().encode(self.entries) {
-            self.store(data, for: .entries)
-        }
+        guard data != nil else { return }
+        
+        self.store(data!, for: type)
     }
     
     private func store(_ data: Data, for type: CacheType) {
