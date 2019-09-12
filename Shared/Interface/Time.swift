@@ -26,6 +26,9 @@ public class Time {
         self.api = apiClient
         self.tokenIdentifier = tokenIdentifier
         self.store = Store(api: self.api)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(autoRefreshedToken), name: .TimeAPIAutoRefreshedToken, object: self.api)
+        NotificationCenter.default.addObserver(self, selector: #selector(autoRefreshFailed), name: .TimeAPIAutoRefreshFailed, object: self.api)
     }
     
     public func initialize(completionHandler: ((Error?) -> ())? = nil) {
@@ -40,19 +43,8 @@ public class Time {
         }
         
         self.api.token = fetchedToken
-        guard fetchedToken.expiration < Date() else {
-            completionHandler?(nil)
-            return
-        }
-        
-        self.api.refreshToken { (newToken, error) in
-            guard error == nil && newToken != nil else {
-                completionHandler?(TimeError.unableToRefreshToken)
-                return
-            }
-            
-            self.handleTokenSuccess(token: newToken!, completionHandler: completionHandler)
-        }
+        // No special success handling. Token already stored
+        completionHandler?(nil)
     }
     
     public func authenticate(email: String, password: String, completionHandler: ((Error?) -> ())? = nil) {
@@ -94,5 +86,19 @@ public class Time {
     public func deauthenticate() {
         _ = TokenStore.deleteToken(withTag: self.tokenIdentifier)
         self.api.token = nil
+    }
+    
+    // MARK: - Notification Center
+    
+    @objc func autoRefreshedToken() {
+        guard let token = self.api.token else {
+            return
+        }
+        
+        _ = TokenStore.storeToken(token, withTag: self.tokenIdentifier)
+    }
+    
+    @objc func autoRefreshFailed() {
+        print("Force user to re-authenticate manually")
     }
 }

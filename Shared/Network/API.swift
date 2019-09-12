@@ -8,6 +8,11 @@
 
 import Foundation
 
+extension Notification.Name {
+    static let TimeAPIAutoRefreshedToken = Notification.Name("TimeAPIAutoRefreshedToken")
+    static let TimeAPIAutoRefreshFailed = Notification.Name("TimeAPIAutoRefreshFailed")
+}
+
 class API: APIQueueDelegate {
     static let shared = API()
     
@@ -175,6 +180,7 @@ class API: APIQueueDelegate {
         self.queue.store(request: apiRequest)
         
         task.resume()
+        print("API Request")
     }
     
     // MARK: - Token Refresh
@@ -185,13 +191,16 @@ class API: APIQueueDelegate {
         self.isRefreshingToken = true
         
         self.refreshToken { (newToken, error) in
+            self.isRefreshingToken = false
+            
             guard error == nil else {
                 let error = TimeError.authenticationFailure("Unable to acquire active access token")
+                NotificationCenter.default.post(name: .TimeAPIAutoRefreshFailed, object: self)
                 self.queue.failAllFailedRequests(with: error)
                 return
             }
             
-            self.isRefreshingToken = false
+            NotificationCenter.default.post(name: .TimeAPIAutoRefreshedToken, object: self)
             self.queue.retryAllFailedRequests()
         }
     }
