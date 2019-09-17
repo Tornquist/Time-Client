@@ -22,6 +22,9 @@ public class Time {
     let tokenIdentifier: String
     public var store: Store
     
+    // Control Flow
+    var reauthenticating: Bool = false
+    
     init(withAPI apiClient: API, andTokenIdentifier tokenIdentifier: String = "token") {
         self.api = apiClient
         self.tokenIdentifier = tokenIdentifier
@@ -57,6 +60,13 @@ public class Time {
             guard token != nil else {
                 completionHandler?(TimeError.tokenNotFound)
                 return
+            }
+            
+            if self.reauthenticating {
+                if token!.userID != self.api.token?.userID {
+                    // self.store.purgeData()
+                }
+                self.reauthenticating = false
             }
             
             self.handleTokenSuccess(token: token!, completionHandler: completionHandler)
@@ -99,6 +109,7 @@ public class Time {
     }
     
     @objc func autoRefreshFailed() {
-        print("Force user to re-authenticate manually")
+        self.reauthenticating = true
+        NotificationCenter.default.post(name: .TimeUserSignInNeeded, object: self)
     }
 }

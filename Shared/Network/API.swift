@@ -8,11 +8,6 @@
 
 import Foundation
 
-extension Notification.Name {
-    static let TimeAPIAutoRefreshedToken = Notification.Name("TimeAPIAutoRefreshedToken")
-    static let TimeAPIAutoRefreshFailed = Notification.Name("TimeAPIAutoRefreshFailed")
-}
-
 class API: APIQueueDelegate {
     static let shared = API()
     

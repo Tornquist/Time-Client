@@ -52,7 +52,7 @@ class LandingViewController: UIViewController {
     }
     
     func buildTabBarController() -> UIViewController {
-        let tabBarVC = UITabBarController()
+        let tabBarVC = HomeViewController()
         
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let categoriesVC = storyboard.instantiateViewController(withIdentifier: "categoriesView")
