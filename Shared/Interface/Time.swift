@@ -51,6 +51,8 @@ public class Time {
     }
     
     public func authenticate(email: String, password: String, completionHandler: ((Error?) -> ())? = nil) {
+        let startingUserID = self.api.token?.userID
+        
         self.api.getToken(withEmail: email, andPassword: password) { (token, error) in
             guard error == nil else {
                 completionHandler?(error)
@@ -63,8 +65,11 @@ public class Time {
             }
             
             if self.reauthenticating {
-                if token!.userID != self.api.token?.userID {
-                    // self.store.purgeData()
+                let endingUserID = self.api.token?.userID
+                let differentUser = startingUserID != endingUserID
+                if differentUser {
+                    self.store.resetDisk()
+                    self.store = Store(api: self.api)
                 }
                 self.reauthenticating = false
             }
@@ -95,6 +100,8 @@ public class Time {
     
     public func deauthenticate() {
         _ = TokenStore.deleteToken(withTag: self.tokenIdentifier)
+        self.store.resetDisk()
+        self.store = Store(api: self.api)
         self.api.token = nil
     }
     

@@ -175,7 +175,6 @@ class API: APIQueueDelegate {
         self.queue.store(request: apiRequest)
         
         task.resume()
-        print("API Request")
     }
     
     // MARK: - Token Refresh

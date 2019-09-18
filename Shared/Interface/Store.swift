@@ -56,6 +56,12 @@ public class Store {
         self.hasInitialized = true
     }
     
+    public func resetDisk() {
+        CacheType.all().forEach { (type) in
+            self.clearData(for: type)
+        }
+    }
+    
     // MARK: - Accounts
     
     public func createAccount(completion: ((Account?, Error?) -> ())?) {
@@ -395,6 +401,10 @@ public class Store {
                 return "entries.time"
             }
         }
+        
+        static func all() -> [CacheType] {
+            return [.accountIDs, .categories, .entries]
+        }
     }
     
     private func restoreDataFromDisk() {
@@ -463,5 +473,19 @@ public class Store {
         let fullPath = applicationSupportFolderURL.appendingPathComponent(type.filename)
         let data = try? Data.init(contentsOf: fullPath)
         return data
+    }
+    
+    private func clearData(for type: CacheType) {
+        guard let applicationSupportFolderURL = try? FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+            ) else {
+                return
+        }
+        
+        let fullPath = applicationSupportFolderURL.appendingPathComponent(type.filename)
+        try? FileManager.default.removeItem(at: fullPath)
     }
 }
