@@ -18,7 +18,7 @@ public class Store {
     private var staleAccountIDs: Bool = false
     
     private var _accountIDs: [Int] = [] {
-        didSet { self.changedData(for: .accountIDs) }
+        didSet { self.archive(data: self._accountIDs) }
     }
     public var accountIDs: [Int] {
         let hasCategories = self.categories.count != 0
@@ -32,11 +32,11 @@ public class Store {
 
     private var _hasFetchedEntries: Bool = false
     public var entries: [Entry] = [] {
-        didSet { self.changedData(for: .entries) }
+        didSet { self.archive(data: self.entries) }
     }
     
     public var categories: [Category] = [] {
-        didSet { self.changedData(for: .categories) }
+        didSet { self.archive(data: self.categories) }
     }
     
     private var _categoryTrees: [Int: CategoryTree] = [:]
@@ -54,12 +54,6 @@ public class Store {
         self.api = api
         self.restoreDataFromDisk()
         self.hasInitialized = true
-    }
-    
-    public func resetDisk() {
-        CacheType.all().forEach { (type) in
-            self.clearData(for: type)
-        }
     }
     
     // MARK: - Accounts
@@ -150,7 +144,7 @@ public class Store {
             
             category.name = newName
             
-            self.changedData(for: .categories)
+            self.archive(data: self.categories)
             completion?(true)
         }
     }
@@ -195,7 +189,7 @@ public class Store {
                     parentTree.sortChildren()
                 }
                 
-                self.changedData(for: .categories)
+                self.archive(data: self.categories)
             }
             
             completion?(error == nil)
@@ -307,7 +301,7 @@ public class Store {
             } else {
                 if let updatedEntry = self.entries.first(where: { $0.id == entry!.id }) {
                     updatedEntry.endedAt = entry!.endedAt
-                    self.changedData(for: .entries)
+                    self.archive(data: self.entries)
                 } else {
                     self.entries.append(entry!)
                 }
@@ -349,7 +343,7 @@ public class Store {
             entry.endedAt = updatedEntry!.endedAt
             entry.endedAtTimezone = updatedEntry!.endedAtTimezone
             
-            self.changedData(for: .entries)
+            self.archive(data: self.entries)
             completion?(true)
         }
     }
@@ -384,108 +378,32 @@ public class Store {
         self.staleAccountIDs = false
     }
     
-    // MARK: - Archival Support
+    // MARK: - Archival Support and Integration
     
-    private enum CacheType {
-        case accountIDs
-        case categories
-        case entries
-        
-        var filename: String {
-            switch self {
-            case .accountIDs:
-                return "account_ids.time"
-            case .categories:
-                return "categories.time"
-            case .entries:
-                return "entries.time"
-            }
-        }
-        
-        static func all() -> [CacheType] {
-            return [.accountIDs, .categories, .entries]
-        }
+    public func resetDisk() {
+        Archive.removeAllData()
     }
     
-    private func restoreDataFromDisk() {
-        if let categoriesData = self.fetchData(for: .categories),
-            let categories = try? JSONDecoder().decode([Category].self, from: categoriesData) {
+    private func restoreDataFromDisk() {        
+        if let categories: [Category] = Archive.retrieveData() {
             self.categories = categories
             self.staleTrees = true
         }
         
-        if let entriesData = self.fetchData(for: .entries),
-            let entries = try? JSONDecoder().decode([Entry].self, from: entriesData) {
+        if let entries: [Entry] = Archive.retrieveData() {
             self.entries = entries
             self._hasFetchedEntries = true
         }
         
-        if let accountIDData = self.fetchData(for: .accountIDs),
-            let accountIDs = try? JSONDecoder().decode([Int].self, from: accountIDData) {
+        if let accountIDs: [Int] = Archive.retrieveData() {
             self._accountIDs = accountIDs
         } else {
             self.staleAccountIDs = true
         }
     }
     
-    private func changedData(for type: CacheType) {
+    private func archive<T>(data: T) where T : Codable {
         guard self.hasInitialized else { return }
-        
-        var data: Data? = nil
-        switch type {
-        case .accountIDs:
-            data = try? JSONEncoder().encode(self._accountIDs)
-        case .categories:
-            data = try? JSONEncoder().encode(self.categories)
-        case .entries:
-            data = try? JSONEncoder().encode(self.entries)
-        }
-        
-        guard data != nil else { return }
-        
-        self.store(data!, for: type)
-    }
-    
-    private func store(_ data: Data, for type: CacheType) {
-        guard let applicationSupportFolderURL = try? FileManager.default.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        ) else {
-            return
-        }
-        
-        let fullPath = applicationSupportFolderURL.appendingPathComponent(type.filename)
-        try? data.write(to: fullPath)
-    }
-    
-    private func fetchData(for type: CacheType) -> Data? {
-        guard let applicationSupportFolderURL = try? FileManager.default.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-            ) else {
-                return nil
-        }
-        
-        let fullPath = applicationSupportFolderURL.appendingPathComponent(type.filename)
-        let data = try? Data.init(contentsOf: fullPath)
-        return data
-    }
-    
-    private func clearData(for type: CacheType) {
-        guard let applicationSupportFolderURL = try? FileManager.default.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-            ) else {
-                return
-        }
-        
-        let fullPath = applicationSupportFolderURL.appendingPathComponent(type.filename)
-        try? FileManager.default.removeItem(at: fullPath)
+        Archive.record(data)
     }
 }
