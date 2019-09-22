@@ -13,7 +13,7 @@ import XCTest
 
 class Test_Archive: XCTestCase {
     func test_00_setup() {
-        Archive.removeAllData()
+        _ = Archive.removeAllData()
     }
     
     func test_01_startsWithNoData() {
@@ -36,7 +36,8 @@ class Test_Archive: XCTestCase {
         )]
         
         // Store data
-        Archive.record(entries)
+        let success = Archive.record(entries)
+        XCTAssertTrue(success)
         
         // Retrieve for various types
         let freshEntries: [Entry]? = Archive.retrieveData()
@@ -80,7 +81,8 @@ class Test_Archive: XCTestCase {
         ]
         
         // Store data
-        Archive.record(entries)
+        let success = Archive.record(entries)
+        XCTAssertTrue(success)
         
         // Retrieve for various types
         let freshEntries: [Entry]? = Archive.retrieveData()
@@ -92,15 +94,46 @@ class Test_Archive: XCTestCase {
         XCTAssertNil(accountIDs)
         
         XCTAssertEqual(freshEntries?.count, 2)
+        
+        let freshEntryIDs = (freshEntries ?? []).map({ $0.id })
+        XCTAssertFalse(freshEntryIDs.contains(15)) // Test 2
+        XCTAssertTrue(freshEntryIDs.contains(16))
+        XCTAssertTrue(freshEntryIDs.contains(17))
     }
     
     func test_04_dataCanBeExplicitlyRemoved() {
+        // Set Data
+        // Entries depend on test 3
+        let accountIDs = [1, 2, 3]
+        let success = Archive.record(accountIDs)
+        XCTAssertTrue(success)
+        
+        // Verify
         let startingEntries: [Entry]? = Archive.retrieveData()
+        let startingAccountIDs: [Int]? = Archive.retrieveData()
         XCTAssertNotNil(startingEntries)
+        XCTAssertNotNil(startingAccountIDs)
         
-        Archive.removeData(for: .entries)
+        // Purge
+        let removed = Archive.removeData(for: .entries)
+        XCTAssertTrue(removed)
         
+        // Verify
         let endingEntries: [Entry]? = Archive.retrieveData()
+        let endingAccountIDs: [Int]? = Archive.retrieveData()
         XCTAssertNil(endingEntries)
+        XCTAssertNotNil(endingAccountIDs)
+    }
+    
+    func test_05_ignoresOtherTypes() {
+        let randomData = [true, false, true]
+        
+        let success = Archive.record(randomData)
+        XCTAssertFalse(success)
+    }
+    
+    func test_06_canRemoveAll() {
+        let removedAll = Archive.removeAllData()
+        XCTAssertTrue(removedAll)
     }
 }

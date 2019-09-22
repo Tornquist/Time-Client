@@ -381,7 +381,7 @@ public class Store {
     // MARK: - Archival Support and Integration
     
     public func resetDisk() {
-        Archive.removeAllData()
+        _ = Archive.removeAllData()
     }
     
     private func restoreDataFromDisk() {        
@@ -404,6 +404,6 @@ public class Store {
     
     private func archive<T>(data: T) where T : Codable {
         guard self.hasInitialized else { return }
-        Archive.record(data)
+        _ = Archive.record(data)
     }
 }
