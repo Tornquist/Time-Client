@@ -135,8 +135,19 @@ class API: APIQueueDelegate {
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {
-                let message = error as? String ?? ""
-                self.completeRequest(apiRequest, nil, TimeError.requestFailed(message))
+                let errorCode = (error as NSError?)?.code ?? -1
+                var returnError: TimeError? = nil
+                switch errorCode {
+                case NSURLErrorNotConnectedToInternet,
+                     NSURLErrorCannotConnectToHost,
+                     NSURLErrorCannotFindHost:
+                    returnError = TimeError.unableToReachServer
+                default:
+                    let message = error as? String ?? ""
+                    returnError = TimeError.requestFailed(message)
+                }
+                
+                self.completeRequest(apiRequest, nil, returnError)
                 self.queue.remove(request: apiRequest)
                 return
             }

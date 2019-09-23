@@ -61,6 +61,7 @@ public class Store {
     public func createAccount(completion: ((Account?, Error?) -> ())?) {
         self.api.createAccount { (newAccount, error) in
             guard error == nil && newAccount != nil else {
+                self.handleNetworkError(error)
                 let returnError = error ?? TimeError.unableToDecodeResponse
                 completion?(nil, returnError)
                 return
@@ -70,6 +71,7 @@ public class Store {
             
             self.api.getCategories(forAccountID: newAccount!.id, completionHandler: { (newCategories, categoryError) in
                 guard categoryError == nil && newCategories != nil && newCategories!.count >= 1 else {
+                    self.handleNetworkError(error)
                     completion?(newAccount, TimeError.requestFailed("Could not load new categories"))
                     return
                 }
@@ -98,6 +100,8 @@ public class Store {
         }
         
         self.api.getCategories { (categories, error) in
+            self.handleNetworkError(error)
+
             if categories != nil {
                 let existingData = self.categories.sorted(by: { $0.id < $1.id })
                 let newData = categories!.sorted(by: { $0.id < $1.id })
@@ -114,6 +118,8 @@ public class Store {
     
     public func addCategory(withName name: String, to parent: Category, completion: ((Bool, Category?) -> Void)?) {
         self.api.createCategory(withName: name, under: parent) { (category, error) in
+            self.handleNetworkError(error)
+
             if category != nil {
                 self.categories.append(category!)
                 
@@ -138,6 +144,7 @@ public class Store {
     public func renameCategory(_ category: Category, to newName: String, completion: ((Bool) -> Void)?) {
         self.api.renameCategory(category, withName: newName) { (newCategory, error) in
             guard error == nil else {
+                self.handleNetworkError(error)
                 completion?(false)
                 return
             }
@@ -169,6 +176,8 @@ public class Store {
     
     public func moveCategory(_ category: Category, to newParent: Category, completion: ((Bool) -> Void)?) {
         self.api.moveCategory(category, toParent: newParent) { (updatedCategory, error) in
+            self.handleNetworkError(error)
+
             if error == nil {
                 category.parentID = newParent.id
                 if let sourceTree = self.categoryTrees[category.accountID],
@@ -199,6 +208,7 @@ public class Store {
     public func deleteCategory(withID id: Int, andChildren deleteChildren: Bool, completion: ((Bool) -> Void)?) {
         self.api.deleteCategory(withID: id, andChildren: deleteChildren) { (error) in
             guard error == nil else {
+                self.handleNetworkError(error)
                 completion?(false)
                 return
             }
@@ -253,6 +263,8 @@ public class Store {
         }
         
         self.api.getEntries { (entries, error) in
+            self.handleNetworkError(error)
+
             if entries != nil {
                 self._hasFetchedEntries = true
                 self.entries = entries!
@@ -267,6 +279,7 @@ public class Store {
     public func recordEvent(for category: TimeSDK.Category, completion: ((Bool) -> Void)?) {
         self.api.recordEvent(for: category) { (newEntry, error) in
             guard error == nil && newEntry != nil else {
+                self.handleNetworkError(error)
                 completion?(false)
                 return
             }
@@ -281,6 +294,7 @@ public class Store {
         guard isOpen != nil else {
             self.getEntries { (entries, error) in
                 guard error == nil else {
+                    self.handleNetworkError(error)
                     completion?(false)
                     return
                 }
@@ -292,6 +306,7 @@ public class Store {
         let action: EntryAction = isOpen! ? .stop : .start
         self.api.updateRange(for: category, with: action) { (entry, error) in
             guard error == nil && entry != nil else {
+                self.handleNetworkError(error)
                 completion?(false)
                 return
             }
@@ -332,6 +347,7 @@ public class Store {
         
         self.api.updateEntry(with: entry.id, setCategory: category, setType: type, setStartedAt: startedAt, setStartedAtTimezone: startedAtTimezone, setEndedAt: endedAt, setEndedAtTimezone: endedAtTimezone) { (updatedEntry, error) in
             guard error == nil && updatedEntry != nil else {
+                self.handleNetworkError(error)
                 completion?(false)
                 return
             }
@@ -350,6 +366,8 @@ public class Store {
     
     public func delete(entry: Entry, completion: ((Bool) -> Void)?) {
         self.api.deleteEntry(withID: entry.id) { (error) in
+            self.handleNetworkError(error)
+
             if error == nil,
                 let index = self.entries.firstIndex(where: { $0.id == entry.id }) {
                 self.entries.remove(at: index)
@@ -378,6 +396,16 @@ public class Store {
         self.staleAccountIDs = false
     }
     
+    private func handleNetworkError(_ error: Error?, _ completionHandler: (() -> ())? = nil) {
+        if (error as? TimeError) == TimeError.unableToReachServer {
+            if completionHandler != nil {
+                completionHandler!()
+            } else {
+                NotificationCenter.default.post(name: .TimeUnableToReachServer, object: self)
+            }
+        }
+    }
+        
     // MARK: - Archival Support and Integration
     
     public func resetDisk() {
