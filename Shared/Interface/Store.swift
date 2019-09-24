@@ -100,44 +100,52 @@ public class Store {
         }
         
         self.api.getCategories { (categories, error) in
-            self.handleNetworkError(error)
-
-            if categories != nil {
-                let existingData = self.categories.sorted(by: { $0.id < $1.id })
-                let newData = categories!.sorted(by: { $0.id < $1.id })
-                let sameData = existingData == newData
-                if !sameData {
-                    self.categories = categories!
-                    self.staleTrees = true
-                    self.staleAccountIDs = true
-                }
+            guard error == nil else {
+                self.handleNetworkError(error)
+                completionHandler(nil, error)
+                return
             }
-            completionHandler(categories, error)
+            guard categories != nil else {
+                completionHandler(nil, TimeError.unableToDecodeResponse)
+                return
+            }
+            
+            let existingData = self.categories.sorted(by: { $0.id < $1.id })
+            let newData = categories!.sorted(by: { $0.id < $1.id })
+            let sameData = existingData == newData
+            if !sameData {
+                self.categories = categories!
+                self.staleTrees = true
+                self.staleAccountIDs = true
+            }
+            completionHandler(categories, nil)
         }
     }
     
     public func addCategory(withName name: String, to parent: Category, completion: ((Bool, Category?) -> Void)?) {
         self.api.createCategory(withName: name, under: parent) { (category, error) in
-            self.handleNetworkError(error)
+            guard category != nil && error == nil else {
+                self.handleNetworkError(error)
+                completion?(false, nil)
+                return
+            }
 
-            if category != nil {
-                self.categories.append(category!)
+            self.categories.append(category!)
+            
+            let newTree = CategoryTree(category!)
+            
+            let accountID = parent.accountID
+            if let accountTree = self.categoryTrees[accountID],
+                let parentTree = accountTree.findItem(withID: parent.id) {
                 
-                let newTree = CategoryTree(category!)
-                
-                let accountID = parent.accountID
-                if let accountTree = self.categoryTrees[accountID],
-                    let parentTree = accountTree.findItem(withID: parent.id) {
-                    
-                    parentTree.children.append(newTree)
-                    newTree.parent = parentTree
-                    parentTree.sortChildren()
-                } else {
-                    self.staleTrees = true
-                }
+                parentTree.children.append(newTree)
+                newTree.parent = parentTree
+                parentTree.sortChildren()
+            } else {
+                self.staleTrees = true
             }
             
-            completion?(error == nil, category)
+            completion?(true, category)
         }
     }
     
@@ -176,32 +184,34 @@ public class Store {
     
     public func moveCategory(_ category: Category, to newParent: Category, completion: ((Bool) -> Void)?) {
         self.api.moveCategory(category, toParent: newParent) { (updatedCategory, error) in
-            self.handleNetworkError(error)
-
-            if error == nil {
-                category.parentID = newParent.id
-                if let sourceTree = self.categoryTrees[category.accountID],
-                    let destinationTree = self.categoryTrees[newParent.accountID],
-                    let categoryTree = sourceTree.findItem(withID: category.id),
-                    let parentTree = destinationTree.findItem(withID: newParent.id) {
-                    
-                    let allCategories = categoryTree.listCategories()
-                    allCategories.forEach({ $0.accountID = newParent.accountID })
-                    
-                    if categoryTree.parent != nil {
-                        categoryTree.parent!.children = categoryTree.parent!.children.filter({ child in
-                            return child.node.id != category.id
-                        })
-                    }
-                    parentTree.children.append(categoryTree)
-                    categoryTree.parent = parentTree
-                    parentTree.sortChildren()
-                }
+            guard error == nil else {
+                self.handleNetworkError(error)
+                completion?(false)
+                return
+            }
+        
+            category.parentID = newParent.id
+            if let sourceTree = self.categoryTrees[category.accountID],
+                let destinationTree = self.categoryTrees[newParent.accountID],
+                let categoryTree = sourceTree.findItem(withID: category.id),
+                let parentTree = destinationTree.findItem(withID: newParent.id) {
                 
-                self.archive(data: self.categories)
+                let allCategories = categoryTree.listCategories()
+                allCategories.forEach({ $0.accountID = newParent.accountID })
+                
+                if categoryTree.parent != nil {
+                    categoryTree.parent!.children = categoryTree.parent!.children.filter({ child in
+                        return child.node.id != category.id
+                    })
+                }
+                parentTree.children.append(categoryTree)
+                categoryTree.parent = parentTree
+                parentTree.sortChildren()
             }
             
-            completion?(error == nil)
+            self.archive(data: self.categories)
+        
+            completion?(true)
         }
     }
     
@@ -263,14 +273,17 @@ public class Store {
         }
         
         self.api.getEntries { (entries, error) in
-            self.handleNetworkError(error)
-
-            if entries != nil {
-                self._hasFetchedEntries = true
-                self.entries = entries!
+            guard entries != nil && error == nil else {
+                self.handleNetworkError(error)
+                let returnError = error ?? TimeError.unableToDecodeResponse
+                completion?(nil, returnError)
+                return
             }
             
-            completion?(entries, error)
+            self._hasFetchedEntries = true
+            self.entries = entries!
+            
+            completion?(entries, nil)
         }
     }
     
@@ -366,13 +379,17 @@ public class Store {
     
     public func delete(entry: Entry, completion: ((Bool) -> Void)?) {
         self.api.deleteEntry(withID: entry.id) { (error) in
-            self.handleNetworkError(error)
+            guard error == nil else {
+                self.handleNetworkError(error)
+                completion?(false)
+                return
+            }
+            
 
-            if error == nil,
-                let index = self.entries.firstIndex(where: { $0.id == entry.id }) {
+            if let index = self.entries.firstIndex(where: { $0.id == entry.id }) {
                 self.entries.remove(at: index)
             }
-            completion?(error == nil)
+            completion?(true)
         }
     }
     
