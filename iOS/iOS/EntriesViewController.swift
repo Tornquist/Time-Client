@@ -190,6 +190,7 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         cell.textLabel?.text = displayName
         cell.detailTextLabel?.text = timeText
+        cell.backgroundColor = .systemBackground
         
         return cell
     }

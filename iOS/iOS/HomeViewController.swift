@@ -23,6 +23,7 @@ class HomeViewController: UITabBarController {
         let showVC = {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let controller = storyboard.instantiateViewController(withIdentifier: "loginView")
+            controller.modalPresentationStyle = .fullScreen
             self.present(controller, animated: true, completion: nil)
         }
 

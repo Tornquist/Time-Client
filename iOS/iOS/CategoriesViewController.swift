@@ -312,11 +312,11 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         }
         let category = categoryTree.node
         
-        var backgroundColor: UIColor = .white
+        var backgroundColor: UIColor = .secondarySystemGroupedBackground
         if self.moving {
             let isValidTarget = Time.shared.store.canMove(self.movingCategory!, to: category)
             let isSelf = self.movingCategory?.id == category.id
-            backgroundColor = isSelf ? .green : (isValidTarget ? .white : .lightGray)
+            backgroundColor = isSelf ? .systemYellow : (isValidTarget ? .secondarySystemGroupedBackground : .systemGroupedBackground)
         }
         
         if category.parentID == nil {
