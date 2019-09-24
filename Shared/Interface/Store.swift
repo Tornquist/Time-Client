@@ -10,6 +10,11 @@ import Foundation
 
 public class Store {
     
+    private enum StoreKeys: String {
+        case entriesSyncTimestamp = "time-entries-sync-timestamp"
+        case categoriesSyncTimestamp = "time-categories-sync-timestamp"
+    }
+    
     var api: API
     
     private var hasInitialized: Bool = false
@@ -110,6 +115,7 @@ public class Store {
                 return
             }
             
+            self.recordCategoriesSync()
             let existingData = self.categories.sorted(by: { $0.id < $1.id })
             let newData = categories!.sorted(by: { $0.id < $1.id })
             let sameData = existingData == newData
@@ -280,6 +286,7 @@ public class Store {
                 return
             }
             
+            self.recordEntriesSync()
             self._hasFetchedEntries = true
             self.entries = entries!
             
@@ -450,5 +457,46 @@ public class Store {
     private func archive<T>(data: T) where T : Codable {
         guard self.hasInitialized else { return }
         _ = Archive.record(data)
+    }
+    
+    // MARK: - Remote Syncing
+    
+    public func fetchRemoteChanges() {
+        guard self.api.token != nil else { return }
+
+        // Will only update data previously synced. Full fetch must be handled
+        // through existing get() interfaces
+        
+        let lastSyncEntries = UserDefaults.standard.object(forKey: StoreKeys.entriesSyncTimestamp.rawValue) as? Date
+        let lastSyncCategories = UserDefaults.standard.object(forKey: StoreKeys.categoriesSyncTimestamp.rawValue) as? Date
+        
+        let shouldUpdateEntries = lastSyncEntries != nil
+        let shouldUpdateCategories = lastSyncCategories != nil
+        let shouldUpdate = shouldUpdateEntries || shouldUpdateCategories
+        guard shouldUpdate else { return }
+        
+        var updateParams: [String: String] = [:]
+        if (shouldUpdateEntries) {
+            updateParams["entries"] = DateHelper.isoStringFrom(date: lastSyncEntries!, includeMilliseconds: true)
+        }
+        if (shouldUpdateCategories) {
+            updateParams["categories"] = DateHelper.isoStringFrom(date: lastSyncCategories!, includeMilliseconds: true)
+        }
+        
+        // mock: sync using update params
+        if (shouldUpdateEntries) { print("Syncing entries after \(lastSyncEntries!)") }
+        if (shouldUpdateCategories) { print("Syncing categories after \(lastSyncCategories!)") }
+        
+        // Record Actions
+        if (shouldUpdateEntries) { self.recordEntriesSync() }
+        if (shouldUpdateCategories) { self.recordCategoriesSync() }
+    }
+    
+    private func recordEntriesSync() {
+        UserDefaults.standard.set(Date(), forKey: StoreKeys.entriesSyncTimestamp.rawValue)
+    }
+    
+    private func recordCategoriesSync() {
+        UserDefaults.standard.set(Date(), forKey: StoreKeys.categoriesSyncTimestamp.rawValue)
     }
 }
