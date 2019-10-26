@@ -70,8 +70,9 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
         
-        Time.shared.store.getCategories(refresh: refresh) { (categories, error) in categoriesDone = true; completion(error) }
-        Time.shared.store.getEntries(refresh: refresh) { (entries, error) in entriesDone = true; completion(error) }
+        let networkMode: Store.NetworkMode = refresh ? .refreshAll : .asNeeded
+        Time.shared.store.getCategories(networkMode) { (categories, error) in categoriesDone = true; completion(error) }
+        Time.shared.store.getEntries(networkMode) { (entries, error) in entriesDone = true; completion(error) }
     }
     
     func refreshEntries() {

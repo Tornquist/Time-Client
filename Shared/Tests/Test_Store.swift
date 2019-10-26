@@ -104,7 +104,7 @@ class Test_Store: XCTestCase {
         
         // Getting categories will invalidate trees
         let getCategoriesExpectation = self.expectation(description: "getCategories")
-        self.store.getCategories(refresh: true) { (_, error) in
+        self.store.getCategories(.refreshAll) { (_, error) in
             XCTAssertNil(error)
             getCategoriesExpectation.fulfill()
         }
@@ -136,7 +136,7 @@ class Test_Store: XCTestCase {
         var timeElapsed: CFAbsoluteTime! = nil
         
         let categoriesExpectation = self.expectation(description: "getCategories")
-        self.store.getCategories(refresh: true) { (categories, error) in
+        self.store.getCategories(.refreshAll) { (categories, error) in
             if error != nil { XCTFail("Expected getCategories to succeed") }
             timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
             categoriesExpectation.fulfill()
@@ -711,7 +711,7 @@ class Test_Store: XCTestCase {
         XCTAssertEqual(self.store.entries.count, 1)
         
         let entriesExpectation = self.expectation(description: "getEntries")
-        self.store.getEntries(refresh: true) { (entries, error) in
+        self.store.getEntries(.refreshAll) { (entries, error) in
             XCTAssertNil(error)
             entriesExpectation.fulfill()
         }

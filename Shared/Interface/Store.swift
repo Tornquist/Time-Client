@@ -15,6 +15,12 @@ public class Store {
         case categoriesSyncTimestamp = "time-categories-sync-timestamp"
     }
     
+    public enum NetworkMode {
+        case asNeeded
+        case fetchChanges
+        case refreshAll
+    }
+    
     var api: API
     
     private var hasInitialized: Bool = false
@@ -98,20 +104,24 @@ public class Store {
     
     // MARK: - Categories
     
-    public func getCategories(refresh: Bool = false, completionHandler: @escaping ([Category]?, Error?) -> ()) {
-        guard self.categories.count == 0 || refresh else {
-            completionHandler(self.categories, nil)
+    public func getCategories(_ network: NetworkMode = .asNeeded, completion: (([Category]?, Error?) -> ())? = nil) {
+        guard self.categories.count == 0 || network != .asNeeded else {
+            completion?(self.categories, nil)
             return
         }
+        
+        // Note: getCategories does not support distinct
+        //       .fetchChanges vs. .refreshAll updates.
+        //       The behavior is the same for both.
         
         self.api.getCategories { (categories, error) in
             guard error == nil else {
                 self.handleNetworkError(error)
-                completionHandler(nil, error)
+                completion?(nil, error)
                 return
             }
             guard categories != nil else {
-                completionHandler(nil, TimeError.unableToDecodeResponse)
+                completion?(nil, TimeError.unableToDecodeResponse)
                 return
             }
             
@@ -124,7 +134,7 @@ public class Store {
                 self.staleTrees = true
                 self.staleAccountIDs = true
             }
-            completionHandler(categories, nil)
+            completion?(categories, nil)
         }
     }
     
@@ -272,13 +282,16 @@ public class Store {
     
     // MARK: - Entries
     
-    public func getEntries(refresh: Bool = false, completion: (([Entry]?, Error?) -> ())?) {
-        guard !self._hasFetchedEntries || refresh else {
+    public func getEntries(_ network: NetworkMode = .asNeeded, completion: (([Entry]?, Error?) -> ())? = nil) {
+        guard !self._hasFetchedEntries || network != .asNeeded else {
             completion?(self.entries, nil)
             return
         }
         
-        self.api.getEntries { (entries, error) in
+        let lastSyncDate = self.getEntriesSync()
+        let fetchOnlyChanges = self._hasFetchedEntries && network == .fetchChanges && lastSyncDate != nil
+        
+        let apiCompletion = { (entries: [Entry]?, error: Error?) in
             guard entries != nil && error == nil else {
                 self.handleNetworkError(error)
                 let returnError = error ?? TimeError.unableToDecodeResponse
@@ -288,9 +301,27 @@ public class Store {
             
             self.recordEntriesSync()
             self._hasFetchedEntries = true
-            self.entries = entries!
             
-            completion?(entries, nil)
+            if fetchOnlyChanges {
+                var cleanEntries = self.entries
+                
+                let impactedIDs = entries!.map({ $0.id })
+                cleanEntries.removeAll { impactedIDs.contains($0.id) }
+                let addEntries = entries!.filter({ $0.deleted != true })
+                cleanEntries.append(contentsOf: addEntries)
+                
+                self.entries = cleanEntries
+            } else {
+                self.entries = entries!
+            }
+            
+            completion?(self.entries, nil)
+        }
+        
+        if fetchOnlyChanges {
+            self.api.getEntryChanges(after: lastSyncDate!, completionHandler: apiCompletion)
+        } else {
+            self.api.getEntries(completionHandler: apiCompletion)
         }
     }
     
@@ -467,8 +498,8 @@ public class Store {
         // Will only update data previously synced. Full fetch must be handled
         // through existing get() interfaces
         
-        let lastSyncEntries = UserDefaults.standard.object(forKey: StoreKeys.entriesSyncTimestamp.rawValue) as? Date
-        let lastSyncCategories = UserDefaults.standard.object(forKey: StoreKeys.categoriesSyncTimestamp.rawValue) as? Date
+        let lastSyncEntries = self.getEntriesSync()
+        let lastSyncCategories = self.getCategoriesSync()
         
         let shouldUpdateEntries = lastSyncEntries != nil
         let shouldUpdateCategories = lastSyncCategories != nil
@@ -483,17 +514,27 @@ public class Store {
             updateParams["categories"] = DateHelper.isoStringFrom(date: lastSyncCategories!, includeMilliseconds: true)
         }
         
-        // mock: sync using update params
-        if (shouldUpdateEntries) { print("Syncing entries after \(lastSyncEntries!)") }
-        if (shouldUpdateCategories) { print("Syncing categories after \(lastSyncCategories!)") }
-        
-        // Record Actions
-        if (shouldUpdateEntries) { self.recordEntriesSync() }
-        if (shouldUpdateCategories) { self.recordCategoriesSync() }
+        // Sync using update params
+        if (shouldUpdateEntries) {
+            print("Syncing entries after \(lastSyncEntries!)")
+            self.getEntries(.fetchChanges)
+        }
+        if (shouldUpdateCategories) {
+            print("Syncing categories after \(lastSyncCategories!)")
+            self.getCategories(.fetchChanges)
+        }
+    }
+    
+    private func getEntriesSync() -> Date? {
+        return UserDefaults.standard.object(forKey: StoreKeys.entriesSyncTimestamp.rawValue) as? Date
     }
     
     private func recordEntriesSync() {
         UserDefaults.standard.set(Date(), forKey: StoreKeys.entriesSyncTimestamp.rawValue)
+    }
+    
+    private func getCategoriesSync() -> Date? {
+        return UserDefaults.standard.object(forKey: StoreKeys.categoriesSyncTimestamp.rawValue) as? Date
     }
     
     private func recordCategoriesSync() {

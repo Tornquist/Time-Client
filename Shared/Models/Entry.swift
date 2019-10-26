@@ -16,6 +16,7 @@ public class Entry: Codable {
     public var startedAtTimezone: String?
     public var endedAt: Date?
     public var endedAtTimezone: String?
+    internal var deleted: Bool?
     
     enum CodingKeys: String, CodingKey
     {
@@ -26,6 +27,7 @@ public class Entry: Codable {
         case startedAtTimezone = "started_at_timezone"
         case endedAt = "ended_at"
         case endedAtTimezone = "ended_at_timezone"
+        case deleted = "deleted"
     }
     
     public init(id: Int, type: EntryType, categoryID: Int, startedAt: Date, startedAtTimezone: String? = nil, endedAt: Date?, endedAtTimezone: String? = nil) {
@@ -55,6 +57,11 @@ public class Entry: Codable {
         let endedAtTimezone: String? = try? container.decode(String.self, forKey: .endedAtTimezone)
 
         self.init(id: id, type: type, categoryID: categoryID, startedAt: startedAt, startedAtTimezone: startedAtTimezone, endedAt: endedAt, endedAtTimezone: endedAtTimezone)
+        
+        // Only path to set
+        if let deleted = try? container.decode(Bool.self, forKey: .deleted) {
+            self.deleted = deleted
+        }
     }
     
     public func encode(to encoder: Encoder) throws {
