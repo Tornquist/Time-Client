@@ -265,6 +265,7 @@ public class Store {
             
             if deleteChildren {
                 let allChildren = categoryTree.listCategories()
+                let removeIds = [category.id] + allChildren.map({ $0.id })
                 let filteredCategories = self.categories.filter({ (category) -> Bool in
                     let inFilterSet = allChildren.contains(where: { (referenceCategory) -> Bool in
                         return referenceCategory.id == category.id
@@ -275,6 +276,7 @@ public class Store {
                     categoryTree.parent?.children = safeChildren
                 }
                 self.categories = filteredCategories
+                self.entries = self.entries.filter({ !removeIds.contains($0.categoryID) })
             } else {
                 let filteredCategories = self.categories.filter({ (testCategory) -> Bool in
                     return testCategory.id != category.id
@@ -289,6 +291,7 @@ public class Store {
                     categoryTree.parent?.sortChildren()
                 }
                 self.categories = filteredCategories
+                self.entries = self.entries.filter({ $0.categoryID != category.id })
             }
             completion?(true)
         }
@@ -476,7 +479,18 @@ public class Store {
             }
         }
     }
+    
+    // MARK: - Metrics
+    
+    public func countEntries(for tree: CategoryTree, includeChildren: Bool) -> Int {
+        let specificIDs = [tree.node.id]
+        let allIDs = specificIDs + tree.listCategories().map({ $0.id })
         
+        return self.entries
+            .filter({ (includeChildren ? allIDs : specificIDs).contains($0.categoryID) })
+            .count
+    }
+    
     // MARK: - Archival Support and Integration
     
     public func resetDisk() {
