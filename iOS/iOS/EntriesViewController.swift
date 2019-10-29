@@ -75,12 +75,14 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         Time.shared.store.getEntries(networkMode) { (entries, error) in entriesDone = true; completion(error) }
     }
     
-    func refreshEntries() {
+    func refreshEntries(reloadTable: Bool = true) {
         let tempEntries = Time.shared.store.entries
         let sortedEntries = tempEntries.sorted { (a, b) -> Bool in
             return a.startedAt > b.startedAt
         }
         self.entries = sortedEntries
+        
+        guard reloadTable else { return }
         
         DispatchQueue.main.async {
             self.tableView.reloadData()
@@ -129,13 +131,15 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    func delete(entry: Entry, completion: @escaping (Bool) -> Void) {
+    func delete(entry: Entry, at indexPath: IndexPath, completion: @escaping (Bool) -> Void) {
         self.showAlertFor(deleting: entry) { (delete) in
             guard delete else { completion(false); return }
             
             Time.shared.store.delete(entry: entry) { deleted in
+                self.refreshEntries(reloadTable: false)
                 DispatchQueue.main.async {
-                    completion(delete)
+                    self.tableView.deleteRows(at: [indexPath], with: .automatic)
+                    completion(deleted)
                 }
             }
         }
@@ -206,7 +210,7 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         let deleteTitle = NSLocalizedString("Delete", comment: "")
         let delete = UIContextualAction(style: .destructive, title: deleteTitle, handler: { (action, view, completion) in
-            self.delete(entry: entry, completion: completion)
+            self.delete(entry: entry, at: indexPath, completion: completion)
         })
 
         let config = UISwipeActionsConfiguration(actions: [edit, delete])
