@@ -67,6 +67,13 @@ public class Store {
         self.hasInitialized = true
     }
     
+    // MARK: - System Queues
+    
+    // Used to avoid race conditions on fetching and setting entries when accessed
+    // from both the getCategories and getEntries paths. All other calls are local
+    // to their own named stack.
+    private let completeSyncCollisonQueue = DispatchQueue(label: "completeSyncCollisonQueue", attributes: .concurrent)
+    
     // MARK: - Accounts
     
     public func createAccount(completion: ((Account?, Error?) -> ())?) {
@@ -133,6 +140,13 @@ public class Store {
                 self.categories = categories!
                 self.staleTrees = true
                 self.staleAccountIDs = true
+                
+                self.completeSyncCollisonQueue.sync {
+                    let startingEntries = self.entries
+                    let currentCategoryIDs = self.categories.map({ $0.id })
+                    let endingEntries = startingEntries.filter({ currentCategoryIDs.contains($0.categoryID) })
+                    self.entries = endingEntries
+                }
             }
             completion?(categories, nil)
         }
@@ -302,17 +316,19 @@ public class Store {
             self.recordEntriesSync()
             self._hasFetchedEntries = true
             
-            if fetchOnlyChanges {
-                var cleanEntries = self.entries
-                
-                let impactedIDs = entries!.map({ $0.id })
-                cleanEntries.removeAll { impactedIDs.contains($0.id) }
-                let addEntries = entries!.filter({ $0.deleted != true })
-                cleanEntries.append(contentsOf: addEntries)
-                
-                self.entries = cleanEntries
-            } else {
-                self.entries = entries!
+            self.completeSyncCollisonQueue.sync {
+                if fetchOnlyChanges {
+                    var cleanEntries = self.entries
+                    
+                    let impactedIDs = entries!.map({ $0.id })
+                    cleanEntries.removeAll { impactedIDs.contains($0.id) }
+                    let addEntries = entries!.filter({ $0.deleted != true })
+                    cleanEntries.append(contentsOf: addEntries)
+                    
+                    self.entries = cleanEntries
+                } else {
+                    self.entries = entries!
+                }
             }
             
             completion?(self.entries, nil)
