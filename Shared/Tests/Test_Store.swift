@@ -10,17 +10,13 @@ import XCTest
 @testable import TimeSDK
 
 class Test_Store: XCTestCase {
-    static var tokenTag = "test-store-tests"
     static var api: API!
-    static var time: Time!
     static var email = "\(UUID().uuidString)@time.com"
     static var password = "defaultPassword"
     
     static var sharedEntry: Entry? = nil
     
-    var tokenTag: String { return Test_Store.tokenTag }
     var api: API! { return Test_Store.api }
-    var time: Time! { return Test_Store.time }
     
     var email: String { return Test_Store.email }
     var password: String { return Test_Store.password }
@@ -33,7 +29,6 @@ class Test_Store: XCTestCase {
     
     override class func setUp() {
         Test_Store.api = API()
-        Test_Store.time = Time(withAPI: Test_Store.api, andTokenIdentifier: self.tokenTag)
     }
     
     override func setUp() {
@@ -51,6 +46,10 @@ class Test_Store: XCTestCase {
     // MARK: - Init
     
     func test_00_initializingAStore() {
+        // Archive has no knowledge of user changes, simply reflects
+        // and caches actions from above. Store is the same. The
+        // public Time interface manages the reset lifecycle
+        _ = Archive.removeAllData()
         self.store = Store(api: self.api)
         
         XCTAssertEqual(self.store.categories.count, 0)
@@ -63,8 +62,6 @@ class Test_Store: XCTestCase {
     // MARK: - Categories
     
     func test_01_fetchingData() {
-        self.store = Store(api: self.api)
-        
         let categoriesExpectation = self.expectation(description: "getCategories")
         self.store.getCategories { (categories, error) in
             if error != nil { XCTFail("Expected getCategories to succeed") }
@@ -147,7 +144,6 @@ class Test_Store: XCTestCase {
         XCTAssertGreaterThan(timeElapsed, 0.002)
         XCTAssertLessThan(timeElapsed, 0.100)
     }
-    
     
     // After test 4
     // rootA
@@ -970,5 +966,60 @@ class Test_Store: XCTestCase {
         
         let foundItem = self.store.entries.first(where: { $0.id == entry.id })
         XCTAssertNil(foundItem)
+    }
+    
+    // MARK: - Shared Operations
+    
+    func test_26_fetchingRemoteChanges() {
+        // Setup test
+        let forceCleanSlate = self.expectation(description: "forceCleanSlate")
+        self.store.fetchRemoteChanges() {
+            forceCleanSlate.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        _ = XCTWaiter.wait(for: [XCTestExpectation(description: "Avoid timestamp collision")], timeout: 1.0)
+        
+        // Perform changes on API layer directly
+        let startingEntries = self.store.entries.map({ $0.id })
+        var endingEntries = startingEntries
+        let startingCategories = self.store.categories
+        
+        guard startingEntries.count > 0 && startingCategories.count > 0 else {
+            XCTFail()
+            return
+        }
+        
+        let createEntry = self.expectation(description: "createEntry")
+        let deleteEntry = self.expectation(description: "deleteEntry")
+     
+        self.api.recordEvent(for: startingCategories[0]) { (entry, error) in
+            XCTAssert(entry != nil)
+            XCTAssert(error == nil)
+            if entry != nil {
+                endingEntries.append(entry!.id)
+            }
+            createEntry.fulfill()
+        }
+        
+        let deleteID = startingEntries[0]
+        self.api.deleteEntry(withID: deleteID) { (error) in
+            XCTAssert(error == nil)
+            endingEntries = endingEntries.filter({ $0 != deleteID})
+            deleteEntry.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Fetch updates
+        let forceUpdate = self.expectation(description: "forceUpdate")
+        self.store.fetchRemoteChanges() {
+            forceUpdate.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Verify Update
+        endingEntries = endingEntries.sorted()
+        let finalEntries = self.store.entries.map({ $0.id }).sorted()
+        XCTAssertEqual(endingEntries, finalEntries)
     }
 }

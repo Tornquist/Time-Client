@@ -522,7 +522,7 @@ public class Store {
     
     // MARK: - Remote Syncing
     
-    public func fetchRemoteChanges() {
+    public func fetchRemoteChanges(completion: (() -> ())? = nil) {
         guard self.api.token != nil else { return }
 
         // Will only update data previously synced. Full fetch must be handled
@@ -545,13 +545,32 @@ public class Store {
         }
         
         // Sync using update params
-        if (shouldUpdateEntries) {
-            print("Syncing entries after \(lastSyncEntries!)")
-            self.getEntries(.fetchChanges)
+        var entriesDone: Bool = false
+        var categoriesDone: Bool = false
+        
+        let callComplete: () -> () = {
+            guard entriesDone && categoriesDone else { return }
+            completion?()
         }
+        
+        if (shouldUpdateEntries) {
+            self.getEntries(.fetchChanges) { (_, _) in
+                entriesDone = true
+                callComplete()
+            }
+        } else {
+            entriesDone = true
+            callComplete()
+        }
+        
         if (shouldUpdateCategories) {
-            print("Syncing categories after \(lastSyncCategories!)")
-            self.getCategories(.fetchChanges)
+            self.getCategories(.fetchChanges) { (_, _) in
+                categoriesDone = true
+                callComplete()
+            }
+        } else {
+            categoriesDone = true
+            callComplete()
         }
     }
     
