@@ -138,7 +138,9 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
             Time.shared.store.delete(entry: entry) { deleted in
                 self.refreshEntries(reloadTable: false)
                 DispatchQueue.main.async {
-                    self.tableView.deleteRows(at: [indexPath], with: .automatic)
+                    if deleted {
+                        self.tableView.deleteRows(at: [indexPath], with: .automatic)
+                    }
                     completion(deleted)
                 }
             }

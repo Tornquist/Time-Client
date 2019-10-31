@@ -123,7 +123,10 @@ public class Store {
         
         self.api.getCategories { (categories, error) in
             guard error == nil else {
-                self.handleNetworkError(error)
+                // Do not broadcast network warning for background updates
+                if network != .fetchChanges {
+                    self.handleNetworkError(error)
+                }
                 completion?(nil, error)
                 return
             }
@@ -310,7 +313,10 @@ public class Store {
         
         let apiCompletion = { (entries: [Entry]?, error: Error?) in
             guard entries != nil && error == nil else {
-                self.handleNetworkError(error)
+                // Do not broadcast network warning for background updates
+                if network != .fetchChanges {
+                    self.handleNetworkError(error)
+                }
                 let returnError = error ?? TimeError.unableToDecodeResponse
                 completion?(nil, returnError)
                 return
