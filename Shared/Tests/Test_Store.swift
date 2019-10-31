@@ -1022,4 +1022,22 @@ class Test_Store: XCTestCase {
         let finalEntries = self.store.entries.map({ $0.id }).sorted()
         XCTAssertEqual(endingEntries, finalEntries)
     }
+    
+    func test_27_countingEntries() {
+        guard
+            self.store.accountIDs.count == 2,
+            let rootA = self.store.categoryTrees[self.store.accountIDs.sorted()[0]],
+            let rootB = self.store.categoryTrees[self.store.accountIDs.sorted()[1]],
+            rootA.children.count > 0,
+            rootB.children.count > 0
+            else {
+                XCTFail("Missing setup info")
+                return
+        }
+        
+        XCTAssertEqual(self.store.countEntries(for: rootA, includeChildren: false), 1)
+        XCTAssertEqual(self.store.countEntries(for: rootA, includeChildren: true), 3)
+        XCTAssertEqual(self.store.countEntries(for: rootB, includeChildren: false), 0)
+        XCTAssertEqual(self.store.countEntries(for: rootB, includeChildren: true), 0)
+    }
 }
