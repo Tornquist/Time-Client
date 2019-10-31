@@ -74,8 +74,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             }
         }
         
-        Time.shared.store.getCategories(refresh: refresh) { (categories, error) in categoriesDone = true; completion(error) }
-        Time.shared.store.getEntries(refresh: refresh) { (entries, error) in entriesDone = true; completion(error) }
+        let networkMode: Store.NetworkMode = refresh ? .refreshAll : .asNeeded
+        Time.shared.store.getCategories(networkMode) { (categories, error) in categoriesDone = true; completion(error) }
+        Time.shared.store.getEntries(networkMode) { (entries, error) in entriesDone = true; completion(error) }
     }
     
     func createAccount() {
@@ -312,11 +313,11 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         }
         let category = categoryTree.node
         
-        var backgroundColor: UIColor = .white
+        var backgroundColor: UIColor = .secondarySystemGroupedBackground
         if self.moving {
             let isValidTarget = Time.shared.store.canMove(self.movingCategory!, to: category)
             let isSelf = self.movingCategory?.id == category.id
-            backgroundColor = isSelf ? .green : (isValidTarget ? .white : .lightGray)
+            backgroundColor = isSelf ? .systemYellow : (isValidTarget ? .secondarySystemGroupedBackground : .systemGroupedBackground)
         }
         
         if category.parentID == nil {

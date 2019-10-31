@@ -135,8 +135,19 @@ class API: APIQueueDelegate {
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {
-                let message = error as? String ?? ""
-                self.completeRequest(apiRequest, nil, TimeError.requestFailed(message))
+                let errorCode = (error as NSError?)?.code ?? -1
+                var returnError: TimeError? = nil
+                switch errorCode {
+                case NSURLErrorNotConnectedToInternet,
+                     NSURLErrorCannotConnectToHost,
+                     NSURLErrorCannotFindHost:
+                    returnError = TimeError.unableToReachServer
+                default:
+                    let message = error as? String ?? ""
+                    returnError = TimeError.requestFailed(message)
+                }
+                
+                self.completeRequest(apiRequest, nil, returnError)
                 self.queue.remove(request: apiRequest)
                 return
             }
@@ -185,13 +196,16 @@ class API: APIQueueDelegate {
         self.isRefreshingToken = true
         
         self.refreshToken { (newToken, error) in
+            self.isRefreshingToken = false
+            
             guard error == nil else {
                 let error = TimeError.authenticationFailure("Unable to acquire active access token")
+                NotificationCenter.default.post(name: .TimeAPIAutoRefreshFailed, object: self)
                 self.queue.failAllFailedRequests(with: error)
                 return
             }
             
-            self.isRefreshingToken = false
+            NotificationCenter.default.post(name: .TimeAPIAutoRefreshedToken, object: self)
             self.queue.retryAllFailedRequests()
         }
     }

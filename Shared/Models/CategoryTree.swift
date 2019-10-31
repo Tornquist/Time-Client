@@ -125,7 +125,7 @@ public class CategoryTree: Equatable {
         // If found, count self (+1) to offset from minimum of 0 if found as first child
         return foundTarget ? offset : nil
     }
-    
+        
     // MARK: - Store and Support Operations
     
     public func findItem(withID id: Int) -> CategoryTree? {

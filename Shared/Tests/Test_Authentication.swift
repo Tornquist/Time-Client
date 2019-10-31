@@ -104,7 +104,7 @@ class Test_Authentication: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_6_initializeWithAnExpiredTokenRefreshes() {
+    func test_6_initializeWithAnExpiredTokenDoesNothing() {
         guard let startingToken = TokenStore.getToken(withTag: self.tokenTag) else {
             XCTAssertTrue(false, "Test conditions not met")
             return
@@ -122,7 +122,7 @@ class Test_Authentication: XCTestCase {
             return
         }
         
-        // Clear API token for true refresh
+        // Clear API token for true refresh from disk
         self.api.token = nil
         
         let expectation = self.expectation(description: "authentication")
@@ -130,49 +130,16 @@ class Test_Authentication: XCTestCase {
             XCTAssertNil(error)
             
             XCTAssertNotNil(self.api.token!)
-            XCTAssertNotEqual(newToken.token, self.api.token!.token)
-            XCTAssertLessThan(newToken.expiration, self.api.token!.expiration)
+            // Same token fetched. Expiration is ignored
+            XCTAssertEqual(newToken.token, self.api.token!.token)
             
             expectation.fulfill()
         }
-        
+
         waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_7_initializeWithAnInvalidRefreshTokenRejects() {
-        guard let startingToken = TokenStore.getToken(withTag: self.tokenTag) else {
-            XCTAssertTrue(false, "Test conditions not met")
-            return
-        }
-        let newToken = Token(
-            userID: startingToken.userID,
-            creation: startingToken.creation,
-            expiration: Date(timeIntervalSinceReferenceDate: 0),
-            token: startingToken.token,
-            refresh: "This is not a real token"
-        )
-        let storedExpiredToken = TokenStore.storeToken(newToken, withTag: self.tokenTag)
-        guard storedExpiredToken else {
-            XCTFail("Token could not be stored")
-            return
-        }
-        
-        // Clear API token for true refresh
-        self.api.token = nil
-        
-        let expectation = self.expectation(description: "authentication")
-        self.time.initialize { (error) in
-            XCTAssertNotNil(error)
-            
-            XCTAssertEqual(error as! TimeError, TimeError.unableToRefreshToken)
-            
-            expectation.fulfill()
-        }
-        
-        waitForExpectations(timeout: 5, handler: nil)
-    }
-    
-    func test_8_deauthenticateClearsLocalSession() {
+    func test_7_deauthenticateClearsLocalSession() {
         // Can authenticate with credentials
         let email = "test@test.com"
         let password = "defaultPassword"

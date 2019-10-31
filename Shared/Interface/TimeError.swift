@@ -14,6 +14,7 @@ public enum TimeError: Error {
     case requestFailed(String)
     case httpFailure(String)
     case authenticationFailure(String)
+    case unableToReachServer
     
     case tokenNotFound
     case unableToRefreshToken
@@ -32,11 +33,13 @@ extension TimeError: Equatable {
             return l == r
         case (.authenticationFailure(let l), .authenticationFailure(let r)):
             return l == r
+        case (.unableToReachServer, .unableToReachServer):
+            return true
         case (.tokenNotFound, .tokenNotFound):
             return true
         case (.unableToRefreshToken, .unableToRefreshToken):
             return true
-        case (.unableToSendRequest, _), (.unableToDecodeResponse, _), (.requestFailed, _), (.httpFailure, _), (.authenticationFailure, _), (.tokenNotFound, _), (.unableToRefreshToken, _):
+        case (.unableToSendRequest, _), (.unableToDecodeResponse, _), (.requestFailed, _), (.httpFailure, _), (.authenticationFailure, _), (.unableToReachServer, _), (.tokenNotFound, _), (.unableToRefreshToken, _):
             return false
         }
     }

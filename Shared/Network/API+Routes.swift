@@ -114,6 +114,15 @@ extension API {
         GET("/entries", completion: completionHandler)
     }
     
+    func getEntryChanges(after: Date, completionHandler: @escaping ([Entry]?, Error?) -> ()) {
+        let urlComponents: [String: String] = [
+            "after": DateHelper.isoStringFrom(date: after),
+            "reference": "update",
+            "deleted": "true"
+        ]
+        GET("/entries", urlComponents: urlComponents, completion: completionHandler)
+    }
+    
     func recordEvent(for category: Category, completionHandler: @escaping (Entry?, Error?) -> ()) {
         let timezone = TimeZone.autoupdatingCurrent.identifier
         let body: [String: Any] = ["category_id": category.id, "type": EntryType.event.rawValue, "timezone": timezone]

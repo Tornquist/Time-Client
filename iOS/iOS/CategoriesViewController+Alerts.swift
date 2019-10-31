@@ -170,8 +170,10 @@ extension CategoriesViewController {
             let deleteTitle = NSLocalizedString("Confirm Delete", comment: "")
             let confirmText = NSLocalizedString("Delete", comment: "")
             let cancelText = NSLocalizedString("Cancel", comment: "")
-            
-            let entriesOnCategory = all ? 0 : 0 // Needs to dynamically build based on children
+
+            let allEntriesCount = Time.shared.store.countEntries(for: tree, includeChildren: true)
+            let specificEntriesCount = Time.shared.store.countEntries(for: tree, includeChildren: false)
+            let entriesOnCategory = all ? allEntriesCount : specificEntriesCount
             let entriesPlural = entriesOnCategory == 1 ? NSLocalizedString("entry", comment: "") : NSLocalizedString("entries", comment: "")
             
             let numChildren = tree.children.count

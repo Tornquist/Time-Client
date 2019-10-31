@@ -20,7 +20,7 @@ class LoginViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+                
         self.emailTextField.placeholder = NSLocalizedString("Email", comment: "")
         self.emailTextField.spellCheckingType = .no
         self.emailTextField.keyboardType = .emailAddress

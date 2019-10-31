@@ -22,10 +22,16 @@ public class Time {
     let tokenIdentifier: String
     public var store: Store
     
+    // Control Flow
+    var reauthenticating: Bool = false
+    
     init(withAPI apiClient: API, andTokenIdentifier tokenIdentifier: String = "token") {
         self.api = apiClient
         self.tokenIdentifier = tokenIdentifier
         self.store = Store(api: self.api)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(autoRefreshedToken), name: .TimeAPIAutoRefreshedToken, object: self.api)
+        NotificationCenter.default.addObserver(self, selector: #selector(autoRefreshFailed), name: .TimeAPIAutoRefreshFailed, object: self.api)
     }
     
     public func initialize(completionHandler: ((Error?) -> ())? = nil) {
@@ -40,22 +46,13 @@ public class Time {
         }
         
         self.api.token = fetchedToken
-        guard fetchedToken.expiration < Date() else {
-            completionHandler?(nil)
-            return
-        }
-        
-        self.api.refreshToken { (newToken, error) in
-            guard error == nil && newToken != nil else {
-                completionHandler?(TimeError.unableToRefreshToken)
-                return
-            }
-            
-            self.handleTokenSuccess(token: newToken!, completionHandler: completionHandler)
-        }
+        // No special success handling. Token already stored
+        completionHandler?(nil)
     }
     
     public func authenticate(email: String, password: String, completionHandler: ((Error?) -> ())? = nil) {
+        let startingUserID = self.api.token?.userID
+        
         self.api.getToken(withEmail: email, andPassword: password) { (token, error) in
             guard error == nil else {
                 completionHandler?(error)
@@ -65,6 +62,16 @@ public class Time {
             guard token != nil else {
                 completionHandler?(TimeError.tokenNotFound)
                 return
+            }
+            
+            if self.reauthenticating {
+                let endingUserID = self.api.token?.userID
+                let differentUser = startingUserID != endingUserID
+                if differentUser {
+                    self.store.resetDisk()
+                    self.store = Store(api: self.api)
+                }
+                self.reauthenticating = false
             }
             
             self.handleTokenSuccess(token: token!, completionHandler: completionHandler)
@@ -93,6 +100,23 @@ public class Time {
     
     public func deauthenticate() {
         _ = TokenStore.deleteToken(withTag: self.tokenIdentifier)
+        self.store.resetDisk()
+        self.store = Store(api: self.api)
         self.api.token = nil
+    }
+    
+    // MARK: - Notification Center
+    
+    @objc func autoRefreshedToken() {
+        guard let token = self.api.token else {
+            return
+        }
+        
+        _ = TokenStore.storeToken(token, withTag: self.tokenIdentifier)
+    }
+    
+    @objc func autoRefreshFailed() {
+        self.reauthenticating = true
+        NotificationCenter.default.post(name: .TimeUserSignInNeeded, object: self)
     }
 }
