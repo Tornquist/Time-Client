@@ -24,6 +24,21 @@ class Test_FileImporter: XCTestCase {
             try importer.loadData()
             importer.categoryColumns = ["category", "project", "task", "subtask"]
             try importer.buildCategoryTree()
+            
+            try importer.setDateTimeParseRules(
+                startUnixColumn: "unix_start",
+                endUnixColumn: "unix_end",
+                timezoneAbbreviation: "CST"
+            )
+            
+            try importer.setDateTimeParseRules(
+                dateColumn: "date",
+                startTimeColumn: "start",
+                endTimeColumn: "end",
+                dateFormat: "M/d/yy",
+                timeFormat: "h:mm a",
+                timezoneAbbreviation: "CST"
+            )
         } catch {
             print("Error loading data \(error)")
             XCTFail()

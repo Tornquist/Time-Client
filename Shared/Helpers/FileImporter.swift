@@ -61,6 +61,15 @@ public class FileImporter {
     var rawObjects: [[String: String?]]? = nil
     var categoryTree: Tree? = nil
     
+    var dateColumn: String? = nil
+    var startTimeColumn: String? = nil
+    var endTimeColumn: String? = nil
+    var dateFormat: String? = nil
+    var timeFormat: String? = nil
+    var startUnixColumn: String? = nil
+    var endUnixColumn: String? = nil
+    var timeZone: TimeZone? = nil
+    
     public init(fileURL: URL, separator: Character = ",") {
         self.fileURL = fileURL
         self.separator = separator
@@ -135,5 +144,103 @@ public class FileImporter {
         }
         
         self.categoryTree = completeTree
+    }
+    
+    public func setDateTimeParseRules(
+        dateColumn: String? = nil,
+        startTimeColumn: String? = nil,
+        endTimeColumn: String? = nil,
+        dateFormat: String? = nil,
+        timeFormat: String? = nil,
+        startUnixColumn: String? = nil,
+        endUnixColumn: String? = nil,
+        timezoneAbbreviation: String? = nil
+    ) throws {
+        let noDateAndTime = dateColumn == nil &&
+            startTimeColumn == nil &&
+            endTimeColumn == nil &&
+            dateFormat == nil &&
+            timeFormat == nil
+        let allDateAndTime = dateColumn != nil &&
+            startTimeColumn != nil &&
+            endTimeColumn != nil &&
+            dateFormat != nil &&
+            timeFormat != nil
+        
+        let noUnix = startUnixColumn == nil && endUnixColumn == nil
+        let allUnix = startUnixColumn != nil && endUnixColumn != nil
+        
+        guard (noDateAndTime && allUnix) || (allDateAndTime && noUnix) else {
+            throw FileImporterError.invalidTimeDateCombination
+        }
+        
+        guard self.rawObjects != nil && self.rawObjects!.count > 0, let testObj = self.rawObjects?[0] else {
+            throw FileImporterError.missingObjectData
+        }
+        
+        let timeZone = (timezoneAbbreviation != nil ? TimeZone(abbreviation: timezoneAbbreviation!) : nil) ?? TimeZone.autoupdatingCurrent
+        
+        self.dateColumn = dateColumn
+        self.startTimeColumn = startTimeColumn
+        self.endTimeColumn = endTimeColumn
+        self.dateFormat = dateFormat
+        self.timeFormat = timeFormat
+        self.startUnixColumn = startUnixColumn
+        self.endUnixColumn = endUnixColumn
+        self.timeZone = timeZone
+
+        let testResults = self.parse(obj: testObj)
+        
+        let datetimeFormatter = DateFormatter()
+        datetimeFormatter.timeZone = timeZone
+        datetimeFormatter.dateFormat = "MMM d, y @ h:mm a zzz"
+        
+        print("Start Date Raw: \(testResults.0)")
+        if testResults.0 != nil {
+            print(datetimeFormatter.string(from: testResults.0!))
+        }
+        
+        print("End Date Raw: \(testResults.1)")
+        if testResults.1 != nil {
+            print(datetimeFormatter.string(from: testResults.1!))
+        }
+    }
+    
+    private func parse(obj: [String : String?]) -> (Date?, Date?) {
+        let unix = self.startUnixColumn != nil
+        
+        var startDate: Date?
+        var endDate: Date?
+        
+        if (unix) {
+            if let startString = obj[self.startUnixColumn!] ?? nil, let startInt = Int(startString) {
+                startDate = Date(timeIntervalSince1970: Double(startInt))
+            }
+            
+            if let endString = obj[self.endUnixColumn!] ?? nil, let endInt = Int(endString) {
+                endDate = Date(timeIntervalSince1970: Double(endInt))
+            }
+        } else {
+            let dateparser = DateFormatter()
+            dateparser.timeZone = self.timeZone
+            
+            if let dateString = obj[self.dateColumn!] ?? nil, let startString = obj[self.startTimeColumn!] ?? nil {
+                let startFormat = "\(dateFormat!) \(timeFormat!)"
+                let startCompiledString = "\(dateString) \(startString)"
+                
+                dateparser.dateFormat = startFormat
+                startDate = dateparser.date(from: startCompiledString)
+            }
+            
+            if let dateString = obj[self.dateColumn!] ?? nil, let endString = obj[self.endTimeColumn!] ?? nil {
+                let endFormat = "\(dateFormat!) \(timeFormat!)"
+                let endCompiledString = "\(dateString) \(endString)"
+                
+                dateparser.dateFormat = endFormat
+                endDate = dateparser.date(from: endCompiledString)
+            }
+        }
+        
+        return (startDate, endDate)
     }
 }
