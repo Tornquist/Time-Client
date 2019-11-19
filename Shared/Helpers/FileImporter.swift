@@ -12,6 +12,9 @@ class Tree {
     let name: String
     var children: [Tree] = []
     
+    var events: [Date] = []
+    var ranges: [(Date, Date)] = []
+    
     init(name: String) {
         self.name = name
     }
@@ -25,7 +28,7 @@ class Tree {
         let child = self.getChild(withName: childName) ?? self.addChild(withName: childName)
         child.buildDescendents(with: descendentNames)
     }
-    
+        
     func getChild(withName name: String) -> Tree? {
         return children.first(where: { (child) -> Bool in
             return child.name == name
@@ -37,6 +40,43 @@ class Tree {
         self.children.append(newChild)
         return newChild
     }
+    
+    func store(start: Date, andEnd end: Date?, with names: [String]) {
+        guard names.count > 0 else {
+            if end == nil {
+                self.events.append(start)
+            } else {
+                self.ranges.append((start, end!))
+            }
+            return
+        }
+        
+        let childName = names[0]
+        let descendentNames = names[1...].map({ String($0) })
+        guard let child = self.getChild(withName: childName) else {
+            // Should not be possible
+            return
+        }
+        
+        child.store(start: start, andEnd: end, with: descendentNames)
+    }
+    
+    func count(events: Bool = false, ranges: Bool = false) -> Int {
+        let childrenCount = self.children.map({
+            $0.count(events: events, ranges: ranges)
+        }).reduce(0, { $0 + $1 })
+        
+        let eventCount = events ? self.events.count : 0
+        let rangeCount = events ? self.ranges.count : 0
+        
+        return childrenCount + eventCount + rangeCount
+    }
+    
+    func cleanStructure() {
+        self.events = []
+        self.ranges = []
+        self.children.forEach({ $0.cleanStructure() })
+    }
 }
 
 public enum FileImporterError: Error {
@@ -46,6 +86,7 @@ public enum FileImporterError: Error {
     case categoryColumnsNotSpecified
     case missingObjectData
     case invalidTimeDateCombination
+    case setupNotCompleted
 }
 
 public class FileImporter {
@@ -55,10 +96,23 @@ public class FileImporter {
     
     // External
     public var categoryColumns: [String] = []
+    public var rows: Int? {
+        return rawObjects?.count
+    }
+    public var events: Int? {
+        return self.categoryTree?.count(events: true)
+    }
+    public var ranges: Int? {
+        return self.categoryTree?.count(ranges: true)
+    }
+    public var entries: Int? {
+        return self.categoryTree?.count(events: true, ranges: true)
+    }
     
     // Internal
     public var columns: [String]? = nil
     var rawObjects: [[String: String?]]? = nil
+    var parsedObjectTrees: [[String]]? = nil
     var categoryTree: Tree? = nil
     
     var dateColumn: String? = nil
@@ -69,6 +123,14 @@ public class FileImporter {
     var startUnixColumn: String? = nil
     var endUnixColumn: String? = nil
     var timeZone: TimeZone? = nil
+    
+    private struct DatePair {
+        var start: Date?
+        var end: Date?
+        
+        var rawStartDate: String?
+        var rawEndDate: String?
+    }
     
     public init(fileURL: URL, separator: Character = ",") {
         self.fileURL = fileURL
@@ -136,6 +198,7 @@ public class FileImporter {
             let trueTree = entryTree[0..<nilIndex].compactMap({ $0 })
             return trueTree
         }
+        self.parsedObjectTrees = objectTrees
         let safeObjectTrees = Array(Set(objectTrees))
         
         let completeTree = Tree(name: "")
@@ -154,8 +217,9 @@ public class FileImporter {
         timeFormat: String? = nil,
         startUnixColumn: String? = nil,
         endUnixColumn: String? = nil,
-        timezoneAbbreviation: String? = nil
-    ) throws {
+        timezoneAbbreviation: String? = nil,
+        testFormat: String = "MMM d, y @ h:mm a zzz"
+    ) throws -> (startRaw: String?, startParsed: String?, endRaw: String?, endParsed: String?) {
         let noDateAndTime = dateColumn == nil &&
             startTimeColumn == nil &&
             endTimeColumn == nil &&
@@ -191,33 +255,57 @@ public class FileImporter {
 
         let testResults = self.parse(obj: testObj)
         
-        let datetimeFormatter = DateFormatter()
-        datetimeFormatter.timeZone = timeZone
-        datetimeFormatter.dateFormat = "MMM d, y @ h:mm a zzz"
+        let testFormatter = DateFormatter()
+        testFormatter.timeZone = timeZone
+        testFormatter.dateFormat = "MMM d, y @ h:mm a zzz"
         
-        print("Start Date Raw: \(testResults.0)")
-        if testResults.0 != nil {
-            print(datetimeFormatter.string(from: testResults.0!))
+        let startParsedString = testResults.start != nil ? testFormatter.string(from: testResults.start!) : nil
+        let endParsedString = testResults.end != nil ? testFormatter.string(from: testResults.end!) : nil
+        
+        return (testResults.rawStartDate, startParsedString, testResults.rawEndDate, endParsedString)
+    }
+    
+    public func parseAll() throws {
+        let setDateTime = self.startTimeColumn != nil || self.startUnixColumn != nil
+        let parsedCategories = self.categoryTree != nil && self.parsedObjectTrees != nil
+        guard setDateTime && parsedCategories else {
+            throw FileImporterError.setupNotCompleted
         }
         
-        print("End Date Raw: \(testResults.1)")
-        if testResults.1 != nil {
-            print(datetimeFormatter.string(from: testResults.1!))
+        guard self.rawObjects != nil else {
+            throw FileImporterError.missingObjectData
+        }
+        
+        // Clean previously stored events
+        self.categoryTree?.cleanStructure()
+        
+        self.rawObjects!.enumerated().forEach { (index, obj) in
+            let parsedDates = self.parse(obj: obj)
+            guard parsedDates.start != nil else {
+                return
+            }
+            
+            let categories = self.parsedObjectTrees![index]
+            self.categoryTree?.store(start: parsedDates.start!, andEnd: parsedDates.end, with: categories)
         }
     }
     
-    private func parse(obj: [String : String?]) -> (Date?, Date?) {
+    private func parse(obj: [String : String?]) -> DatePair {
         let unix = self.startUnixColumn != nil
         
         var startDate: Date?
+        var startRaw: String?
         var endDate: Date?
+        var endRaw: String?
         
         if (unix) {
             if let startString = obj[self.startUnixColumn!] ?? nil, let startInt = Int(startString) {
+                startRaw = startString
                 startDate = Date(timeIntervalSince1970: Double(startInt))
             }
             
             if let endString = obj[self.endUnixColumn!] ?? nil, let endInt = Int(endString) {
+                endRaw = endString
                 endDate = Date(timeIntervalSince1970: Double(endInt))
             }
         } else {
@@ -228,6 +316,8 @@ public class FileImporter {
                 let startFormat = "\(dateFormat!) \(timeFormat!)"
                 let startCompiledString = "\(dateString) \(startString)"
                 
+                startRaw = startCompiledString
+                
                 dateparser.dateFormat = startFormat
                 startDate = dateparser.date(from: startCompiledString)
             }
@@ -236,11 +326,13 @@ public class FileImporter {
                 let endFormat = "\(dateFormat!) \(timeFormat!)"
                 let endCompiledString = "\(dateString) \(endString)"
                 
+                endRaw = endCompiledString
+                
                 dateparser.dateFormat = endFormat
                 endDate = dateparser.date(from: endCompiledString)
             }
         }
         
-        return (startDate, endDate)
+        return DatePair(start: startDate, end: endDate, rawStartDate: startRaw, rawEndDate: endRaw)
     }
 }
