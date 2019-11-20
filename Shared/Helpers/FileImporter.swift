@@ -110,7 +110,10 @@ public class FileImporter {
     }
     
     // Internal
-    public var columns: [String]? = nil
+    var _columns: [String]? = nil
+    public var columns: [String]? {
+        return self._columns
+    }
     var rawObjects: [[String: String?]]? = nil
     var parsedObjectTrees: [[String]]? = nil
     var categoryTree: Tree? = nil
@@ -161,7 +164,7 @@ public class FileImporter {
         guard columns.count > 1 else {
             throw FileImporterError.unableToParseCSV
         }
-        self.columns = columns
+        self._columns = columns
 
         self.rawObjects = try dataRows.map({ (row) -> [String: String?] in
             let rowData = row.split(separator: ",", omittingEmptySubsequences: false)
