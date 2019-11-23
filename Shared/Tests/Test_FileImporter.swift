@@ -17,8 +17,16 @@ class Test_FileImporter: XCTestCase {
         
         return fileURL
     }
+    
+    func getImporterWithData() -> FileImporter {
+        let inputFileName = "import-example.csv"
+        let fileURL = self.getUrlInBundle(with: inputFileName)
+        let importer = FileImporter(fileURL: fileURL, separator: ",")
+        XCTAssertNoThrow(try importer.loadData())
+        return importer
+    }
 
-    // MARK: - Initialization and data loading
+    // MARK: - Initialization and Data Loading
     
     func test_initWithInvalidPath() {
         guard var fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
@@ -110,6 +118,58 @@ class Test_FileImporter: XCTestCase {
         let actualColumns = Set(importer.columns ?? [])
         
         XCTAssertEqual(expectedColumns, actualColumns)
+    }
+    
+    // MARK: - Building Category Tree
+    
+    func test_buildingTreeWithoutSettingColumns() {
+        let importer = self.getImporterWithData()
+        XCTAssertThrowsError(try importer.buildCategoryTree()) { (error) in
+            XCTAssertEqual(error as? FileImporterError, FileImporterError.categoryColumnsNotSpecified)
+        }
+    }
+    
+    func test_buildingTreeWithMadeUpColumns() {
+        let importer = self.getImporterWithData()
+        importer.categoryColumns = ["not-in-csv"]
+        XCTAssertNoThrow(try importer.buildCategoryTree())
+        
+        XCTAssertNotNil(importer.categoryTree)
+        XCTAssertEqual(importer.categoryTree?.children.count, 0)
+    }
+    
+    func test_buildingTreeWithSingleColumns() {
+        self.continueAfterFailure = false
+        
+        let importer = self.getImporterWithData()
+        importer.categoryColumns = ["category"]
+        XCTAssertNoThrow(try importer.buildCategoryTree())
+        
+        XCTAssertNotNil(importer.categoryTree)
+        XCTAssertEqual(importer.categoryTree?.children.count, 3)
+        
+        let childrenNames = Set(importer.categoryTree!.children.map({ $0.name }))
+        XCTAssertEqual(childrenNames, Set(["Life", "Work", "Side Projects"]))
+        
+        importer.categoryTree!.children.forEach { (child) in
+            XCTAssertEqual(child.children.count, 0)
+        }
+    }
+    
+    func test_buildingAFullCategoryTree() {
+        self.continueAfterFailure = false
+        
+        let importer = self.getImporterWithData()
+        importer.categoryColumns = ["category", "project", "task", "subtask"]
+        XCTAssertNoThrow(try importer.buildCategoryTree())
+        
+        XCTAssertNotNil(importer.categoryTree)
+        XCTAssertEqual(importer.categoryTree?.children.count, 3)
+        
+        let childrenNames = Set(importer.categoryTree!.children.map({ $0.name }))
+        XCTAssertEqual(childrenNames, Set(["Life", "Work", "Side Projects"]))
+        
+        // TODO: Full parsing
     }
     
 //    func test_all() {
