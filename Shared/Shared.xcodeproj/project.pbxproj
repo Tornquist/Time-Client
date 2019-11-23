@@ -81,6 +81,8 @@
 		D8FB5B1C23857AF000EED615 /* not-a-csv.png in Resources */ = {isa = PBXBuildFile; fileRef = D8FB5B1A23857AF000EED615 /* not-a-csv.png */; };
 		D8FB5B1E23857B3C00EED615 /* tiny-example.csv in Resources */ = {isa = PBXBuildFile; fileRef = D8FB5B1D23857B3C00EED615 /* tiny-example.csv */; };
 		D8FB5B1F23857B3C00EED615 /* tiny-example.csv in Resources */ = {isa = PBXBuildFile; fileRef = D8FB5B1D23857B3C00EED615 /* tiny-example.csv */; };
+		D8FB5B222389BD3900EED615 /* mismatched-example.csv in Resources */ = {isa = PBXBuildFile; fileRef = D8FB5B212389BD3900EED615 /* mismatched-example.csv */; };
+		D8FB5B232389BD3900EED615 /* mismatched-example.csv in Resources */ = {isa = PBXBuildFile; fileRef = D8FB5B212389BD3900EED615 /* mismatched-example.csv */; };
 		D8FE621A22062549003A095A /* Test_0_Setup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FE621922062549003A095A /* Test_0_Setup.swift */; };
 /* End PBXBuildFile section */
 
@@ -167,6 +169,7 @@
 		D8FB5B1523785E3B00EED615 /* import-example.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "import-example.csv"; sourceTree = "<group>"; };
 		D8FB5B1A23857AF000EED615 /* not-a-csv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "not-a-csv.png"; sourceTree = "<group>"; };
 		D8FB5B1D23857B3C00EED615 /* tiny-example.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "tiny-example.csv"; sourceTree = "<group>"; };
+		D8FB5B212389BD3900EED615 /* mismatched-example.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "mismatched-example.csv"; sourceTree = "<group>"; };
 		D8FE621922062549003A095A /* Test_0_Setup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_0_Setup.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -366,6 +369,7 @@
 		D8FB5B1423785E2200EED615 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
+				D8FB5B212389BD3900EED615 /* mismatched-example.csv */,
 				D8FB5B1D23857B3C00EED615 /* tiny-example.csv */,
 				D8FB5B1A23857AF000EED615 /* not-a-csv.png */,
 				D8FB5B1523785E3B00EED615 /* import-example.csv */,
@@ -525,6 +529,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D8FB5B222389BD3900EED615 /* mismatched-example.csv in Resources */,
 				D8FB5B1B23857AF000EED615 /* not-a-csv.png in Resources */,
 				D8FB5B1623785E3B00EED615 /* import-example.csv in Resources */,
 				D8FB5B1E23857B3C00EED615 /* tiny-example.csv in Resources */,
@@ -545,6 +550,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D8FB5B232389BD3900EED615 /* mismatched-example.csv in Resources */,
 				D8FB5B1C23857AF000EED615 /* not-a-csv.png in Resources */,
 				D8FB5B1723785E3B00EED615 /* import-example.csv in Resources */,
 				D8FB5B1F23857B3C00EED615 /* tiny-example.csv in Resources */,

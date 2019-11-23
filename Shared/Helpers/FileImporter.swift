@@ -8,77 +8,6 @@
 
 import Foundation
 
-class Tree {
-    let name: String
-    var children: [Tree] = []
-    
-    var events: [Date] = []
-    var ranges: [(Date, Date)] = []
-    
-    init(name: String) {
-        self.name = name
-    }
-    
-    func buildDescendents(with names: [String]) {
-        guard names.count > 0 else { return }
-        
-        let childName = names[0]
-        let descendentNames = names[1...].map({ String($0) })
-        
-        let child = self.getChild(withName: childName) ?? self.addChild(withName: childName)
-        child.buildDescendents(with: descendentNames)
-    }
-        
-    func getChild(withName name: String) -> Tree? {
-        return children.first(where: { (child) -> Bool in
-            return child.name == name
-        })
-    }
-    
-    func addChild(withName name: String) -> Tree {
-        let newChild = Tree(name: name)
-        self.children.append(newChild)
-        return newChild
-    }
-    
-    func store(start: Date, andEnd end: Date?, with names: [String]) {
-        guard names.count > 0 else {
-            if end == nil {
-                self.events.append(start)
-            } else {
-                self.ranges.append((start, end!))
-            }
-            return
-        }
-        
-        let childName = names[0]
-        let descendentNames = names[1...].map({ String($0) })
-        guard let child = self.getChild(withName: childName) else {
-            // Should not be possible
-            return
-        }
-        
-        child.store(start: start, andEnd: end, with: descendentNames)
-    }
-    
-    func count(events: Bool = false, ranges: Bool = false) -> Int {
-        let childrenCount = self.children.map({
-            $0.count(events: events, ranges: ranges)
-        }).reduce(0, { $0 + $1 })
-        
-        let eventCount = events ? self.events.count : 0
-        let rangeCount = events ? self.ranges.count : 0
-        
-        return childrenCount + eventCount + rangeCount
-    }
-    
-    func cleanStructure() {
-        self.events = []
-        self.ranges = []
-        self.children.forEach({ $0.cleanStructure() })
-    }
-}
-
 public enum FileImporterError: Error {
     case fileNotFound
     case unableToReadFile
@@ -337,5 +266,78 @@ public class FileImporter {
         }
         
         return DatePair(start: startDate, end: endDate, rawStartDate: startRaw, rawEndDate: endRaw)
+    }
+}
+
+extension FileImporter {
+    internal class Tree {
+        let name: String
+        var children: [Tree] = []
+        
+        var events: [Date] = []
+        var ranges: [(Date, Date)] = []
+        
+        init(name: String) {
+            self.name = name
+        }
+        
+        func buildDescendents(with names: [String]) {
+            guard names.count > 0 else { return }
+            
+            let childName = names[0]
+            let descendentNames = names[1...].map({ String($0) })
+            
+            let child = self.getChild(withName: childName) ?? self.addChild(withName: childName)
+            child.buildDescendents(with: descendentNames)
+        }
+            
+        private func getChild(withName name: String) -> Tree? {
+            return children.first(where: { (child) -> Bool in
+                return child.name == name
+            })
+        }
+        
+        private func addChild(withName name: String) -> Tree {
+            let newChild = Tree(name: name)
+            self.children.append(newChild)
+            return newChild
+        }
+        
+        func store(start: Date, andEnd end: Date?, with names: [String]) {
+            guard names.count > 0 else {
+                if end == nil {
+                    self.events.append(start)
+                } else {
+                    self.ranges.append((start, end!))
+                }
+                return
+            }
+            
+            let childName = names[0]
+            let descendentNames = names[1...].map({ String($0) })
+            guard let child = self.getChild(withName: childName) else {
+                // Should not be possible
+                return
+            }
+            
+            child.store(start: start, andEnd: end, with: descendentNames)
+        }
+        
+        func count(events: Bool = false, ranges: Bool = false) -> Int {
+            let childrenCount = self.children.map({
+                $0.count(events: events, ranges: ranges)
+            }).reduce(0, { $0 + $1 })
+            
+            let eventCount = events ? self.events.count : 0
+            let rangeCount = ranges ? self.ranges.count : 0
+            
+            return childrenCount + eventCount + rangeCount
+        }
+        
+        func cleanStructure() {
+            self.events = []
+            self.ranges = []
+            self.children.forEach({ $0.cleanStructure() })
+        }
     }
 }
