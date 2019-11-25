@@ -304,6 +304,14 @@ public class FileImporter {
         
         return DatePair(start: startDate, end: endDate, rawStartDate: startRaw, rawEndDate: endRaw)
     }
+    
+    public func asJson() -> [[String: Any]] {
+        let timeZoneString = self.timeZone?.abbreviation()
+        let rootTrees: [[String: Any]] = self.categoryTree?.children.compactMap({ (tree) -> [String: Any] in
+            return tree.asJsonDictionary(with: timeZoneString)
+        }) ?? []
+        return rootTrees
+    }
 }
 
 extension FileImporter {
@@ -375,6 +383,33 @@ extension FileImporter {
             self.events = []
             self.ranges = []
             self.children.forEach({ $0.cleanStructure() })
+        }
+        
+        func asJsonDictionary(with timezone: String? = nil) -> [String: Any] {
+            return [
+                "name": self.name,
+                "events": self.events.map({ (event) -> [String:String] in
+                    var baseData = [
+                        "started_at": DateHelper.isoStringFrom(date: event, includeMilliseconds: true)
+                    ]
+                    if timezone != nil {
+                        baseData["started_at_timezone"] = timezone!
+                    }
+                    return baseData
+                }),
+                "ranges": self.ranges.map({ (event) -> [String:String] in
+                    var baseData = [
+                        "started_at": DateHelper.isoStringFrom(date: event.0, includeMilliseconds: true),
+                        "ended_at": DateHelper.isoStringFrom(date: event.0, includeMilliseconds: true)
+                    ]
+                    if timezone != nil {
+                        baseData["started_at_timezone"] = timezone!
+                        baseData["ended_at_timezone"] = timezone!
+                    }
+                    return baseData
+                }),
+                "children": self.children.map({ $0.asJsonDictionary(with: timezone) })
+            ]
         }
     }
 }

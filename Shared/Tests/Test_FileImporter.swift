@@ -493,7 +493,15 @@ class Test_FileImporter_Tree: Test_FileImporterShared {
         XCTAssertEqual(self.tree.count(events: false, ranges: true), 2)
     }
     
-    func test_04_clearStructure() {
+    func test_04_asJson() {
+        self.continueAfterFailure = false
+        guard self.tree != nil else { XCTFail(); return }
+        
+        let jsonData = self.tree.asJsonDictionary(with: "CST")
+        print(jsonData)
+    }
+    
+    func test_05_clearStructure() {
         self.continueAfterFailure = false
         guard self.tree != nil else { XCTFail(); return }
         
