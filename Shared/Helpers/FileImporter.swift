@@ -142,6 +142,47 @@ public class FileImporter {
     }
     
     public func setDateTimeParseRules(
+        dateColumn: String,
+        startTimeColumn: String,
+        endTimeColumn: String,
+        dateFormat: String,
+        timeFormat: String,
+        timezoneAbbreviation: String? = nil,
+        testFormat: String = "MMM d, y @ h:mm a zzz"
+    ) throws -> (startRaw: String?, startParsed: String?, endRaw: String?, endParsed: String?) {
+        return try self.setDateTimeParseRules(
+            dateColumn: dateColumn,
+            startTimeColumn: startTimeColumn,
+            endTimeColumn: endTimeColumn,
+            dateFormat: dateFormat,
+            timeFormat: timeFormat,
+            startUnixColumn: nil,
+            endUnixColumn: nil,
+            timezoneAbbreviation: timezoneAbbreviation,
+            testFormat: testFormat
+        )
+    }
+    
+    public func setDateTimeParseRules(
+        startUnixColumn: String,
+        endUnixColumn: String,
+        timezoneAbbreviation: String? = nil,
+        testFormat: String = "MMM d, y @ h:mm a zzz"
+    ) throws -> (startRaw: String?, startParsed: String?, endRaw: String?, endParsed: String?) {
+        return try self.setDateTimeParseRules(
+            dateColumn: nil,
+            startTimeColumn: nil,
+            endTimeColumn: nil,
+            dateFormat: nil,
+            timeFormat: nil,
+            startUnixColumn: startUnixColumn,
+            endUnixColumn: endUnixColumn,
+            timezoneAbbreviation: timezoneAbbreviation,
+            testFormat: testFormat
+        )
+    }
+    
+    private func setDateTimeParseRules(
         dateColumn: String? = nil,
         startTimeColumn: String? = nil,
         endTimeColumn: String? = nil,
@@ -189,7 +230,7 @@ public class FileImporter {
         
         let testFormatter = DateFormatter()
         testFormatter.timeZone = timeZone
-        testFormatter.dateFormat = "MMM d, y @ h:mm a zzz"
+        testFormatter.dateFormat = testFormat
         
         let startParsedString = testResults.start != nil ? testFormatter.string(from: testResults.start!) : nil
         let endParsedString = testResults.end != nil ? testFormatter.string(from: testResults.end!) : nil
@@ -200,12 +241,8 @@ public class FileImporter {
     public func parseAll() throws {
         let setDateTime = self.startTimeColumn != nil || self.startUnixColumn != nil
         let parsedCategories = self.categoryTree != nil && self.parsedObjectTrees != nil
-        guard setDateTime && parsedCategories else {
+        guard setDateTime && parsedCategories && self.rawObjects != nil else {
             throw FileImporterError.setupNotCompleted
-        }
-        
-        guard self.rawObjects != nil else {
-            throw FileImporterError.missingObjectData
         }
         
         // Clean previously stored events
