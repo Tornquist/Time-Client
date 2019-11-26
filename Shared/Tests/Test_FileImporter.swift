@@ -27,6 +27,13 @@ class Test_FileImporterShared: XCTestCase {
             XCTAssertEqual(tree?.children.count, numChildren, "Expected tree with name \(tree?.name ?? "??") to have \(numChildren) children")
         }
     }
+    
+    struct ImporterData: Codable {
+        var name: String
+        var events: [[String:String]]
+        var ranges: [[String:String]]
+        var children: [ImporterData]
+    }
 }
 
 class Test_FileImporter: Test_FileImporterShared {
@@ -368,6 +375,34 @@ class Test_FileImporter: Test_FileImporterShared {
         XCTAssertEqual(importer.ranges, 138)
         XCTAssertEqual(importer.entries, 138)
     }
+    
+    func test_parseAllDataToNetworkLayer() {
+        self.continueAfterFailure = false
+
+        // Setup
+        let importer = self.getImporterWithData()
+        importer.categoryColumns = ["category", "project", "task", "subtask"]
+        XCTAssertNoThrow(try importer.buildCategoryTree())
+        XCTAssertNoThrow(try importer.setDateTimeParseRules(
+            startUnixColumn: "unix_start",
+            endUnixColumn: "unix_end",
+            timezoneAbbreviation: "CST",
+            testFormat: "MMM d, y @ h:mm a zzz"
+        ))
+        XCTAssertNoThrow(try importer.parseAll())
+        
+        // Network Layer
+        let jsonData = importer.asJson()
+        
+        let decoder = JSONDecoder()
+        guard let pureData = try? JSONSerialization.data(withJSONObject: jsonData, options: []),
+            let decodedData = try? decoder.decode([ImporterData].self, from: pureData) else {
+                XCTFail()
+                return
+        }
+        
+        XCTAssertEqual(decodedData.count, 3)
+    }
 }
 
 class Test_FileImporter_Tree: Test_FileImporterShared {
@@ -498,7 +533,16 @@ class Test_FileImporter_Tree: Test_FileImporterShared {
         guard self.tree != nil else { XCTFail(); return }
         
         let jsonData = self.tree.asJsonDictionary(with: "CST")
-        print(jsonData)
+        
+        let decoder = JSONDecoder()
+        guard let pureData = try? JSONSerialization.data(withJSONObject: jsonData, options: []),
+            let decodedData = try? decoder.decode(ImporterData.self, from: pureData) else {
+                XCTFail()
+                return
+        }
+        
+        XCTAssertEqual(decodedData.name, "Test")
+        XCTAssertEqual(decodedData.children.count, 2)
     }
     
     func test_05_clearStructure() {
