@@ -155,4 +155,22 @@ extension API {
     func deleteEntry(withID id: Int, completionHandler: @escaping (Error?) -> ()) {
         DELETE("/entries/\(id)", completion: completionHandler)
     }
+    
+    // MARK: - Importing Data
+    
+    func importData(from fileImporter: FileImporter, completionHandler: @escaping (Error?) -> ()) {
+        guard let jsonData = fileImporter.asJson() else {
+            completionHandler(TimeError.unableToSendRequest("Missing data"))
+            return
+        }
+        let body: [String: Any] = ["groups": jsonData]
+
+        struct TempObj: Codable {
+            var received: String
+        }
+        POST("/import", body, auth: true, encoding: .json, completion: { (obj: TempObj?, error: Error?) in
+            print("Importer Response", obj)
+            completionHandler(error)
+        })
+    }
 }

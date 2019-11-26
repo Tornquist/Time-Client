@@ -392,10 +392,9 @@ class Test_FileImporter: Test_FileImporterShared {
         XCTAssertNoThrow(try importer.parseAll())
         
         // Network Layer
-        let jsonData = importer.asJson()
-        
         let decoder = JSONDecoder()
-        guard let pureData = try? JSONSerialization.data(withJSONObject: jsonData, options: []),
+        guard let jsonData = importer.asJson(),
+            let pureData = try? JSONSerialization.data(withJSONObject: jsonData, options: []),
             let decodedData = try? decoder.decode([ImporterData].self, from: pureData) else {
                 XCTFail()
                 return

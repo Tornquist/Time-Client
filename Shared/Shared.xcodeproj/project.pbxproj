@@ -83,6 +83,8 @@
 		D8FB5B1F23857B3C00EED615 /* tiny-example.csv in Resources */ = {isa = PBXBuildFile; fileRef = D8FB5B1D23857B3C00EED615 /* tiny-example.csv */; };
 		D8FB5B222389BD3900EED615 /* mismatched-example.csv in Resources */ = {isa = PBXBuildFile; fileRef = D8FB5B212389BD3900EED615 /* mismatched-example.csv */; };
 		D8FB5B232389BD3900EED615 /* mismatched-example.csv in Resources */ = {isa = PBXBuildFile; fileRef = D8FB5B212389BD3900EED615 /* mismatched-example.csv */; };
+		D8FB5B25238D66D900EED615 /* Test_API_Importer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FB5B24238D66D900EED615 /* Test_API_Importer.swift */; };
+		D8FB5B26238D66D900EED615 /* Test_API_Importer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FB5B24238D66D900EED615 /* Test_API_Importer.swift */; };
 		D8FE621A22062549003A095A /* Test_0_Setup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FE621922062549003A095A /* Test_0_Setup.swift */; };
 /* End PBXBuildFile section */
 
@@ -170,6 +172,7 @@
 		D8FB5B1A23857AF000EED615 /* not-a-csv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "not-a-csv.png"; sourceTree = "<group>"; };
 		D8FB5B1D23857B3C00EED615 /* tiny-example.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "tiny-example.csv"; sourceTree = "<group>"; };
 		D8FB5B212389BD3900EED615 /* mismatched-example.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "mismatched-example.csv"; sourceTree = "<group>"; };
+		D8FB5B24238D66D900EED615 /* Test_API_Importer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_API_Importer.swift; sourceTree = "<group>"; };
 		D8FE621922062549003A095A /* Test_0_Setup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_0_Setup.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -341,6 +344,7 @@
 				D811B17E21EA451E009F6C8E /* Test_API_Accounts.swift */,
 				D89C7C4A22087B9300B09D73 /* Test_API_Categories.swift */,
 				D8EA80EF22239130002686D4 /* Test_API_Entries.swift */,
+				D8FB5B24238D66D900EED615 /* Test_API_Importer.swift */,
 			);
 			name = Network;
 			sourceTree = "<group>";
@@ -594,6 +598,7 @@
 			files = (
 				D8FE621A22062549003A095A /* Test_0_Setup.swift in Sources */,
 				D8437C5B21F3B04700974B03 /* Test_Token.swift in Sources */,
+				D8FB5B25238D66D900EED615 /* Test_API_Importer.swift in Sources */,
 				D8EA80FD2225776E002686D4 /* Test_Entry.swift in Sources */,
 				D89C7C4B22087B9300B09D73 /* Test_API_Categories.swift in Sources */,
 				D8500CAD227E2BF3009052DC /* Test_CategoryTree.swift in Sources */,
@@ -630,6 +635,7 @@
 			files = (
 				D85B0A6D2246F2ED00835E55 /* Test_0_Setup.swift in Sources */,
 				D85B0A6E2246F2ED00835E55 /* Test_Token.swift in Sources */,
+				D8FB5B26238D66D900EED615 /* Test_API_Importer.swift in Sources */,
 				D85B0A6F2246F2ED00835E55 /* Test_Entry.swift in Sources */,
 				D85B0A702246F2ED00835E55 /* Test_API_Categories.swift in Sources */,
 				D8500CAE227E2BF3009052DC /* Test_CategoryTree.swift in Sources */,

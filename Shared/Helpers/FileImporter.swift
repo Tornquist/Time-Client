@@ -305,11 +305,13 @@ public class FileImporter {
         return DatePair(start: startDate, end: endDate, rawStartDate: startRaw, rawEndDate: endRaw)
     }
     
-    public func asJson() -> [[String: Any]] {
+    public func asJson() -> [[String: Any]]? {
+        guard self.categoryTree != nil else { return nil }
+
         let timeZoneString = self.timeZone?.abbreviation()
-        let rootTrees: [[String: Any]] = self.categoryTree?.children.compactMap({ (tree) -> [String: Any] in
+        let rootTrees: [[String: Any]] = self.categoryTree!.children.compactMap({ (tree) -> [String: Any] in
             return tree.asJsonDictionary(with: timeZoneString)
-        }) ?? []
+        })
         return rootTrees
     }
 }
