@@ -61,8 +61,16 @@ class Test_API_Importer: XCTestCase {
         
         // Network
         let importExpectation = self.expectation(description: "importer")
-        self.api.importData(from: importer) { (error) in
+        self.api.importData(from: importer) { (request, error) in
+            XCTAssertNotNil(request)
             XCTAssertNil(error)
+            
+            if request != nil {
+                XCTAssertEqual(request!.categories, 9)
+                XCTAssertEqual(request!.events, 0)
+                XCTAssertEqual(request!.ranges, 138)
+            }
+            
             importExpectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)

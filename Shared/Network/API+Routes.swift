@@ -158,19 +158,20 @@ extension API {
     
     // MARK: - Importing Data
     
-    func importData(from fileImporter: FileImporter, completionHandler: @escaping (Error?) -> ()) {
+    func importData(from fileImporter: FileImporter, completionHandler: @escaping (FileImporter.Request?, Error?) -> ()) {
         guard let jsonData = fileImporter.asJson() else {
-            completionHandler(TimeError.unableToSendRequest("Missing data"))
+            completionHandler(nil, TimeError.unableToSendRequest("Missing data"))
             return
         }
-        let body: [String: Any] = ["groups": jsonData]
+        
+        // Empty root will map all root.children to top level
+        let body: [String: Any] = [
+            "name": "",
+            "events": [],
+            "ranges": [],
+            "children": jsonData
+        ]
 
-        struct TempObj: Codable {
-            var received: String
-        }
-        POST("/import", body, auth: true, encoding: .json, completion: { (obj: TempObj?, error: Error?) in
-            print("Importer Response", obj)
-            completionHandler(error)
-        })
+        POST("/import", body, auth: true, encoding: .json, completion: completionHandler)
     }
 }

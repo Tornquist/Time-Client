@@ -415,3 +415,12 @@ extension FileImporter {
         }
     }
 }
+
+extension FileImporter {
+    public struct Request: Codable {
+        var id: Int
+        var categories: Int
+        var events: Int
+        var ranges: Int
+    }
+}
