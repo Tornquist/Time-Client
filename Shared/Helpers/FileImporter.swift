@@ -410,7 +410,7 @@ extension FileImporter {
                 "ranges": self.ranges.map({ (event) -> [String:String] in
                     var baseData = [
                         "started_at": DateHelper.isoStringFrom(date: event.0, includeMilliseconds: true),
-                        "ended_at": DateHelper.isoStringFrom(date: event.0, includeMilliseconds: true)
+                        "ended_at": DateHelper.isoStringFrom(date: event.1, includeMilliseconds: true)
                     ]
                     if timezone != nil {
                         baseData["started_at_timezone"] = timezone!
