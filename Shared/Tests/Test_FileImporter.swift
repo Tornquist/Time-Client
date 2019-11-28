@@ -325,6 +325,51 @@ class Test_FileImporter: Test_FileImporterShared {
         }
     }
     
+    func test_settingDatetimeRulesWithTimezoneIdentifier() {
+        self.continueAfterFailure = false
+        
+        let importer = self.getImporterWithData()
+        do {
+            let res = try importer.setDateTimeParseRules(
+                dateColumn: "date",
+                startTimeColumn: "start",
+                endTimeColumn: "end",
+                dateFormat: "M/d/yy",
+                timeFormat: "h:mm a",
+                timezoneIdentifier: "America/Chicago",
+                testFormat: "h:mm a zzz" // Using custom output format
+            )
+            
+            // Returns a single parsed pair (as an example of the result)
+            XCTAssertNotNil(res.startRaw)
+            XCTAssertEqual(res.startParsed, "8:38 AM CDT")
+            XCTAssertNotNil(res.endRaw)
+            XCTAssertEqual(res.endParsed, "12:33 PM CDT")
+        } catch {
+            XCTFail(error.localizedDescription)
+        }
+    }
+    
+    func test_settingDatetimeRulesWithTimezoneIdentifierAndAbbreviation() {
+        self.continueAfterFailure = false
+        
+        let importer = self.getImporterWithData()
+        XCTAssertThrowsError(
+            try importer.setDateTimeParseRules(
+                dateColumn: "date",
+                startTimeColumn: "start",
+                endTimeColumn: "end",
+                dateFormat: "M/d/yy",
+                timeFormat: "h:mm a",
+                timezoneAbbreviation: "CST",
+                timezoneIdentifier: "America/Chicago",
+                testFormat: "h:mm a zzz" // Using custom output format
+            )
+        ) { (error) in
+            XCTAssertEqual(error as? FileImporterError, FileImporterError.invalidTimeDateCombination)
+        }
+    }
+    
     // MARK: - Parsing All Data
     
     func test_rejectsWithoutDatetimeSettings() {

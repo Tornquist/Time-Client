@@ -148,6 +148,7 @@ public class FileImporter {
         dateFormat: String,
         timeFormat: String,
         timezoneAbbreviation: String? = nil,
+        timezoneIdentifier: String? = nil,
         testFormat: String = "MMM d, y @ h:mm a zzz"
     ) throws -> (startRaw: String?, startParsed: String?, endRaw: String?, endParsed: String?) {
         return try self.setDateTimeParseRules(
@@ -159,6 +160,7 @@ public class FileImporter {
             startUnixColumn: nil,
             endUnixColumn: nil,
             timezoneAbbreviation: timezoneAbbreviation,
+            timezoneIdentifier: timezoneIdentifier,
             testFormat: testFormat
         )
     }
@@ -167,6 +169,7 @@ public class FileImporter {
         startUnixColumn: String,
         endUnixColumn: String,
         timezoneAbbreviation: String? = nil,
+        timezoneIdentifier: String? = nil,
         testFormat: String = "MMM d, y @ h:mm a zzz"
     ) throws -> (startRaw: String?, startParsed: String?, endRaw: String?, endParsed: String?) {
         return try self.setDateTimeParseRules(
@@ -178,6 +181,7 @@ public class FileImporter {
             startUnixColumn: startUnixColumn,
             endUnixColumn: endUnixColumn,
             timezoneAbbreviation: timezoneAbbreviation,
+            timezoneIdentifier: timezoneIdentifier,
             testFormat: testFormat
         )
     }
@@ -191,6 +195,7 @@ public class FileImporter {
         startUnixColumn: String? = nil,
         endUnixColumn: String? = nil,
         timezoneAbbreviation: String? = nil,
+        timezoneIdentifier: String? = nil,
         testFormat: String = "MMM d, y @ h:mm a zzz"
     ) throws -> (startRaw: String?, startParsed: String?, endRaw: String?, endParsed: String?) {
         let noDateAndTime = dateColumn == nil &&
@@ -206,8 +211,9 @@ public class FileImporter {
         
         let noUnix = startUnixColumn == nil && endUnixColumn == nil
         let allUnix = startUnixColumn != nil && endUnixColumn != nil
+        let mismatchedTimezone = timezoneAbbreviation != nil && timezoneIdentifier != nil
         
-        guard (noDateAndTime && allUnix) || (allDateAndTime && noUnix) else {
+        guard ((noDateAndTime && allUnix) || (allDateAndTime && noUnix)) && !mismatchedTimezone else {
             throw FileImporterError.invalidTimeDateCombination
         }
         
@@ -215,7 +221,9 @@ public class FileImporter {
             throw FileImporterError.missingObjectData
         }
         
-        let timeZone = (timezoneAbbreviation != nil ? TimeZone(abbreviation: timezoneAbbreviation!) : nil) ?? TimeZone.autoupdatingCurrent
+        let timeZoneFromAbbreviation = (timezoneAbbreviation != nil ? TimeZone(abbreviation: timezoneAbbreviation!) : nil)
+        let timeZoneFromIdentifier = (timezoneIdentifier != nil ? TimeZone(identifier: timezoneIdentifier!) : nil)
+        let timeZone = timeZoneFromAbbreviation ?? timeZoneFromIdentifier ?? TimeZone.autoupdatingCurrent
         
         self.dateColumn = dateColumn
         self.startTimeColumn = startTimeColumn
@@ -308,7 +316,7 @@ public class FileImporter {
     public func asJson() -> [[String: Any]]? {
         guard self.categoryTree != nil else { return nil }
 
-        let timeZoneString = self.timeZone?.abbreviation()
+        let timeZoneString = self.timeZone?.identifier
         let rootTrees: [[String: Any]] = self.categoryTree!.children.compactMap({ (tree) -> [String: Any] in
             return tree.asJsonDictionary(with: timeZoneString)
         })
