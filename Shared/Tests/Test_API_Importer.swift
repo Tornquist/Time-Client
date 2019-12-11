@@ -13,11 +13,15 @@ class Test_API_Importer: XCTestCase {
     static var api: API!
     static var email = "\(UUID().uuidString)@time.com"
     static var password = "defaultPassword"
+
+    static var importID: Int? = nil
     
     var api: API! { return Test_API_Importer.api }
     
     var email: String { return Test_API_Importer.email }
     var password: String { return Test_API_Importer.password }
+    
+    var importID: Int? { return Test_API_Importer.importID }
 
     override class func setUp() {
         Test_API_Importer.api = API()
@@ -39,7 +43,19 @@ class Test_API_Importer: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_sendImporterRequest() {
+    func test_01_checkExistingImportRequests() {
+        let importExpectation = self.expectation(description: "importer")
+        self.api.getImportRequests { (requests, error) in
+            XCTAssertNotNil(requests)
+            XCTAssertNil(error)
+            
+            XCTAssertEqual(requests?.count, 0)
+            importExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_02_createImportRequest() {
         self.continueAfterFailure = false
         
         // Setup
@@ -65,12 +81,31 @@ class Test_API_Importer: XCTestCase {
             XCTAssertNotNil(request)
             XCTAssertNil(error)
             
-            if request != nil {
-                XCTAssertEqual(request!.categories, 9)
-                XCTAssertEqual(request!.events, 0)
-                XCTAssertEqual(request!.ranges, 138)
-            }
+            Test_API_Importer.importID = request?.id
+            XCTAssertEqual(request?.categories.imported, 0)
+            XCTAssertEqual(request?.categories.expected, 9)
+            XCTAssertEqual(request?.entries.imported, 0)
+            XCTAssertEqual(request?.entries.expected, 0 + 138)
+            XCTAssertEqual(request?.complete, false)
+            XCTAssertEqual(request?.success, false)
             
+            importExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_03_check_specific_request() {
+        guard self.importID != nil else {
+            XCTFail()
+            return
+        }
+        
+        let importExpectation = self.expectation(description: "importer")
+        self.api.getImportRequest(withID: self.importID!) { (request, error) in
+            XCTAssertNotNil(request)
+            XCTAssertNil(error)
+            
+            XCTAssertEqual(request?.id, self.importID)
             importExpectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)

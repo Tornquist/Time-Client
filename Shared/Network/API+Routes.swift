@@ -158,6 +158,14 @@ extension API {
     
     // MARK: - Importing Data
     
+    func getImportRequests(completionHandler: @escaping ([FileImporter.Request]?, Error?) -> ()) {
+        GET("/import", completion: completionHandler)
+    }
+    
+    func getImportRequest(withID id: Int, completionHandler: @escaping (FileImporter.Request?, Error?) -> ()) {
+        GET("/import/\(id)", completion: completionHandler)
+    }
+    
     func importData(from fileImporter: FileImporter, completionHandler: @escaping (FileImporter.Request?, Error?) -> ()) {
         guard let jsonData = fileImporter.asJson() else {
             completionHandler(nil, TimeError.unableToSendRequest("Missing data"))

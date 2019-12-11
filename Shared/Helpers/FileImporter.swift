@@ -425,10 +425,59 @@ extension FileImporter {
 }
 
 extension FileImporter {
-    public struct Request: Codable {
+    public class Request: Decodable {
         var id: Int
-        var categories: Int
-        var events: Int
-        var ranges: Int
+        var createdAt: Date
+        var updatedAt: Date
+        var categories: Request.Status
+        var entries: Request.Status
+        var complete: Bool
+        var success: Bool
+                
+        public struct Status: Codable {
+            var imported: Int
+            var expected: Int
+        }
+        
+        enum CodingKeys: String, CodingKey
+        {
+            case id
+            case createdAt = "created_at"
+            case updatedAt = "updated_at"
+            case categories
+            case entries
+            case complete
+            case success
+        }
+        
+        public init(id: Int, createdAt: Date, updatedAt: Date, categories: Request.Status, entries: Request.Status, complete: Bool, success: Bool) {
+            self.id = id
+            self.createdAt = createdAt
+            self.updatedAt = updatedAt
+            self.categories = categories
+            self.entries = entries
+            self.complete = complete
+            self.success = success
+        }
+        
+        public required convenience init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            
+            let id: Int = try container.decode(Int.self, forKey: .id)
+            let createdAtString: String = try container.decode(String.self, forKey: .createdAt)
+            guard let createdAt: Date = DateHelper.dateFrom(isoString: createdAtString) else {
+                throw TimeError.unableToDecodeResponse
+            }
+            let updatedAtString: String = try container.decode(String.self, forKey: .updatedAt)
+            guard let updatedAt: Date = DateHelper.dateFrom(isoString: updatedAtString) else {
+                throw TimeError.unableToDecodeResponse
+            }
+            let categories: Request.Status = try container.decode(Request.Status.self, forKey: .categories)
+            let entries: Request.Status = try container.decode(Request.Status.self, forKey: .entries)
+            let complete: Bool = try container.decode(Bool.self, forKey: .complete)
+            let success: Bool = try container.decode(Bool.self, forKey: .success)
+            
+            self.init(id: id, createdAt: createdAt, updatedAt: updatedAt, categories: categories, entries: entries, complete: complete, success: success)
+        }
     }
 }
