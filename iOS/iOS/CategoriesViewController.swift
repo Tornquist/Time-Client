@@ -14,6 +14,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     var signOutButton: UIBarButtonItem!
     var cancelButton: UIBarButtonItem!
     var addButton: UIBarButtonItem!
+    var importButton: UIBarButtonItem!
     var refreshControl: UIRefreshControl!
     @IBOutlet weak var tableView: UITableView!
     
@@ -37,6 +38,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         self.signOutButton = UIBarButtonItem(title: NSLocalizedString("Sign Out", comment: ""), style: .plain, target: self, action: #selector(signOutPressed(_:)))
         self.cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelPressed(_:)))
         self.addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addPressed(_:)))
+        self.importButton = UIBarButtonItem(title: NSLocalizedString("Import", comment: ""), style: .plain, target: self, action: #selector(importPressed(_:)))
         
         let topConstraint = NSLayoutConstraint(item: self.view!, attribute: .top, relatedBy: .equal, toItem: self.tableView, attribute: .top, multiplier: 1, constant: 0)
         let bottomConstraint = NSLayoutConstraint(item: self.view!, attribute: .bottom, relatedBy: .equal, toItem: self.tableView, attribute: .bottom, multiplier: 1, constant: 0)
@@ -51,7 +53,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     
     func refreshNavigation() {
         self.navigationItem.leftBarButtonItem = self.moving ? self.cancelButton: self.signOutButton
-        self.navigationItem.rightBarButtonItem = self.moving ? nil : self.addButton
+        self.navigationItem.rightBarButtonItems = self.moving ? [] : [self.addButton, self.importButton]
         self.navigationItem.title = self.moving ? NSLocalizedString("Select Target", comment: "") : nil
     }
     
@@ -288,6 +290,12 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     
     @IBAction func addPressed(_ sender: Any) {
         self.createAccount()
+    }
+    
+    @IBAction func importPressed(_ sender: Any) {
+        guard let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "importListView") as? ImportListViewController else { return }
+        let importNavVC = UINavigationController(rootViewController: vc)
+        self.present(importNavVC, animated: true, completion: nil)
     }
     
     // MARK: - Table View
