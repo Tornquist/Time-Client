@@ -426,13 +426,13 @@ extension FileImporter {
 
 extension FileImporter {
     public class Request: Decodable {
-        var id: Int
-        var createdAt: Date
-        var updatedAt: Date
-        var categories: Request.Status
-        var entries: Request.Status
-        var complete: Bool
-        var success: Bool
+        public var id: Int
+        public var createdAt: Date
+        public var updatedAt: Date
+        public var categories: Request.Status
+        public var entries: Request.Status
+        public var complete: Bool
+        public var success: Bool
                 
         public struct Status: Codable {
             var imported: Int

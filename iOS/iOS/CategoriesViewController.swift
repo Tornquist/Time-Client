@@ -46,7 +46,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         
         self.refreshControl = UIRefreshControl()
         self.refreshControl.addTarget(self, action: #selector(handleRefresh(_:)), for: .valueChanged)
-        self.tableView.addSubview(self.refreshControl)
+        self.tableView.refreshControl = self.refreshControl
         
         self.refreshNavigation()
     }

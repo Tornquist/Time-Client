@@ -42,7 +42,7 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         self.refreshControl = UIRefreshControl()
         self.refreshControl.addTarget(self, action: #selector(handleRefresh(_:)), for: .valueChanged)
-        self.tableView.addSubview(self.refreshControl)
+        self.tableView.refreshControl = self.refreshControl
         
         self.refreshNavigation()
     }

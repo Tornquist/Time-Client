@@ -7,9 +7,13 @@
 //
 
 import UIKit
+import TimeSDK
 
-class ImportListViewController: UIViewController {
+class ImportListViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
+    var refreshControl: UIRefreshControl!
+    @IBOutlet weak var tableView: UITableView!
+        
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -26,12 +30,29 @@ class ImportListViewController: UIViewController {
         self.navigationItem.title = NSLocalizedString("Imports", comment: "")
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(closePressed(_:)))
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addPressed(_:)))
+        
+        let topConstraint = NSLayoutConstraint(item: self.view!, attribute: .top, relatedBy: .equal, toItem: self.tableView, attribute: .top, multiplier: 1, constant: 0)
+        let bottomConstraint = NSLayoutConstraint(item: self.view!, attribute: .bottom, relatedBy: .equal, toItem: self.tableView, attribute: .bottom, multiplier: 1, constant: 0)
+        self.view.addConstraints([topConstraint, bottomConstraint])
+        
+        self.refreshControl = UIRefreshControl()
+        self.refreshControl.addTarget(self, action: #selector(handleRefresh(_:)), for: .valueChanged)
+        self.tableView.refreshControl = self.refreshControl
     }
     
     // MARK: - Data Methods and Actions
     
-    func loadData() {
-        print("Loading Data")
+    func loadData(refresh: Bool = false) {
+        let networkMode: Store.NetworkMode = refresh ? .refreshAll : .asNeeded
+        Time.shared.store.getImportRequests(networkMode) { (requests, error) in
+            DispatchQueue.main.async {
+                if self.refreshControl.isRefreshing {
+                    self.refreshControl.endRefreshing()
+                }
+                
+                self.tableView.reloadData()
+            }
+        }
     }
     
     // MARK: - Events
@@ -44,5 +65,31 @@ class ImportListViewController: UIViewController {
         guard let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "newImportView") as? NewImportViewController else { return }
         let importNavVC = UINavigationController(rootViewController: vc)
         self.present(importNavVC, animated: true, completion: nil)
+    }
+    
+    // MARK: - Table View
+    @objc func handleRefresh(_ refreshControl: UIRefreshControl) {
+        self.loadData(refresh: true)
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return Time.shared.store.importRequests.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "importCell", for: indexPath)
+        let request = Time.shared.store.importRequests[indexPath.row]
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MM/yy"
+        let dateString = dateFormatter.string(from: request.createdAt)
+        
+        cell.textLabel?.text = dateString
+        cell.detailTextLabel?.text = request.complete ? "Complete" : "Processing"
+        return cell
     }
 }
