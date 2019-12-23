@@ -58,6 +58,11 @@ class NewImportViewController: UIViewController, UIDocumentPickerDelegate, UIPic
     var step4ColumnBName: String? = nil
     var step4ColumnCName: String? = nil
     
+    @IBOutlet weak var step5Container: UIView!
+    @IBOutlet weak var step5TitleLabel: UILabel!
+    @IBOutlet weak var step5DetailsLabel: UILabel!
+    @IBOutlet weak var step5Button: UIButton!
+    
     // Shared
     
     var availableColumns: [String] = []
@@ -177,6 +182,9 @@ class NewImportViewController: UIViewController, UIDocumentPickerDelegate, UIPic
         self.step4Label.text = NSLocalizedString("4. Specify date formatting rules", comment: "")
         self.configureStep4()
         
+        self.step5TitleLabel.text = NSLocalizedString("5. Review details", comment: "")
+        self.step5Button.setTitle(NSLocalizedString("Import", comment: ""), for: .normal)
+        
         self.restartSteps()
     }
     
@@ -195,6 +203,8 @@ class NewImportViewController: UIViewController, UIDocumentPickerDelegate, UIPic
         self.step3CategoryColumns = []
         
         self.step4Container.isHidden = true
+        
+        self.step5Container.isHidden = true
     }
     
     // MARK: Step 1
@@ -266,9 +276,15 @@ class NewImportViewController: UIViewController, UIDocumentPickerDelegate, UIPic
 
     @IBAction func step3ContinueButtonPressed(_ sender: Any) {
         self.importer?.categoryColumns = self.step3CategoryColumns
-        
-        self.step3Container.isHidden = true
-        self.step4Container.isHidden = false
+        do {
+            // TODO: Show progress
+            try self.importer?.buildCategoryTree()
+            // TODO: End progress
+            self.step3Container.isHidden = true
+            self.step4Container.isHidden = false
+        } catch {
+            // TODO: Show error
+        }
     }
     
     // MARK: Step 4
@@ -418,6 +434,46 @@ class NewImportViewController: UIViewController, UIDocumentPickerDelegate, UIPic
                 // Show error
                 self.step4TestLabel.text = NSLocalizedString("Unable to parse", comment: "")
                 self.step4ApproveButton.isEnabled = false
+            }
+        }
+    }
+    
+    @IBAction func step4ApprovePressed(_ sender: Any) {
+        do {
+            // TODO: Show progress
+            try self.importer?.parseAll()
+            // TODO: End progress
+            self.configureStep5Details()
+            
+            self.step4Container.isHidden = true
+            self.step5Container.isHidden = false
+        } catch {
+            // show error
+        }
+    }
+    
+    // MARK: Step 5
+    
+    func configureStep5Details() {
+        let rangesValue = self.importer?.ranges ?? 0
+        let eventsValue = self.importer?.events ?? 0
+        let rangesString = NSLocalizedString("Ranges: \(rangesValue)", comment: "")
+        let eventsString = NSLocalizedString("Events: \(eventsValue)", comment: "")
+        
+        // TODO: Add review of columns prior to final submit
+        
+        self.step5DetailsLabel.text = NSLocalizedString("\(rangesString)\n\(eventsString)", comment: "")
+    }
+    
+    @IBAction func step5SubmitPressed(_ sender: Any) {
+        guard self.importer != nil else { return }
+        
+        Time.shared.store.importData(from: self.importer!) { (importedRequest, error) in
+            guard error == nil else {
+                return
+            }
+            DispatchQueue.main.async {
+                self.dismiss(animated: true, completion: nil)
             }
         }
     }

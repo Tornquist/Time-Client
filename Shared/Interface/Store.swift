@@ -474,9 +474,20 @@ public class Store {
             }
             
             self.importRequests = requests!
-            self._hasFetchedEntries = true
+            self._hasFetchedImportRequests = true
             
             completion?(requests, nil)
+        }
+    }
+
+    public func importData(from importer: FileImporter, completion: ((FileImporter.Request?, Error?) -> ())? = nil) {
+        self.api.importData(from: importer) { (request, error) in
+            if request != nil && error == nil {
+                self.importRequests.insert(request!, at: 0)
+                // Do not set _hasFetchedImportRequests to trigger full pull
+            }
+            
+            completion?(request, nil)
         }
     }
     
