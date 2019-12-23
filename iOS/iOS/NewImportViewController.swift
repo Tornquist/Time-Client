@@ -9,7 +9,13 @@
 import UIKit
 import TimeSDK
 
+protocol NewImportViewControllerDelegate: class {
+    func didCreateNewImportRequest()
+}
+
 class NewImportViewController: UIViewController, UIDocumentPickerDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
+    
+    weak var delegate: NewImportViewControllerDelegate? = nil
     
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var stackView: UIStackView!
@@ -473,6 +479,12 @@ class NewImportViewController: UIViewController, UIDocumentPickerDelegate, UIPic
                 return
             }
             DispatchQueue.main.async {
+                // TODO: Replace with autorefresh in store and listeners.
+                //       This works for the parent view, but makes refreshing changes in the root
+                //       views a bit messy. I do not want all kinds of hooks into the category
+                //       and entry views to explicity refresh.
+
+                self.delegate?.didCreateNewImportRequest()
                 self.dismiss(animated: true, completion: nil)
             }
         }

@@ -9,7 +9,7 @@
 import UIKit
 import TimeSDK
 
-class ImportListViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class ImportListViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, NewImportViewControllerDelegate {
     
     var refreshControl: UIRefreshControl!
     @IBOutlet weak var tableView: UITableView!
@@ -50,7 +50,7 @@ class ImportListViewController: UIViewController, UITableViewDelegate, UITableVi
                     self.refreshControl.endRefreshing()
                 }
                 
-                self.tableView.reloadData()
+                self.refreshTableViewAndOptionallyRepeat()
             }
         }
     }
@@ -63,11 +63,13 @@ class ImportListViewController: UIViewController, UITableViewDelegate, UITableVi
     
     @IBAction func addPressed(_ sender: Any) {
         guard let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "newImportView") as? NewImportViewController else { return }
+        vc.delegate = self
         let importNavVC = UINavigationController(rootViewController: vc)
         self.present(importNavVC, animated: true, completion: nil)
     }
     
     // MARK: - Table View
+
     @objc func handleRefresh(_ refreshControl: UIRefreshControl) {
         self.loadData(refresh: true)
     }
@@ -91,5 +93,22 @@ class ImportListViewController: UIViewController, UITableViewDelegate, UITableVi
         cell.textLabel?.text = dateString
         cell.detailTextLabel?.text = request.complete ? "Complete" : "Processing"
         return cell
+    }
+    
+    func refreshTableViewAndOptionallyRepeat() {
+        self.tableView.reloadData()
+        
+        let somethingPending = Time.shared.store.importRequests.map({ !$0.complete }).reduce(false, { $0 || $1 })
+        if somethingPending {
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(2)) {
+                self.loadData(refresh: true)
+            }
+        }
+    }
+    
+    // MARK: - NewImportViewControllerDelegate
+    
+    func didCreateNewImportRequest() {
+        self.refreshTableViewAndOptionallyRepeat()
     }
 }

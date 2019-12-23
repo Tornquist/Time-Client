@@ -473,6 +473,24 @@ public class Store {
                 return
             }
             
+            if self.importRequests.count != 0 {
+                let requestCompleted = requests!.map({ (newRequest) in
+                    let newID = newRequest.id
+                    let oldRequest = self.importRequests.first(where: { $0.id == newID })
+                    
+                    let newAlreadyComplete = oldRequest == nil && newRequest.complete
+                    let newRecentlyComplete = oldRequest != nil && !oldRequest!.complete && newRequest.complete
+                    
+                    return newAlreadyComplete || newRecentlyComplete
+                }).reduce(false, { $0 || $1 })
+
+                if requestCompleted {
+                    // Hard refresh data to display new entries
+                    self.getEntries(.fetchChanges)
+                    self.getCategories(.fetchChanges)
+                }
+            }
+            
             self.importRequests = requests!
             self._hasFetchedImportRequests = true
             
