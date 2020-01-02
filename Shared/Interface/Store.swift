@@ -485,13 +485,31 @@ public class Store {
                 }).reduce(false, { $0 || $1 })
 
                 if requestCompleted {
+                    NotificationCenter.default.post(name: .TimeImportRequestCompleted, object: self)
+                    
                     // Hard refresh data to display new entries
-                    self.getEntries(.fetchChanges)
-                    self.getCategories(.fetchChanges)
+                    var entriesUpdateDone = false
+                    var categoriesUpdateDone = false
+ 
+                    let complete = {
+                        guard entriesUpdateDone && categoriesUpdateDone else { return }
+                        NotificationCenter.default.post(name: .TimeBackgroundStoreUpdate, object: self)
+                    }
+                    
+                    self.getEntries(.fetchChanges) { (_, _) in
+                        entriesUpdateDone = true
+                        complete()
+                    }
+                    self.getCategories(.fetchChanges) { (_, _) in
+                        categoriesUpdateDone = true
+                        complete()
+                    }
                 }
             }
             
-            self.importRequests = requests!
+            self.importRequests = requests!.sorted(by: { (a, b) -> Bool in
+                return a.createdAt.compare(b.createdAt) == .orderedDescending
+            })
             self._hasFetchedImportRequests = true
             
             completion?(requests, nil)
@@ -502,7 +520,11 @@ public class Store {
         self.api.importData(from: importer) { (request, error) in
             if request != nil && error == nil {
                 self.importRequests.insert(request!, at: 0)
-                // Do not set _hasFetchedImportRequests to trigger full pull
+                // Do not set _hasFetchedImportRequests.
+                //   -> If already true, it is still true.
+                //   -> If it was false, there can still be items missing that need fetched.
+                
+                NotificationCenter.default.post(name: .TimeImportRequestCreated, object: self)
             }
             
             completion?(request, nil)

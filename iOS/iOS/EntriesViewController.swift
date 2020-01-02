@@ -25,6 +25,8 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         super.viewDidLoad()
         
         self.configureTheme()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(safeReload), name: .TimeBackgroundStoreUpdate, object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -236,6 +238,16 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    }
+    
+    @objc func safeReload() {
+        if Thread.isMainThread {
+            self.tableView.reloadData()
+        } else {
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }
     }
     
     // MARK: - Time Formatting

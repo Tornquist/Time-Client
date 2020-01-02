@@ -9,7 +9,7 @@
 import UIKit
 import TimeSDK
 
-class ImportListViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, NewImportViewControllerDelegate {
+class ImportListViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var refreshControl: UIRefreshControl!
     @IBOutlet weak var tableView: UITableView!
@@ -18,6 +18,9 @@ class ImportListViewController: UIViewController, UITableViewDelegate, UITableVi
         super.viewDidLoad()
         
         self.configureTheme()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(didModifyImportRequests), name: .TimeImportRequestCreated, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didModifyImportRequests), name: .TimeImportRequestCompleted, object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -28,7 +31,7 @@ class ImportListViewController: UIViewController, UITableViewDelegate, UITableVi
     
     func configureTheme() {
         self.navigationItem.title = NSLocalizedString("Imports", comment: "")
-        self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(closePressed(_:)))
+        self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(donePressed(_:)))
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addPressed(_:)))
         
         let topConstraint = NSLayoutConstraint(item: self.view!, attribute: .top, relatedBy: .equal, toItem: self.tableView, attribute: .top, multiplier: 1, constant: 0)
@@ -57,13 +60,12 @@ class ImportListViewController: UIViewController, UITableViewDelegate, UITableVi
     
     // MARK: - Events
     
-    @IBAction func closePressed(_ sender: Any) {
+    @IBAction func donePressed(_ sender: Any) {
         self.dismiss(animated: true, completion: nil)
     }
     
     @IBAction func addPressed(_ sender: Any) {
         guard let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "newImportView") as? NewImportViewController else { return }
-        vc.delegate = self
         let importNavVC = UINavigationController(rootViewController: vc)
         self.present(importNavVC, animated: true, completion: nil)
     }
@@ -96,7 +98,13 @@ class ImportListViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func refreshTableViewAndOptionallyRepeat() {
-        self.tableView.reloadData()
+        if Thread.isMainThread {
+            self.tableView.reloadData()
+        } else {
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }
         
         let somethingPending = Time.shared.store.importRequests.map({ !$0.complete }).reduce(false, { $0 || $1 })
         if somethingPending {
@@ -106,9 +114,9 @@ class ImportListViewController: UIViewController, UITableViewDelegate, UITableVi
         }
     }
     
-    // MARK: - NewImportViewControllerDelegate
+    // MARK: - Time Notifictions
     
-    func didCreateNewImportRequest() {
+    @objc func didModifyImportRequests() {
         self.refreshTableViewAndOptionallyRepeat()
     }
 }

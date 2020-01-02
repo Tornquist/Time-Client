@@ -25,6 +25,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         super.viewDidLoad()
         
         self.configureTheme()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(safeReload), name: .TimeBackgroundStoreUpdate, object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -431,6 +433,16 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                     self.tableView.insertRows(at: modifyPaths, with: .automatic)
                 }
             }, completion: nil)
+        }
+    }
+    
+    @objc func safeReload() {
+        if Thread.isMainThread {
+            self.tableView.reloadData()
+        } else {
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
         }
     }
     
