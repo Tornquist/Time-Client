@@ -14,4 +14,9 @@ extension Notification.Name {
     
     public static let TimeUserSignInNeeded = Notification.Name("TimeUserSignInNeeded")
     public static let TimeUnableToReachServer = Notification.Name("TimeUnableToReachServer")
+    
+    public static let TimeImportRequestCreated = Notification.Name("TimeImportRequestCreated")
+    public static let TimeImportRequestCompleted = Notification.Name("TimeImportRequestCompleted")
+    
+    public static let TimeBackgroundStoreUpdate = Notification.Name("TimeBackgroundStoreUpdate")
 }

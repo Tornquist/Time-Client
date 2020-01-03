@@ -61,6 +61,9 @@ public class Store {
         return self._categoryTrees
     }
     
+    private var _hasFetchedImportRequests: Bool = false
+    public var importRequests: [FileImporter.Request] = []
+    
     init(api: API) {
         self.api = api
         self.restoreDataFromDisk()
@@ -453,6 +456,78 @@ public class Store {
                 self.entries.remove(at: index)
             }
             completion?(true)
+        }
+    }
+    
+    // MARK: - Import Interface
+    
+    public func getImportRequests(_ network: NetworkMode = .asNeeded, completion: (([FileImporter.Request]?, Error?) -> ())? = nil) {
+        guard !self._hasFetchedImportRequests || network != .asNeeded else {
+            completion?(self.importRequests, nil)
+            return
+        }
+        
+        self.api.getImportRequests { (requests, error) in
+            guard requests != nil && error == nil else {
+                completion?(nil, error)
+                return
+            }
+            
+            if self.importRequests.count != 0 {
+                let requestCompleted = requests!.map({ (newRequest) in
+                    let newID = newRequest.id
+                    let oldRequest = self.importRequests.first(where: { $0.id == newID })
+                    
+                    let newAlreadyComplete = oldRequest == nil && newRequest.complete
+                    let newRecentlyComplete = oldRequest != nil && !oldRequest!.complete && newRequest.complete
+                    
+                    return newAlreadyComplete || newRecentlyComplete
+                }).reduce(false, { $0 || $1 })
+
+                if requestCompleted {
+                    NotificationCenter.default.post(name: .TimeImportRequestCompleted, object: self)
+                    
+                    // Hard refresh data to display new entries
+                    var entriesUpdateDone = false
+                    var categoriesUpdateDone = false
+ 
+                    let complete = {
+                        guard entriesUpdateDone && categoriesUpdateDone else { return }
+                        NotificationCenter.default.post(name: .TimeBackgroundStoreUpdate, object: self)
+                    }
+                    
+                    self.getEntries(.fetchChanges) { (_, _) in
+                        entriesUpdateDone = true
+                        complete()
+                    }
+                    self.getCategories(.fetchChanges) { (_, _) in
+                        categoriesUpdateDone = true
+                        complete()
+                    }
+                }
+            }
+            
+            self.importRequests = requests!.sorted(by: { (a, b) -> Bool in
+                return a.createdAt.compare(b.createdAt) == .orderedDescending
+            })
+            self._hasFetchedImportRequests = true
+            
+            completion?(requests, nil)
+        }
+    }
+
+    public func importData(from importer: FileImporter, completion: ((FileImporter.Request?, Error?) -> ())? = nil) {
+        self.api.importData(from: importer) { (request, error) in
+            if request != nil && error == nil {
+                self.importRequests.insert(request!, at: 0)
+                // Do not set _hasFetchedImportRequests.
+                //   -> If already true, it is still true.
+                //   -> If it was false, there can still be items missing that need fetched.
+                
+                NotificationCenter.default.post(name: .TimeImportRequestCreated, object: self)
+            }
+            
+            completion?(request, nil)
         }
     }
     
