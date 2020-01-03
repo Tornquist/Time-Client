@@ -155,4 +155,31 @@ extension API {
     func deleteEntry(withID id: Int, completionHandler: @escaping (Error?) -> ()) {
         DELETE("/entries/\(id)", completion: completionHandler)
     }
+    
+    // MARK: - Importing Data
+    
+    func getImportRequests(completionHandler: @escaping ([FileImporter.Request]?, Error?) -> ()) {
+        GET("/import", completion: completionHandler)
+    }
+    
+    func getImportRequest(withID id: Int, completionHandler: @escaping (FileImporter.Request?, Error?) -> ()) {
+        GET("/import/\(id)", completion: completionHandler)
+    }
+    
+    func importData(from fileImporter: FileImporter, completionHandler: @escaping (FileImporter.Request?, Error?) -> ()) {
+        guard let jsonData = fileImporter.asJson() else {
+            completionHandler(nil, TimeError.unableToSendRequest("Missing data"))
+            return
+        }
+        
+        // Empty root will map all root.children to top level
+        let body: [String: Any] = [
+            "name": "",
+            "events": [],
+            "ranges": [],
+            "children": jsonData
+        ]
+
+        POST("/import", body, auth: true, encoding: .json, completion: completionHandler)
+    }
 }
