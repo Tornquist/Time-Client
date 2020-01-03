@@ -1040,4 +1040,103 @@ class Test_Store: XCTestCase {
         XCTAssertEqual(self.store.countEntries(for: rootB, includeChildren: false), 0)
         XCTAssertEqual(self.store.countEntries(for: rootB, includeChildren: true), 0)
     }
+    
+    // MARK: - Import Requests
+    
+    func test_28_fetchingImportRequests() {
+        // With network on 1st try
+        let importFetch = self.expectation(description: "importFetch")
+        var startTime = CFAbsoluteTimeGetCurrent()
+        var timeElapsed: CFAbsoluteTime! = nil
+        self.store.getImportRequests() { (requests, error) in
+            XCTAssertNotNil(requests)
+            XCTAssertEqual(requests?.count ?? -1, 0)
+            XCTAssertNil(error)
+            
+            timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+            XCTAssertGreaterThan(timeElapsed, 0.0001)
+            
+            importFetch.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Without network on 2nd try
+        let importReFetch = self.expectation(description: "importFetch")
+        startTime = CFAbsoluteTimeGetCurrent()
+        timeElapsed = nil
+        self.store.getImportRequests() { (requests, error) in
+            XCTAssertNotNil(requests)
+            XCTAssertEqual(requests?.count ?? -1, 0)
+            XCTAssertNil(error)
+            
+            timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+            XCTAssertEqual(timeElapsed, 0, accuracy: 0.0001)
+            
+            importReFetch.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+
+    func test_29_importingANewRequest() {
+        // Setup
+        let inputFileName = "import-example.csv"
+        let fileParts = inputFileName.split(separator: ".").map({ String($0) })
+        let bundle = Bundle(for: type(of: self))
+        let fileURL = bundle.url(forResource: fileParts[0], withExtension: fileParts[1])!
+        let importer = FileImporter(fileURL: fileURL, separator: ",")
+        XCTAssertNoThrow(try importer.loadData())
+        importer.categoryColumns = ["category", "project", "task", "subtask"]
+        XCTAssertNoThrow(try importer.buildCategoryTree())
+        XCTAssertNoThrow(try importer.setDateTimeParseRules(
+            startUnixColumn: "unix_start",
+            endUnixColumn: "unix_end"
+        ))
+        
+        // Create request from importer
+        // --> Expect new import request to send notification
+        _ = self.expectation(forNotification: .TimeImportRequestCreated, object: nil, handler: nil)
+        
+        let submitImportRequest = self.expectation(description: "submitImportRequest")
+        self.store.importData(from: importer) { (newRequest, error) in
+            XCTAssertNotNil(newRequest)
+            XCTAssertNil(error)
+            
+            submitImportRequest.fulfill()
+        }
+        
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_30_softFetchReturnsImportRequest() {
+        let importFetch = self.expectation(description: "importFetch")
+
+        self.store.getImportRequests(.asNeeded) { (requests, error) in
+            XCTAssertNotNil(requests)
+            XCTAssertEqual(requests?.count ?? 0, 1)
+            XCTAssertNil(error)
+            
+            importFetch.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func test_31_hardFetchReturnsUpdatedImportRequestAndTriggersNotifications() {
+        sleep(1) // Allow server to complete import
+        
+        // Verify update triggers tracked completion
+        let importFetch = self.expectation(description: "importFetch")
+        _ = self.expectation(forNotification: .TimeImportRequestCompleted, object: nil, handler: nil)
+        self.store.getImportRequests(.fetchChanges) { (requests, error) in
+            XCTAssertNotNil(requests)
+            XCTAssertEqual(requests?.count ?? 0, 1)
+            XCTAssertNil(error)
+            
+            importFetch.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Verify after import completion is received a background update is triggered
+        _ = self.expectation(forNotification: .TimeBackgroundStoreUpdate, object: nil, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+    }
 }
