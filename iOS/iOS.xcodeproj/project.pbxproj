@@ -52,6 +52,7 @@
 		D855813121BDE9A400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D85B0A492246DD1A00835E55 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		D85B0A4B2246DD2100835E55 /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesViewController.swift; sourceTree = "<group>"; };
+		D8D3BA9423C42BA7002B0082 /* Time-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Time-iOS.entitlements"; sourceTree = "<group>"; };
 		D8DD2A422331083500F26665 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		D8E85C33229D682C00204D14 /* EntriesViewController+Alerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EntriesViewController+Alerts.swift"; sourceTree = "<group>"; };
 		D8F549B023A9005D009E8512 /* ImportListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportListViewController.swift; sourceTree = "<group>"; };
@@ -91,6 +92,7 @@
 		D855812121BDE9A200DCB577 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
+				D8D3BA9423C42BA7002B0082 /* Time-iOS.entitlements */,
 				D855812221BDE9A200DCB577 /* AppDelegate.swift */,
 				D855812E21BDE9A400DCB577 /* LaunchScreen.storyboard */,
 				D855812C21BDE9A400DCB577 /* Assets.xcassets */,
@@ -347,6 +349,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "iOS/Time-iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 99AECXNBFU;
 				INFOPLIST_FILE = "$(SRCROOT)/iOS/Info.plist";
@@ -366,6 +369,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "iOS/Time-iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 99AECXNBFU;
 				INFOPLIST_FILE = "$(SRCROOT)/iOS/Info.plist";
