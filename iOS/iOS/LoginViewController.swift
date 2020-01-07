@@ -26,11 +26,13 @@ class LoginViewController: UIViewController {
         self.emailTextField.keyboardType = .emailAddress
         self.emailTextField.autocapitalizationType = .none
         self.emailTextField.autocorrectionType = .no
+        self.emailTextField.textContentType = .username
         
         self.passwordTextField.placeholder = NSLocalizedString("Password", comment: "")
         self.passwordTextField.spellCheckingType = .no
         self.passwordTextField.autocapitalizationType = .none
         self.passwordTextField.isSecureTextEntry = true
+        self.passwordTextField.textContentType = .password
         
         self.signUpButton.setTitle(NSLocalizedString("Sign Up", comment: ""), for: .normal)
         self.logInButton.setTitle(NSLocalizedString("Log In", comment: ""), for: .normal)
