@@ -34,7 +34,16 @@ public class Time {
         NotificationCenter.default.addObserver(self, selector: #selector(autoRefreshFailed), name: .TimeAPIAutoRefreshFailed, object: self.api)
     }
     
-    public func initialize(completionHandler: ((Error?) -> ())? = nil) {
+    public func initialize(for serverURL: String? = nil, completionHandler: ((Error?) -> ())? = nil) {
+        // If not set, allow API to run without modification
+        if serverURL != nil {
+            let updatedURL = self.api.set(url: serverURL!)
+            if updatedURL {
+                // On server change, purge everything
+                self.deauthenticate()
+            }
+        }
+        
         guard self.api.token == nil else {
             completionHandler?(nil)
             return

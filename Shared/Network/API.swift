@@ -9,17 +9,54 @@
 import Foundation
 
 class API: APIQueueDelegate {
-    static let shared = API()
+    
+    private enum APIKeys: String {
+        case storedSharedServerURLOverride = "time-api-configuration-shared-server-url-override"
+    }
+    
+    private static var _shared: API? = nil
+    static var shared: API {
+        if API._shared == nil {
+            let storedUrlOverride = UserDefaults.standard.string(forKey:
+                API.APIKeys.storedSharedServerURLOverride.rawValue
+            )
+            API._shared = API(baseURL: storedUrlOverride)
+        }
+        return API._shared!
+    }
     
     var isRefreshingToken = false
-    var baseURL: String = "http://localhost:8000"
     var token: Token? = nil
+    
+    private var _baseURL: String {
+        didSet {
+            if self === API.shared {
+                UserDefaults.standard.set(
+                    self._baseURL,
+                    forKey: API.APIKeys.storedSharedServerURLOverride.rawValue
+                )
+            }
+        }
+    }
+    var baseURL: String { return self._baseURL }
+    
+    static private let defaultURL: String = "http://localhost:8000"
     
     var queue: APIQueue
     
-    init() {
+    init(baseURL: String? = nil) {
+        self._baseURL = baseURL ?? API.defaultURL
+        
         self.queue = APIQueue(maximumFailures: 2)
         self.queue.delegate = self
+    }
+
+    func set(url newURL: String) -> Bool {
+        if newURL == self._baseURL {
+            return false
+        }
+        self._baseURL = newURL
+        return true
     }
     
     enum HttpMethod: String {

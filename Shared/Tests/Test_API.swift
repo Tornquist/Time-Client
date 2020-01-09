@@ -49,8 +49,7 @@ class Test_API: XCTestCase {
     }
     
     func test_rejectsAllRequestsWithBadBaseURL() {
-        let newAPI = API()
-        newAPI.baseURL = "/\\"
+        let newAPI = API(baseURL: "/\\")
         
         let expectation = self.expectation(description: "badURL")
         newAPI.timeRequest(path: "/endpoint", method: .GET, body: nil, encoding: nil, authorized: false, completion: { (user: User?, error: Error?) in

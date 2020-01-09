@@ -15,10 +15,18 @@ class LandingViewController: UIViewController {
     var initialized: Bool = false
     var authenticated: Bool = false
     
+    var serverURLOverride: String? {
+        let serverOverrideStoredValue = UserDefaults.standard.string(forKey: "server_url_override")
+        if serverOverrideStoredValue?.count == 0 {
+            return nil
+        }
+        return serverOverrideStoredValue
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        Time.shared.initialize { error in
+                
+        Time.shared.initialize(for: self.serverURLOverride) { error in
             self.initialized = true
             self.authenticated = error == nil
             self.handleTransition()
