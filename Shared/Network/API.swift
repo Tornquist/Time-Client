@@ -10,53 +10,67 @@ import Foundation
 
 class API: APIQueueDelegate {
     
-    private enum APIKeys: String {
-        case storedSharedServerURLOverride = "time-api-configuration-shared-server-url-override"
-    }
-    
+    // Shared Interface
     private static var _shared: API? = nil
     static var shared: API {
         if API._shared == nil {
-            let storedUrlOverride = UserDefaults.standard.string(forKey:
-                API.APIKeys.storedSharedServerURLOverride.rawValue
-            )
-            API._shared = API(baseURL: storedUrlOverride)
+            let storedURL = self.storedUrlOverride
+            let safeUrl = API.generateSafe(url: storedURL)
+            API._shared = API(baseURL: safeUrl)
         }
         return API._shared!
     }
+    private var isShared: Bool { self === API.shared }
     
-    var isRefreshingToken = false
-    var token: Token? = nil
+    // User Defaults
+    private enum APIKeys: String {
+        case storedSharedServerURLOverride = "time-api-configuration-shared-server-url-override"
+    }
+    private static var storedUrlOverride: String? {
+        return UserDefaults.standard.string(forKey: API.APIKeys.storedSharedServerURLOverride.rawValue)
+    }
     
-    private var _baseURL: String {
-        didSet {
-            if self === API.shared {
+    // Internal URL Interface
+    private var _activeURLStorage: String
+    private var activeURL: String {
+        get {
+            return self._activeURLStorage
+        }
+        set {
+            if self.isShared {
                 UserDefaults.standard.set(
-                    self._baseURL,
+                    newValue,
                     forKey: API.APIKeys.storedSharedServerURLOverride.rawValue
                 )
             }
+            
+            self._activeURLStorage = API.generateSafe(url: newValue)
         }
     }
-    var baseURL: String { return self._baseURL }
     
+    // External URL Interface
+    var baseURL: String { self.activeURL }
+    func set(url newURL: String) -> Bool {
+        let urlDifferent = self.isShared ? newURL != API.storedUrlOverride : newURL != self.activeURL
+        guard urlDifferent else { return false }
+        
+        self.activeURL = newURL
+        return true
+    }
+    
+    // Authentication
+    var isRefreshingToken = false
+    var token: Token? = nil
+    
+    // API Retry and Default Configuration
     static private let defaultURL: String = "http://localhost:8000"
-    
     var queue: APIQueue
     
     init(baseURL: String? = nil) {
-        self._baseURL = baseURL ?? API.defaultURL
+        self._activeURLStorage = API.generateSafe(url: baseURL)
         
         self.queue = APIQueue(maximumFailures: 2)
         self.queue.delegate = self
-    }
-
-    func set(url newURL: String) -> Bool {
-        if newURL == self._baseURL {
-            return false
-        }
-        self._baseURL = newURL
-        return true
     }
     
     enum HttpMethod: String {
@@ -312,5 +326,14 @@ class API: APIQueueDelegate {
         } catch {
             completion(nil, TimeError.unableToDecodeResponse)
         }
+    }
+    
+    // MARK: - URL Helper
+    
+    private static func generateSafe(url: String?) -> String {
+        guard url != nil && url!.trimmingCharacters(in: .whitespaces).count > 0 else {
+            return API.defaultURL
+        }
+        return url!
     }
 }

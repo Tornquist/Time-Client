@@ -35,13 +35,9 @@ public class Time {
     }
     
     public func initialize(for serverURL: String? = nil, completionHandler: ((Error?) -> ())? = nil) {
-        // If not set, allow API to run without modification
         if serverURL != nil {
             let updatedURL = self.api.set(url: serverURL!)
-            if updatedURL {
-                // On server change, purge everything
-                self.deauthenticate()
-            }
+            if updatedURL { self.deauthenticate() }
         }
         
         guard self.api.token == nil else {
