@@ -170,4 +170,32 @@ class Test_Authentication: XCTestCase {
         
         waitForExpectations(timeout: 5, handler: nil)
     }
+    
+    func test_9_externalInterfaceSupportsURLOverride() {
+        let api = API()
+        let tokenIdentifier = UUID().uuidString
+        let time = Time(withAPI: api, andTokenIdentifier: tokenIdentifier)
+        
+        let email = "test@test.com"
+        let password = "defaultPassword"
+        
+        // Start with default URL
+        let authenticationExpectation = self.expectation(description: "authentication")
+        time.authenticate(email: email, password: password) { (error) in
+            XCTAssertNil(error)
+            authenticationExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        XCTAssertNotNil(time.api.token)
+        
+        // Change url and force deauthentication
+        let initializeExpectation = self.expectation(description: "initialization")
+        time.initialize(for: "http://localhost:8001") { (error) in
+            XCTAssertNotNil(error)
+            XCTAssertEqual(error as! TimeError, TimeError.tokenNotFound)
+            initializeExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        XCTAssertNil(time.api.token)
+    }
 }

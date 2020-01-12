@@ -204,4 +204,97 @@ class Test_API: XCTestCase {
         // Side effects only called on success
         XCTAssertFalse(sideEffectsCalled)
     }
+    
+    // MARK: - URL Configuration Tests
+    
+    func test_defaultURLIsCorrect() {
+        let newAPI = API()
+        XCTAssertEqual(newAPI.baseURL, "http://localhost:8000")
+    }
+    
+    func test_canSetCustomURL() {
+        let myURLOverride = "https://myCustomSubdomain.myCustomDomain.com"
+        let newAPI = API(baseURL: myURLOverride)
+        XCTAssertEqual(newAPI.baseURL, myURLOverride)
+    }
+    
+    func test_canChangeURLFromDefault() {
+        let newAPI = API()
+        XCTAssertEqual(newAPI.baseURL, "http://localhost:8000")
+        
+        let newURL = "https://myCustomSubdomain.myCustomDomain.com"
+        let didChange = newAPI.set(url: newURL)
+        
+        XCTAssertTrue(didChange)
+        XCTAssertEqual(newAPI.baseURL, newURL)
+    }
+    
+    func test_canChangeURLFromOverride() {
+        let baseURL = "https://myCustomSubdomain.myCustomDomain.com"
+        let newURL = "https://www.myOtherCustomDomain.com"
+        
+        let newAPI = API(baseURL: baseURL)
+        XCTAssertEqual(newAPI.baseURL, baseURL)
+        
+        let didChange = newAPI.set(url: newURL)
+        
+        XCTAssertTrue(didChange)
+        XCTAssertEqual(newAPI.baseURL, newURL)
+    }
+    
+    func test_returnsDidChangeOnFirstChange() {
+        let newAPI = API()
+        XCTAssertEqual(newAPI.baseURL, "http://localhost:8000")
+        
+        let newURL = "https://www.myOtherCustomDomain.com"
+        let didChange = newAPI.set(url: newURL)
+        
+        XCTAssertTrue(didChange)
+        XCTAssertEqual(newAPI.baseURL, newURL)
+        
+        let didChangeAgain = newAPI.set(url: newURL)
+        XCTAssertFalse(didChangeAgain)
+        XCTAssertEqual(newAPI.baseURL, newURL)
+    }
+    
+    func test_sharedStoredURLUpdates() {
+        let keyName = "time-api-configuration-shared-server-url-override"
+                
+        // Force reset
+        let api = API.shared
+        _ = api.set(url: "https://default.domain.com")
+        
+        // Test
+        let newURL = "https://otherSubdomain.newDomain.com"
+        
+        let startingStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertNotEqual(startingStoredValue, newURL)
+        
+        let didUpdate = api.set(url: newURL)
+        XCTAssertTrue(didUpdate)
+        XCTAssertEqual(api.baseURL, newURL)
+        
+        let newStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(newStoredValue, newURL)
+        
+        // Return to safe (for any tests using API.shared)
+        _ = api.set(url: "http://localhost:8000")
+    }
+    
+    func test_notSharedStoredURLDoesNotUpdate() {
+        let keyName = "time-api-configuration-shared-server-url-override"
+
+        let startingStoredValue = UserDefaults.standard.string(forKey: keyName)
+        
+        let newURL = "https://\(UUID.init().uuidString).com"
+        let newAPI = API()
+        let didUpdate = newAPI.set(url: newURL)
+        
+        XCTAssertTrue(didUpdate)
+        XCTAssertEqual(newAPI.baseURL, newURL)
+        
+        let endingStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(startingStoredValue, endingStoredValue)
+        XCTAssertNotEqual(endingStoredValue, newURL)
+    }
 }
