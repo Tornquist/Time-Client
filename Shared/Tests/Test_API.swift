@@ -257,9 +257,9 @@ class Test_API: XCTestCase {
         XCTAssertEqual(newAPI.baseURL, newURL)
     }
     
-    func test_sharedStoredURLUpdates() {
-        let keyName = "time-api-configuration-shared-server-url-override"
-                
+    func test_sharedAPIUsesCaching() {
+        let keyName = "time-api-configuration-server-url-override"
+
         // Force reset
         let api = API.shared
         _ = api.set(url: "https://default.domain.com")
@@ -281,8 +281,8 @@ class Test_API: XCTestCase {
         _ = api.set(url: "http://localhost:8000")
     }
     
-    func test_notSharedStoredURLDoesNotUpdate() {
-        let keyName = "time-api-configuration-shared-server-url-override"
+    func test_cachingBehaviorIsDisabledByDefaultForNewAPIObjects() {
+        let keyName = "time-api-configuration-server-url-override"
 
         let startingStoredValue = UserDefaults.standard.string(forKey: keyName)
         
@@ -296,5 +296,77 @@ class Test_API: XCTestCase {
         let endingStoredValue = UserDefaults.standard.string(forKey: keyName)
         XCTAssertEqual(startingStoredValue, endingStoredValue)
         XCTAssertNotEqual(endingStoredValue, newURL)
+    }
+    
+    func test_cachingBehaviorCanBeEnabledForCustomObjects() {
+        let keyName = "time-api-configuration-server-url-override"
+
+        // Force reset
+        let api = API(enableURLCachingBehavior: true)
+        _ = api.set(url: "https://default.domain.com")
+        
+        // Test
+        let newURL = "https://otherSubdomain.newDomain.com"
+        
+        let startingStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertNotEqual(startingStoredValue, newURL)
+        
+        let didUpdate = api.set(url: newURL)
+        XCTAssertTrue(didUpdate)
+        XCTAssertEqual(api.baseURL, newURL)
+        
+        let newStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(newStoredValue, newURL)
+        
+        // Return to safe (for any tests using API.shared)
+        _ = api.set(url: "http://localhost:8000")
+    }
+    
+    func test_cachingBehaviorWithCustomKeys() {
+        let keyName = UUID().uuidString
+        
+        // Seed initial value
+        let startingURL = "https://myDomain.com"
+        UserDefaults.standard.set(startingURL, forKey: keyName)
+
+        // Create new API with caching and the correct key name
+        let api = API(
+            enableURLCachingBehavior: true,
+            urlOverrideKey: keyName
+        )
+        XCTAssertEqual(api.baseURL, startingURL)
+        
+        // Change url and monitor results
+        let changedURL = "https://mySubdomain.myDomain.com"
+        let didChange = api.set(url: changedURL)
+        XCTAssertTrue(didChange)
+        let storedValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(changedURL, storedValue)
+        
+        // Create a new API with caching and a custom URL
+        let baseURLOverride = "https://otherSubdomain.myDomain.com"
+        let newAPI = API(
+            baseURL: baseURLOverride,
+            enableURLCachingBehavior: true,
+            urlOverrideKey: keyName
+        )
+        XCTAssertEqual(newAPI.baseURL, baseURLOverride)
+        let newStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(baseURLOverride, newStoredValue)
+        
+        // Update the url to the same as init
+        let didChangeOnUpdateToSame = newAPI.set(url: baseURLOverride)
+        XCTAssertFalse(didChangeOnUpdateToSame)
+        
+        // Update the url and monitor continued caching
+        let finalURL = "https://www.myOtherDomain.com"
+        let didChangeOnUpdateToNew = newAPI.set(url: finalURL)
+        XCTAssertTrue(didChangeOnUpdateToNew)
+        let newerStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(finalURL, newerStoredValue)
+        
+        // Create another api using the same key
+        let newerAPI = API(enableURLCachingBehavior: true, urlOverrideKey: keyName)
+        XCTAssertEqual(newerAPI.baseURL, finalURL)
     }
 }
