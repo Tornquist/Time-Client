@@ -14,11 +14,12 @@ class LandingViewController: UIViewController {
     // Direction Flags
     var initialized: Bool = false
     var authenticated: Bool = false
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        Time.shared.initialize { error in
+                
+        let serverURLOverride = UserDefaults.standard.string(forKey: "server_url_override")
+        Time.shared.initialize(for: serverURLOverride) { error in
             self.initialized = true
             self.authenticated = error == nil
             self.handleTransition()

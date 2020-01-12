@@ -9,15 +9,81 @@
 import Foundation
 
 class API: APIQueueDelegate {
-    static let shared = API()
     
+    // Default Configuration
+    static private let defaultURL: String = "http://localhost:8000"
+    static private let defaultURLOverrideKey = "time-api-configuration-server-url-override"
+    
+    // Shared Interface
+    private static var _shared: API? = nil
+    static var shared: API {
+        if API._shared == nil {
+            API._shared = API(enableURLCachingBehavior: true)
+        }
+        return API._shared!
+    }
+        
+    // Internal URL Interface and Configuration
+    private var _activeURLStorage: String
+    private var enableURLCachingBehavior: Bool
+    private var urlOverrideKey: String
+    private var activeURL: String {
+        get {
+            return self._activeURLStorage
+        }
+        set {
+            if self.enableURLCachingBehavior {
+                UserDefaults.standard.set(newValue, forKey: self.urlOverrideKey)
+            }
+            
+            self._activeURLStorage = API.generateSafe(url: newValue)
+        }
+    }
+    
+    // External URL Interface
+    var baseURL: String { self.activeURL }
+    func set(url newURL: String) -> Bool {
+        let urlDifferent = self.enableURLCachingBehavior
+            ? newURL != UserDefaults.standard.string(forKey: self.urlOverrideKey)
+            : newURL != self.activeURL
+        guard urlDifferent else { return false }
+        
+        self.activeURL = newURL
+        return true
+    }
+    
+    // Authentication
     var isRefreshingToken = false
-    var baseURL: String = "http://localhost:8000"
     var token: Token? = nil
     
+    // Other Variables
     var queue: APIQueue
     
-    init() {
+    /**
+       Initializes an API object
+       - Parameters:
+         - baseURL: The server URL. If not set, will use the internal default.
+         - enableURLCachingBehavior:
+           Initialize with cached (on-disk) url and write any url changes to disk.
+           Will use baseURL over cached URL if set.
+           Defaults to false
+         
+     */
+    init(baseURL: String? = nil, enableURLCachingBehavior: Bool = false, urlOverrideKey: String? = nil) {
+        self.enableURLCachingBehavior = enableURLCachingBehavior
+        self.urlOverrideKey = urlOverrideKey ?? API.defaultURLOverrideKey
+        
+        let storedURL = UserDefaults.standard.string(forKey: self.urlOverrideKey)
+        let startingURL = baseURL != nil ? baseURL : (self.enableURLCachingBehavior ? storedURL : nil)
+        
+        // Similar to activeURL setter. Required because self has not completed initialzation
+        // Only store when urls match to avoid erasing "" and causing additional deauth
+        let trueURL = API.generateSafe(url: startingURL)
+        if self.enableURLCachingBehavior && trueURL == startingURL {
+            UserDefaults.standard.set(trueURL, forKey: self.urlOverrideKey)
+        }
+        self._activeURLStorage = trueURL
+        
         self.queue = APIQueue(maximumFailures: 2)
         self.queue.delegate = self
     }
@@ -275,5 +341,14 @@ class API: APIQueueDelegate {
         } catch {
             completion(nil, TimeError.unableToDecodeResponse)
         }
+    }
+    
+    // MARK: - URL Helper
+    
+    private static func generateSafe(url: String?) -> String {
+        guard url != nil && url!.trimmingCharacters(in: .whitespaces).count > 0 else {
+            return API.defaultURL
+        }
+        return url!
     }
 }

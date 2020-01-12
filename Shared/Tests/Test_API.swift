@@ -49,8 +49,7 @@ class Test_API: XCTestCase {
     }
     
     func test_rejectsAllRequestsWithBadBaseURL() {
-        let newAPI = API()
-        newAPI.baseURL = "/\\"
+        let newAPI = API(baseURL: "/\\")
         
         let expectation = self.expectation(description: "badURL")
         newAPI.timeRequest(path: "/endpoint", method: .GET, body: nil, encoding: nil, authorized: false, completion: { (user: User?, error: Error?) in
@@ -204,5 +203,170 @@ class Test_API: XCTestCase {
         XCTAssertEqual(startingToken, endingToken)
         // Side effects only called on success
         XCTAssertFalse(sideEffectsCalled)
+    }
+    
+    // MARK: - URL Configuration Tests
+    
+    func test_defaultURLIsCorrect() {
+        let newAPI = API()
+        XCTAssertEqual(newAPI.baseURL, "http://localhost:8000")
+    }
+    
+    func test_canSetCustomURL() {
+        let myURLOverride = "https://myCustomSubdomain.myCustomDomain.com"
+        let newAPI = API(baseURL: myURLOverride)
+        XCTAssertEqual(newAPI.baseURL, myURLOverride)
+    }
+    
+    func test_canChangeURLFromDefault() {
+        let newAPI = API()
+        XCTAssertEqual(newAPI.baseURL, "http://localhost:8000")
+        
+        let newURL = "https://myCustomSubdomain.myCustomDomain.com"
+        let didChange = newAPI.set(url: newURL)
+        
+        XCTAssertTrue(didChange)
+        XCTAssertEqual(newAPI.baseURL, newURL)
+    }
+    
+    func test_canChangeURLFromOverride() {
+        let baseURL = "https://myCustomSubdomain.myCustomDomain.com"
+        let newURL = "https://www.myOtherCustomDomain.com"
+        
+        let newAPI = API(baseURL: baseURL)
+        XCTAssertEqual(newAPI.baseURL, baseURL)
+        
+        let didChange = newAPI.set(url: newURL)
+        
+        XCTAssertTrue(didChange)
+        XCTAssertEqual(newAPI.baseURL, newURL)
+    }
+    
+    func test_returnsDidChangeOnFirstChange() {
+        let newAPI = API()
+        XCTAssertEqual(newAPI.baseURL, "http://localhost:8000")
+        
+        let newURL = "https://www.myOtherCustomDomain.com"
+        let didChange = newAPI.set(url: newURL)
+        
+        XCTAssertTrue(didChange)
+        XCTAssertEqual(newAPI.baseURL, newURL)
+        
+        let didChangeAgain = newAPI.set(url: newURL)
+        XCTAssertFalse(didChangeAgain)
+        XCTAssertEqual(newAPI.baseURL, newURL)
+    }
+    
+    func test_sharedAPIUsesCaching() {
+        let keyName = "time-api-configuration-server-url-override"
+
+        // Force reset
+        let api = API.shared
+        _ = api.set(url: "https://default.domain.com")
+        
+        // Test
+        let newURL = "https://otherSubdomain.newDomain.com"
+        
+        let startingStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertNotEqual(startingStoredValue, newURL)
+        
+        let didUpdate = api.set(url: newURL)
+        XCTAssertTrue(didUpdate)
+        XCTAssertEqual(api.baseURL, newURL)
+        
+        let newStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(newStoredValue, newURL)
+        
+        // Return to safe (for any tests using API.shared)
+        _ = api.set(url: "http://localhost:8000")
+    }
+    
+    func test_cachingBehaviorIsDisabledByDefaultForNewAPIObjects() {
+        let keyName = "time-api-configuration-server-url-override"
+
+        let startingStoredValue = UserDefaults.standard.string(forKey: keyName)
+        
+        let newURL = "https://\(UUID.init().uuidString).com"
+        let newAPI = API()
+        let didUpdate = newAPI.set(url: newURL)
+        
+        XCTAssertTrue(didUpdate)
+        XCTAssertEqual(newAPI.baseURL, newURL)
+        
+        let endingStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(startingStoredValue, endingStoredValue)
+        XCTAssertNotEqual(endingStoredValue, newURL)
+    }
+    
+    func test_cachingBehaviorCanBeEnabledForCustomObjects() {
+        let keyName = "time-api-configuration-server-url-override"
+
+        // Force reset
+        let api = API(enableURLCachingBehavior: true)
+        _ = api.set(url: "https://default.domain.com")
+        
+        // Test
+        let newURL = "https://otherSubdomain.newDomain.com"
+        
+        let startingStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertNotEqual(startingStoredValue, newURL)
+        
+        let didUpdate = api.set(url: newURL)
+        XCTAssertTrue(didUpdate)
+        XCTAssertEqual(api.baseURL, newURL)
+        
+        let newStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(newStoredValue, newURL)
+        
+        // Return to safe (for any tests using API.shared)
+        _ = api.set(url: "http://localhost:8000")
+    }
+    
+    func test_cachingBehaviorWithCustomKeys() {
+        let keyName = UUID().uuidString
+        
+        // Seed initial value
+        let startingURL = "https://myDomain.com"
+        UserDefaults.standard.set(startingURL, forKey: keyName)
+
+        // Create new API with caching and the correct key name
+        let api = API(
+            enableURLCachingBehavior: true,
+            urlOverrideKey: keyName
+        )
+        XCTAssertEqual(api.baseURL, startingURL)
+        
+        // Change url and monitor results
+        let changedURL = "https://mySubdomain.myDomain.com"
+        let didChange = api.set(url: changedURL)
+        XCTAssertTrue(didChange)
+        let storedValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(changedURL, storedValue)
+        
+        // Create a new API with caching and a custom URL
+        let baseURLOverride = "https://otherSubdomain.myDomain.com"
+        let newAPI = API(
+            baseURL: baseURLOverride,
+            enableURLCachingBehavior: true,
+            urlOverrideKey: keyName
+        )
+        XCTAssertEqual(newAPI.baseURL, baseURLOverride)
+        let newStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(baseURLOverride, newStoredValue)
+        
+        // Update the url to the same as init
+        let didChangeOnUpdateToSame = newAPI.set(url: baseURLOverride)
+        XCTAssertFalse(didChangeOnUpdateToSame)
+        
+        // Update the url and monitor continued caching
+        let finalURL = "https://www.myOtherDomain.com"
+        let didChangeOnUpdateToNew = newAPI.set(url: finalURL)
+        XCTAssertTrue(didChangeOnUpdateToNew)
+        let newerStoredValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(finalURL, newerStoredValue)
+        
+        // Create another api using the same key
+        let newerAPI = API(enableURLCachingBehavior: true, urlOverrideKey: keyName)
+        XCTAssertEqual(newerAPI.baseURL, finalURL)
     }
 }
