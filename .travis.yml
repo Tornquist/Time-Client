@@ -25,10 +25,8 @@ cache:
     - Time-API/node_modules
 
 before_install:
-  - brew update
   - brew install mysql@5.7
-  - brew tap homebrew/services
-  - brew services start mysql@5.7
+  - /usr/local/opt/mysql@5.7/bin/mysql.server start
   - brew link mysql@5.7 --force
 
 install:
