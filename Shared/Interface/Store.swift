@@ -68,6 +68,13 @@ public class Store {
         self.api = api
         self.restoreDataFromDisk()
         self.hasInitialized = true
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(categoryArchiveRequested),
+            name: .TimeCategoryArchiveRequested,
+            object: nil
+        )
     }
     
     // MARK: - System Queues
@@ -403,7 +410,6 @@ public class Store {
             
             completion?(true)
         }
-        
     }
     
     public func isRangeOpen(for category: TimeSDK.Category) -> Bool? {
@@ -573,6 +579,15 @@ public class Store {
     }
     
     // MARK: - Archival Support and Integration
+    
+    @objc private func categoryArchiveRequested(notification: NSNotification) {
+        // Only trigger archive for categories managed by store
+        guard
+            let category = notification.object as? Category,
+            self.categories.contains(category)
+        else { return }
+        self.archive(data: self.categories)
+    }
     
     public func resetDisk() {
         _ = Archive.removeAllData()
