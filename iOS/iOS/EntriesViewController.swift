@@ -262,7 +262,14 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         } else if entry.endedAt == nil {
             timeText = "\(startedAtString) - \(NSLocalizedString("Present", comment: ""))"
         } else {
-            timeText = "\(startedAtString) - \(endedAtString!)"
+            // Depends on stable string formatting
+            let sameDay = endedAtString != nil && (startedAtString.prefix(8) == endedAtString!.prefix(8))
+            if !sameDay {
+                timeText = "\(startedAtString) - \(endedAtString!)"
+            } else {
+                let endedAtWithoutDate = endedAtString!.dropFirst(9)
+                timeText = "\(startedAtString) - \(endedAtWithoutDate)"
+            }
         }
         return timeText
     }

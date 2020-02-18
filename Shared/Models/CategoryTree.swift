@@ -21,8 +21,7 @@ public class CategoryTree: Equatable {
         return self.parent == nil ? 0 : self.parent!.depth + 1
     }
     
-    private var _expanded: Bool = false
-    public var expanded: Bool { return self._expanded }
+    public var expanded: Bool { return self.node.expanded }
     
     // MARK: - Init
     
@@ -37,14 +36,14 @@ public class CategoryTree: Equatable {
     
     public func toggleExpanded(forceTo goal: Bool? = nil) {
         guard self.children.count > 0 else {
-            self._expanded = false
+            self.node.expanded = false
             return
         }
         
         if goal == nil {
-            self._expanded = !self.expanded
+            self.node.expanded = !self.expanded
         } else {
-            self._expanded = goal!
+            self.node.expanded = goal!
         }
     }
     

@@ -12,6 +12,8 @@ extension Notification.Name {
     static let TimeAPIAutoRefreshedToken = Notification.Name("TimeAPIAutoRefreshedToken")
     static let TimeAPIAutoRefreshFailed = Notification.Name("TimeAPIAutoRefreshFailed")
     
+    public static let TimeCategoryArchiveRequested = Notification.Name("TimeCategoryArchiveRequested")
+    
     public static let TimeUserSignInNeeded = Notification.Name("TimeUserSignInNeeded")
     public static let TimeUnableToReachServer = Notification.Name("TimeUnableToReachServer")
     
