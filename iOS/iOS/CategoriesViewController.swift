@@ -21,6 +21,18 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     var moving: Bool { return self.movingCategory != nil }
     var movingCategory: TimeSDK.Category? = nil
     
+    enum ControlSectionType: String {
+        case metric
+        case favorites
+        case recents
+        case entries
+    }
+    let controls: [ControlSectionType] = [.metric, .recents]
+    let controlRows: [ControlSectionType: Int] = [
+        ControlSectionType.metric: 1,
+        ControlSectionType.recents: 3
+    ]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -276,7 +288,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             })
         }
     }
-    
+        
     // MARK: - Events
     
     @IBAction func signOutPressed(_ sender: Any) {
@@ -306,15 +318,32 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return Time.shared.store.accountIDs.count
+        let controlsSections = self.controls.count
+        let accountSections = Time.shared.store.accountIDs.count
+        
+        return controlsSections + accountSections
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        guard section >= self.controls.count else {
+            let controlType = self.controls[section]
+            guard let rows = self.controlRows[controlType] else { return 0 }
+            return rows
+        }
+
         guard let tree = self.getTree(for: section) else { return 0 }
         return tree.numberOfDisplayRows(overrideExpanded: self.moving, includeRoot: true)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard indexPath.section >= self.controls.count else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
+            let controlType = self.controls[indexPath.section]
+            cell.textLabel?.text = controlType.rawValue
+            cell.detailTextLabel?.text = "SECTION"
+            return cell
+        }
+        
         guard let categoryTree = self.getTree(for: indexPath) else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
             cell.textLabel?.text = "ERROR"
@@ -348,6 +377,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        guard indexPath.section >= self.controls.count else { return nil }
         guard let categoryTree = self.getTree(for: indexPath) else { return nil }
         let category = categoryTree.node
         
@@ -374,6 +404,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        guard indexPath.section >= self.controls.count else { return nil}
         guard let categoryTree = self.getTree(for: indexPath) else { return nil }
         let category = categoryTree.node
         
@@ -408,6 +439,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard indexPath.section >= self.controls.count else { return }
         guard let categoryTree = self.getTree(for: indexPath) else { return }
         
         if self.moving {
@@ -449,8 +481,11 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     // MARK: - TableView <-> Data store support methods
     
     func getTree(for section: Int) -> CategoryTree? {
-        guard section < Time.shared.store.accountIDs.count else { return nil }
-        let accountID = Time.shared.store.accountIDs[section]
+        guard section >= self.controls.count else { return nil }
+
+        let correctedSection = section - self.controls.count
+        guard correctedSection < Time.shared.store.accountIDs.count else { return nil }
+        let accountID = Time.shared.store.accountIDs[correctedSection]
         guard let tree = Time.shared.store.categoryTrees[accountID] else { return nil }
         
         return tree
