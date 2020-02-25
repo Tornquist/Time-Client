@@ -26,12 +26,20 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         case favorites
         case recents
         case entries
+        case signOut
+        case importRecords
+        case addAccount
     }
     let controls: [ControlSectionType] = [.metric, .recents, .entries]
     let controlRows: [ControlSectionType: Int] = [
         ControlSectionType.metric: 1,
         ControlSectionType.recents: 3,
         ControlSectionType.entries: 1
+    ]
+    let moreControls: [ControlSectionType] = [
+        .addAccount,
+        .importRecords,
+        .signOut
     ]
     
     override func viewDidLoad() {
@@ -67,9 +75,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func refreshNavigation() {
-        self.navigationItem.leftBarButtonItem = self.moving ? self.cancelButton: self.signOutButton
-        self.navigationItem.rightBarButtonItems = self.moving ? [] : [self.addButton, self.importButton]
-        self.navigationItem.title = self.moving ? NSLocalizedString("Select Target", comment: "") : nil
+        self.navigationItem.leftBarButtonItem = self.moving ? self.cancelButton : nil //self.signOutButton
+        self.navigationItem.rightBarButtonItems = self.moving ? [] : nil // [self.addButton, self.importButton]
+        self.navigationItem.title = self.moving ? NSLocalizedString("Select Target", comment: "") : NSLocalizedString("Time", comment: "")
     }
     
     // MARK: - Data Methods and Actions
@@ -321,8 +329,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     func numberOfSections(in tableView: UITableView) -> Int {
         let controlsSections = self.controls.count
         let accountSections = Time.shared.store.accountIDs.count
+        let moreControlsSection = self.moreControls.count > 0 ? 1 : 0
         
-        return controlsSections + accountSections
+        return controlsSections + accountSections + moreControlsSection
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -330,6 +339,10 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             let controlType = self.controls[section]
             guard let rows = self.controlRows[controlType] else { return 0 }
             return rows
+        }
+        if section == self.controls.count + Time.shared.store.accountIDs.count {
+            // More controls
+            return self.moreControls.count
         }
 
         guard let tree = self.getTree(for: section) else { return 0 }
@@ -342,6 +355,16 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             let controlType = self.controls[indexPath.section]
             cell.textLabel?.text = controlType.rawValue
             cell.detailTextLabel?.text = "SECTION"
+            cell.backgroundColor = .secondarySystemGroupedBackground
+            return cell
+        }
+        
+        if indexPath.section == self.controls.count + Time.shared.store.accountIDs.count {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
+            let controlType = self.moreControls[indexPath.row]
+            cell.textLabel?.text = controlType.rawValue
+            cell.detailTextLabel?.text = "More"
+            cell.backgroundColor = .secondarySystemGroupedBackground
             return cell
         }
         
@@ -379,6 +402,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard indexPath.section >= self.controls.count else { return nil }
+        if indexPath.section == self.controls.count + Time.shared.store.accountIDs.count {
+            return nil
+        }
         guard let categoryTree = self.getTree(for: indexPath) else { return nil }
         let category = categoryTree.node
         
@@ -406,6 +432,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard indexPath.section >= self.controls.count else { return nil}
+        if indexPath.section == self.controls.count + Time.shared.store.accountIDs.count {
+            return nil
+        }
         guard let categoryTree = self.getTree(for: indexPath) else { return nil }
         let category = categoryTree.node
         
@@ -452,6 +481,24 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             }
             return
         }
+        
+        if indexPath.section == self.controls.count + Time.shared.store.accountIDs.count {
+            guard self.moving == false else { return }
+            
+            let control = self.moreControls[indexPath.row]
+            switch control {
+            case .addAccount:
+                self.addPressed(self)
+            case .importRecords:
+                self.importPressed(self)
+            case .signOut:
+                self.signOutPressed(self)
+            default:
+                break
+            }
+            return
+        }
+        
         guard let categoryTree = self.getTree(for: indexPath) else { return }
         
         if self.moving {

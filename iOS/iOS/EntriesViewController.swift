@@ -45,6 +45,12 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         self.refreshControl = UIRefreshControl()
         self.refreshControl.addTarget(self, action: #selector(handleRefresh(_:)), for: .valueChanged)
         self.tableView.refreshControl = self.refreshControl
+        
+        self.refreshNavigation()
+    }
+    
+    func refreshNavigation() {
+        self.navigationItem.title = NSLocalizedString("Entries", comment: "")
     }
     
     // MARK: - Data Methods and Actions
