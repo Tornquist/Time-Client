@@ -27,10 +27,11 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         case recents
         case entries
     }
-    let controls: [ControlSectionType] = [.metric, .recents]
+    let controls: [ControlSectionType] = [.metric, .recents, .entries]
     let controlRows: [ControlSectionType: Int] = [
         ControlSectionType.metric: 1,
-        ControlSectionType.recents: 3
+        ControlSectionType.recents: 3,
+        ControlSectionType.entries: 1
     ]
     
     override func viewDidLoad() {
@@ -439,7 +440,18 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard indexPath.section >= self.controls.count else { return }
+        guard indexPath.section >= self.controls.count else {
+            let control = self.controls[indexPath.section]
+            switch control {
+            case .entries:
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                let entriesVC = storyboard.instantiateViewController(withIdentifier: "entriesView")
+                self.navigationController?.pushViewController(entriesVC, animated: true)
+            default:
+                break
+            }
+            return
+        }
         guard let categoryTree = self.getTree(for: indexPath) else { return }
         
         if self.moving {

@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HomeViewController: UITabBarController {
+class HomeViewController: UINavigationController {
     
     var showingNetworkError: Bool = false
     

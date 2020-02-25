@@ -45,12 +45,6 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         self.refreshControl = UIRefreshControl()
         self.refreshControl.addTarget(self, action: #selector(handleRefresh(_:)), for: .valueChanged)
         self.tableView.refreshControl = self.refreshControl
-        
-        self.refreshNavigation()
-    }
-    
-    func refreshNavigation() {
-        self.navigationItem.leftBarButtonItem = self.signOutButton
     }
     
     // MARK: - Data Methods and Actions
