@@ -41,6 +41,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         .importRecords,
         .signOut
     ]
+    var expandMoreControls: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -341,8 +342,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             return rows
         }
         if section == self.controls.count + Time.shared.store.accountIDs.count {
-            // More controls
-            return self.moreControls.count
+            let header = 1
+            let controls = self.expandMoreControls ? self.moreControls.count : 0
+            return header + controls
         }
 
         guard let tree = self.getTree(for: section) else { return 0 }
@@ -361,9 +363,15 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         
         if indexPath.section == self.controls.count + Time.shared.store.accountIDs.count {
             let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
-            let controlType = self.moreControls[indexPath.row]
-            cell.textLabel?.text = controlType.rawValue
-            cell.detailTextLabel?.text = "More"
+            if indexPath.row == 0 {
+                cell.textLabel?.text = ""
+                cell.detailTextLabel?.text = "More"
+            } else {
+                let controlType = self.moreControls[indexPath.row - 1]
+                cell.textLabel?.text = controlType.rawValue
+                cell.detailTextLabel?.text = "More"
+            }
+            
             cell.backgroundColor = .secondarySystemGroupedBackground
             return cell
         }
@@ -485,7 +493,13 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         if indexPath.section == self.controls.count + Time.shared.store.accountIDs.count {
             guard self.moving == false else { return }
             
-            let control = self.moreControls[indexPath.row]
+            if indexPath.row == 0 {
+                self.expandMoreControls = !self.expandMoreControls
+                self.tableView.reloadSections([indexPath.section], with: .automatic)
+                return
+            }
+            
+            let control = self.moreControls[indexPath.row - 1]
             switch control {
             case .addAccount:
                 self.addPressed(self)
