@@ -11,10 +11,7 @@ import TimeSDK
 
 class CategoriesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    var signOutButton: UIBarButtonItem!
     var cancelButton: UIBarButtonItem!
-    var addButton: UIBarButtonItem!
-    var importButton: UIBarButtonItem!
     var refreshControl: UIRefreshControl!
     @IBOutlet weak var tableView: UITableView!
     
@@ -30,9 +27,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         case importRecords
         case addAccount
     }
-    let controls: [ControlSectionType] = [.metric, .recents, .entries]
+    let controls: [ControlSectionType] = [.recents, .entries]
     let controlRows: [ControlSectionType: Int] = [
-        ControlSectionType.metric: 1,
         ControlSectionType.recents: 3,
         ControlSectionType.entries: 1
     ]
@@ -59,10 +55,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func configureTheme() {
-        self.signOutButton = UIBarButtonItem(title: NSLocalizedString("Sign Out", comment: ""), style: .plain, target: self, action: #selector(signOutPressed(_:)))
         self.cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelPressed(_:)))
-        self.addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addPressed(_:)))
-        self.importButton = UIBarButtonItem(title: NSLocalizedString("Import", comment: ""), style: .plain, target: self, action: #selector(importPressed(_:)))
         
         let topConstraint = NSLayoutConstraint(item: self.view!, attribute: .top, relatedBy: .equal, toItem: self.tableView, attribute: .top, multiplier: 1, constant: 0)
         let bottomConstraint = NSLayoutConstraint(item: self.view!, attribute: .bottom, relatedBy: .equal, toItem: self.tableView, attribute: .bottom, multiplier: 1, constant: 0)
@@ -76,8 +69,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func refreshNavigation() {
-        self.navigationItem.leftBarButtonItem = self.moving ? self.cancelButton : nil //self.signOutButton
-        self.navigationItem.rightBarButtonItems = self.moving ? [] : nil // [self.addButton, self.importButton]
+        self.navigationItem.leftBarButtonItem = self.moving ? self.cancelButton : nil
+        self.navigationItem.rightBarButtonItems = self.moving ? [] : nil
         self.navigationItem.title = self.moving ? NSLocalizedString("Select Target", comment: "") : NSLocalizedString("Time", comment: "")
     }
     
@@ -355,8 +348,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         guard indexPath.section >= self.controls.count else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
             let controlType = self.controls[indexPath.section]
-            cell.textLabel?.text = controlType.rawValue
-            cell.detailTextLabel?.text = "SECTION"
+            cell.textLabel?.text = ""
+            cell.detailTextLabel?.text = controlType.rawValue
             cell.backgroundColor = .secondarySystemGroupedBackground
             return cell
         }
@@ -368,8 +361,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                 cell.detailTextLabel?.text = "More"
             } else {
                 let controlType = self.moreControls[indexPath.row - 1]
-                cell.textLabel?.text = controlType.rawValue
-                cell.detailTextLabel?.text = "More"
+                cell.textLabel?.text = ""
+                cell.detailTextLabel?.text = controlType.rawValue
             }
             
             cell.backgroundColor = .secondarySystemGroupedBackground
