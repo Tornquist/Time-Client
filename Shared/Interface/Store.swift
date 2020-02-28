@@ -51,7 +51,7 @@ public class Store {
     }
     
     private var _categoryTrees: [Int: CategoryTree] = [:]
-    public var categoryTrees: [Int:CategoryTree] {
+    public var categoryTrees: [Int: CategoryTree] {
         let hasCategories = self.categories.count != 0
         let hasTrees = self._categoryTrees.count > 0
         let needsGeneration = self.staleTrees || (hasCategories && !hasTrees)

@@ -29,7 +29,6 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     let controls: [ControlSectionType] = [.recents, .entries]
     let controlRows: [ControlSectionType: Int] = [
-        ControlSectionType.recents: 3,
         ControlSectionType.entries: 1
     ]
     let moreControls: [ControlSectionType] = [
@@ -38,6 +37,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         .signOut
     ]
     var expandMoreControls: Bool = false
+    
+    var recentCategories: [CategoryTree] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,6 +53,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         
         self.refreshNavigation()
         self.loadData()
+        
+        self.calculateRecents()
     }
     
     func configureTheme() {
@@ -73,7 +76,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         self.navigationItem.rightBarButtonItems = self.moving ? [] : nil
         self.navigationItem.title = self.moving ? NSLocalizedString("Select Target", comment: "") : NSLocalizedString("Time", comment: "")
     }
-    
+        
     // MARK: - Data Methods and Actions
     
     func loadData(refresh: Bool = false) {
@@ -291,6 +294,44 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             })
         }
     }
+    
+    func calculateRecents() {
+        let maxDays = 7 // Max time
+        let maxResults = 5 // Max recent entries
+        
+        let entries = Time.shared.store.entries
+        
+        let cutoff = Date().addingTimeInterval(Double(-maxDays * 24 * 60 * 60))
+        
+        let filteredEntries = entries.filter { (entry) -> Bool in
+            return entry.startedAt > cutoff
+        }
+        let orderedEntries = filteredEntries.sorted(by: { $0.startedAt > $1.startedAt })
+        let orderedCategoryIDs = orderedEntries.map({ $0.categoryID })
+        var reducedOrderedIDs: [Int] = []
+        orderedCategoryIDs.forEach { (id) in
+            guard !reducedOrderedIDs.contains(id) else { return }
+            reducedOrderedIDs.append(id)
+        }
+        
+        let recentCategoryIDs = reducedOrderedIDs.prefix(maxResults)
+                
+        let recentCategories = recentCategoryIDs.compactMap { (id) -> CategoryTree? in
+            guard
+                let category = Time.shared.store.categories.first(where: { $0.id == id }),
+                let root = Time.shared.store.categoryTrees[category.accountID],
+                let categoryTree = root.findItem(withID: category.id)
+            else { return nil }
+            
+            return categoryTree
+        }
+
+        self.recentCategories = recentCategories
+
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
+    }
         
     // MARK: - Events
     
@@ -331,6 +372,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard section >= self.controls.count else {
             let controlType = self.controls[section]
+            guard controlType != .recents else {
+                return self.recentCategories.count
+            }
             guard let rows = self.controlRows[controlType] else { return 0 }
             return rows
         }
@@ -350,6 +394,21 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             let controlType = self.controls[indexPath.section]
             cell.textLabel?.text = ""
             cell.detailTextLabel?.text = controlType.rawValue
+            if controlType == .recents {
+                let categoryTree = self.recentCategories[indexPath.row]
+                
+                var displayNameParts = [categoryTree.node.name]
+                var position = categoryTree.parent
+                while position != nil {
+                    // Make sure exists and is not root
+                    if position != nil && position?.parent != nil {
+                        displayNameParts.append(position!.node.name)
+                    }
+                    position = position?.parent
+                }
+                let displayName = displayNameParts.reversed().joined(separator: " > ")
+                cell.detailTextLabel?.text = displayName
+            }
             cell.backgroundColor = .secondarySystemGroupedBackground
             return cell
         }
@@ -432,11 +491,20 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        guard indexPath.section >= self.controls.count else { return nil}
+        let isControl = indexPath.section < self.controls.count
+        let isRecent = isControl && self.controls[indexPath.section] == .recents
+        guard isRecent || !isControl else { return nil }
+
         if indexPath.section == self.controls.count + Time.shared.store.accountIDs.count {
             return nil
         }
-        guard let categoryTree = self.getTree(for: indexPath) else { return nil }
+        
+        guard let categoryTree = (
+            isRecent
+                ? self.recentCategories[indexPath.row]
+                : self.getTree(for: indexPath)
+        ) else { return nil }
+        
         let category = categoryTree.node
         
         let isRoot = category.parentID == nil
