@@ -26,8 +26,17 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         case signOut
         case importRecords
         case addAccount
+        
+        var title: String? {
+            switch self {
+                case .recents:
+                    return NSLocalizedString("Recent", comment: "")
+                default:
+                    return nil
+            }
+        }
     }
-    let controls: [ControlSectionType] = [.recents, .entries]
+    var controls: [ControlSectionType] = [.recents, .entries]
     let controlRows: [ControlSectionType: Int] = [
         ControlSectionType.entries: 1
     ]
@@ -63,6 +72,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         let topConstraint = NSLayoutConstraint(item: self.view!, attribute: .top, relatedBy: .equal, toItem: self.tableView, attribute: .top, multiplier: 1, constant: 0)
         let bottomConstraint = NSLayoutConstraint(item: self.view!, attribute: .bottom, relatedBy: .equal, toItem: self.tableView, attribute: .bottom, multiplier: 1, constant: 0)
         self.view.addConstraints([topConstraint, bottomConstraint])
+        
+        self.view.backgroundColor = self.tableView?.backgroundColor
         
         self.refreshControl = UIRefreshControl()
         self.refreshControl.addTarget(self, action: #selector(handleRefresh(_:)), for: .valueChanged)
@@ -327,6 +338,13 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         }
 
         self.recentCategories = recentCategories
+        if self.recentCategories.count == 0 {
+            self.controls = self.controls.filter({ $0 != .recents })
+        } else {
+            if !self.controls.contains(.recents) {
+                self.controls.insert(.recents, at: 0)
+            }
+        }
 
         DispatchQueue.main.async {
             self.tableView.reloadData()
@@ -367,6 +385,16 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         let moreControlsSection = self.moreControls.count > 0 ? 1 : 0
         
         return controlsSections + accountSections + moreControlsSection
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        guard section >= self.controls.count else {
+            let controlType = self.controls[section]
+            return controlType.title
+        }
+        
+        // No title for 'more' section or accounts. Root is title
+        return nil
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
