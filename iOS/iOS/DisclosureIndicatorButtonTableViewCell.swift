@@ -14,6 +14,7 @@ class DisclosureIndicatorButtonTableViewCell: UITableViewCell {
     @IBOutlet weak private var buttonLabel: UILabel!
     
     // Other
+    static let nibName: String = "DisclosureIndicatorButtonTableViewCell"
     static let reuseID: String = "disclosureIndicatorButtonTableViewCell"
     
     // Configuration

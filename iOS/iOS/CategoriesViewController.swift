@@ -75,14 +75,24 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         
         self.view.backgroundColor = self.tableView?.backgroundColor
         
+        self.configureTableView()
+        
         self.refreshControl = UIRefreshControl()
         self.refreshControl.addTarget(self, action: #selector(handleRefresh(_:)), for: .valueChanged)
         self.tableView.refreshControl = self.refreshControl
-        
-        let cellNib = UINib(nibName: "DisclosureIndicatorButtonTableViewCell", bundle: nil)
-        self.tableView.register(cellNib, forCellReuseIdentifier: DisclosureIndicatorButtonTableViewCell.reuseID)
-        
+                
         self.refreshNavigation()
+    }
+    
+    func configureTableView() {
+        self.tableView.rowHeight = UITableView.automaticDimension
+        self.tableView.estimatedRowHeight = 44.0
+        
+        let detailCellNib = UINib(nibName: DisclosureIndicatorButtonTableViewCell.nibName, bundle: nil)
+        self.tableView.register(detailCellNib, forCellReuseIdentifier: DisclosureIndicatorButtonTableViewCell.reuseID)
+        
+        let recentCellNib = UINib(nibName: RecentEntryTableViewCell.nibName, bundle: nil)
+        self.tableView.register(recentCellNib, forCellReuseIdentifier: RecentEntryTableViewCell.reuseID)
     }
     
     func refreshNavigation() {
@@ -426,21 +436,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             switch controlType {
                 case .recents:
                     let categoryTree = self.recentCategories[indexPath.row]
-                    var displayNameParts = [categoryTree.node.name]
-                    var position = categoryTree.parent
-                    while position != nil {
-                        // Make sure exists and is not root
-                        if position != nil && position?.parent != nil {
-                            displayNameParts.append(position!.node.name)
-                        }
-                        position = position?.parent
-                    }
-                    let displayName = displayNameParts.reversed().joined(separator: " > ")
-
-                    let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
-                    cell.textLabel?.text = ""
-                    cell.detailTextLabel?.text = displayName
-                    cell.backgroundColor = .secondarySystemGroupedBackground
+                    let cell = tableView.dequeueReusableCell(withIdentifier: RecentEntryTableViewCell.reuseID, for: indexPath) as! RecentEntryTableViewCell
+                    cell.configure(for: categoryTree)
+//                    cell.backgroundColor = .secondarySystemGroupedBackground
                     return cell
                 
                 case .entries:
