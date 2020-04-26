@@ -79,6 +79,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         self.refreshControl.addTarget(self, action: #selector(handleRefresh(_:)), for: .valueChanged)
         self.tableView.refreshControl = self.refreshControl
         
+        let cellNib = UINib(nibName: "DisclosureIndicatorButtonTableViewCell", bundle: nil)
+        self.tableView.register(cellNib, forCellReuseIdentifier: DisclosureIndicatorButtonTableViewCell.reuseID)
+        
         self.refreshNavigation()
     }
     
@@ -418,27 +421,41 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard indexPath.section >= self.controls.count else {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
             let controlType = self.controls[indexPath.section]
-            cell.textLabel?.text = ""
-            cell.detailTextLabel?.text = controlType.rawValue
-            if controlType == .recents {
-                let categoryTree = self.recentCategories[indexPath.row]
-                
-                var displayNameParts = [categoryTree.node.name]
-                var position = categoryTree.parent
-                while position != nil {
-                    // Make sure exists and is not root
-                    if position != nil && position?.parent != nil {
-                        displayNameParts.append(position!.node.name)
+            
+            switch controlType {
+                case .recents:
+                    let categoryTree = self.recentCategories[indexPath.row]
+                    var displayNameParts = [categoryTree.node.name]
+                    var position = categoryTree.parent
+                    while position != nil {
+                        // Make sure exists and is not root
+                        if position != nil && position?.parent != nil {
+                            displayNameParts.append(position!.node.name)
+                        }
+                        position = position?.parent
                     }
-                    position = position?.parent
-                }
-                let displayName = displayNameParts.reversed().joined(separator: " > ")
-                cell.detailTextLabel?.text = displayName
+                    let displayName = displayNameParts.reversed().joined(separator: " > ")
+
+                    let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
+                    cell.textLabel?.text = ""
+                    cell.detailTextLabel?.text = displayName
+                    cell.backgroundColor = .secondarySystemGroupedBackground
+                    return cell
+                
+                case .entries:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: DisclosureIndicatorButtonTableViewCell.reuseID, for: indexPath) as! DisclosureIndicatorButtonTableViewCell
+                    cell.buttonText = NSLocalizedString("Show All Entries", comment: "")
+//                    cell.backgroundColor = .secondarySystemGroupedBackground
+                    return cell
+                
+                default:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
+                    cell.textLabel?.text = ""
+                    cell.detailTextLabel?.text = controlType.rawValue
+                    cell.backgroundColor = .secondarySystemGroupedBackground
+                    return cell
             }
-            cell.backgroundColor = .secondarySystemGroupedBackground
-            return cell
         }
         
         if indexPath.section == self.controls.count + Time.shared.store.accountIDs.count {
