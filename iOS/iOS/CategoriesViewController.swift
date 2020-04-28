@@ -320,8 +320,14 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func calculateRecents() {
+        enum RecentSortMode {
+            case date
+            case name
+        }
+        
         let maxDays = 7 // Max time
         let maxResults = 5 // Max recent entries
+        let sortMode: RecentSortMode = .name
         
         let entries = Time.shared.store.entries
         
@@ -349,8 +355,15 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             
             return categoryTree
         }
+        
+        switch sortMode {
+            case .date:
+                // Date sorting is default
+                self.recentCategories = recentCategories
+            case .name:
+                self.recentCategories = recentCategories.sorted { $0.node.name < $1.node.name }
+        }
 
-        self.recentCategories = recentCategories
         if self.recentCategories.count == 0 {
             self.controls = self.controls.filter({ $0 != .recents })
         } else {
