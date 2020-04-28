@@ -55,8 +55,14 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         self.configureTheme()
         
         NotificationCenter.default.addObserver(self, selector: #selector(safeReload), name: .TimeBackgroundStoreUpdate, object: nil)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryStarted, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryStopped, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryRecorded, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryModified, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryDeleted, object: nil)
     }
-    
+        
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
@@ -317,6 +323,10 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                 }
             })
         }
+    }
+    
+    @objc func handleEntryNotification(_ notification:Notification) {
+        self.calculateRecents()
     }
     
     func calculateRecents() {
