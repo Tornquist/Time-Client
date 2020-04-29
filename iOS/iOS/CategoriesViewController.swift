@@ -9,7 +9,7 @@
 import UIKit
 import TimeSDK
 
-class CategoriesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class CategoriesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, RecentEntryTableViewCellDelegate {
     
     var cancelButton: UIBarButtonItem!
     var refreshControl: UIRefreshControl!
@@ -459,8 +459,22 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             switch controlType {
                 case .recents:
                     let categoryTree = self.recentCategories[indexPath.row]
+                    let categoryID = categoryTree.node.id
+                    
+                    let maxDays = 7 // TODO: Merge with recent calculations
+                    let cutoff = Date().addingTimeInterval(Double(-maxDays * 24 * 60 * 60))
+                    let matchingEntry = Time.shared.store.entries
+                        .filter({ (entry) -> Bool in
+                            return entry.categoryID == categoryID && entry.startedAt > cutoff
+                        })
+                        .sorted(by: { (a, b) -> Bool in
+                            return a.startedAt > b.startedAt
+                        }).first
+
+                    let isRange = matchingEntry?.type == .range
                     let cell = tableView.dequeueReusableCell(withIdentifier: RecentEntryTableViewCell.reuseID, for: indexPath) as! RecentEntryTableViewCell
-                    cell.configure(for: categoryTree)
+                    cell.configure(for: categoryTree, asRange: isRange)
+                    cell.delegate = self
 //                    cell.backgroundColor = .secondarySystemGroupedBackground
                     return cell
                 
@@ -694,5 +708,19 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     func getTree(for indexPath: IndexPath) -> CategoryTree? {
         guard let tree = self.getTree(for: indexPath.section) else { return nil }
         return tree.getChild(withOffset: indexPath.row, overrideExpanded: self.moving)
+    }
+    
+    // MARK: - RecentEntryTableViewCellDelegate
+    
+    func toggle(categoryID: Int) {
+        guard let category = Time.shared.store.categories.first(where: { $0.id == categoryID}) else { return }
+        
+        Time.shared.store.toggleRange(for: category, completion: nil)
+    }
+    
+    func record(categoryID: Int) {
+        guard let category = Time.shared.store.categories.first(where: { $0.id == categoryID}) else { return }
+        
+        Time.shared.store.recordEvent(for: category, completion: nil)
     }
 }

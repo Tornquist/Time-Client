@@ -9,6 +9,11 @@
 import UIKit
 import TimeSDK
 
+protocol RecentEntryTableViewCellDelegate: class {
+    func toggle(categoryID: Int)
+    func record(categoryID: Int)
+}
+
 class RecentEntryTableViewCell: UITableViewCell {
     
     // Views
@@ -20,6 +25,11 @@ class RecentEntryTableViewCell: UITableViewCell {
     static let reuseID: String = "recentEntryTableViewCell"
     
     @IBOutlet weak var actionButton: UIButton!
+    
+    private var configuredForCategoryID: Int? = nil
+    private var configuredAsRange: Bool = true
+    
+    weak var delegate: RecentEntryTableViewCellDelegate? = nil
     
     // MARK: - init
     
@@ -45,7 +55,12 @@ class RecentEntryTableViewCell: UITableViewCell {
         self.actionButton.setImage(UIImage(systemName: "play.circle", withConfiguration: imageConfiguration), for: .normal)
     }
     
-    public func configure(for tree: CategoryTree) {
+    public func configure(for tree: CategoryTree, asRange: Bool) {
+        // Record Configuration
+        self.configuredAsRange = asRange
+        self.configuredForCategoryID = tree.node.id
+        
+        // Configure Cell
         let entryName = tree.node.name
         
         var parentNameParts: [String] = []
@@ -64,6 +79,37 @@ class RecentEntryTableViewCell: UITableViewCell {
         self.entryNameLabel.text = entryName
         self.entryParentsLabel.text = parentName
         
-        self.actionButton.isHidden = true // TODO: Implement action button (requires system triggers for top-level updates)
+        let category = tree.node
+        if asRange {
+            let isRangeOpen = Time.shared.store.isRangeOpen(for: category) == true
+            let imageName = isRangeOpen ? "pause.circle" : "play.circle"
+            self.actionButton.setImage(
+                UIImage(
+                    systemName: imageName,
+                    withConfiguration:
+                    UIImage.SymbolConfiguration(scale: .large)
+                ),
+                for: .normal
+            )
+        } else {
+            self.actionButton.setImage(
+                UIImage(
+                    systemName: "smallcircle.fill.circle",
+                    withConfiguration:
+                    UIImage.SymbolConfiguration(scale: .large)
+                ),
+                for: .normal
+            )
+        }
+    }
+    
+    @IBAction func actionButtonTapped(_ sender: Any) {
+        guard let categoryID = self.configuredForCategoryID else { return }
+        
+        if self.configuredAsRange {
+            self.delegate?.toggle(categoryID: categoryID)
+        } else {
+            self.delegate?.record(categoryID: categoryID)
+        }
     }
 }

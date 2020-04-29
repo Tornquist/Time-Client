@@ -35,6 +35,9 @@
                     <state key="normal" image="play.circle" catalog="system">
                         <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large"/>
                     </state>
+                    <connections>
+                        <action selector="actionButtonTapped:" destination="iN0-l3-epB" eventType="touchUpInside" id="Yz5-61-dHk"/>
+                    </connections>
                 </button>
             </subviews>
             <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
