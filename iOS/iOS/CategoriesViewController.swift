@@ -99,6 +99,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         
         let recentCellNib = UINib(nibName: RecentEntryTableViewCell.nibName, bundle: nil)
         self.tableView.register(recentCellNib, forCellReuseIdentifier: RecentEntryTableViewCell.reuseID)
+        
+        let categoryCellNib = UINib(nibName: CategoryTableViewCell.nibName, bundle: nil)
+        self.tableView.register(categoryCellNib, forCellReuseIdentifier: CategoryTableViewCell.reuseID)
     }
     
     func refreshNavigation() {
@@ -176,7 +179,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                             }
                             self.tableView.performBatchUpdates({
                                 self.tableView.insertRows(at: insertPaths, with: .automatic)
-                            }, completion: nil)
+                            }, completion: { _ in
+                                self.tableView.reloadRows(at: [indexPath], with: .automatic)
+                            })
                         } else {
                             self.tableView.reloadData()
                         }
@@ -286,6 +291,12 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                         // Delete main node
                         self.tableView.deleteRows(at: [indexPath], with: .automatic)
                         completion(true)
+                        
+                        // Refresh parent cell (for expand/collapse icon)
+                        if let parentRow = parentRowStart {
+                            let parentIndexPath = IndexPath(row: parentRow, section: indexPath.section)
+                            self.tableView.reloadRows(at: [parentIndexPath], with: .none)
+                        }
                         
                         if animateAwayChildren {
                             let range: CountableClosedRange = 1...startingDisplayCount
@@ -453,6 +464,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        var backgroundColor: UIColor = .secondarySystemGroupedBackground
+        
         guard indexPath.section >= self.controls.count else {
             let controlType = self.controls[indexPath.section]
             
@@ -475,20 +488,20 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                     let cell = tableView.dequeueReusableCell(withIdentifier: RecentEntryTableViewCell.reuseID, for: indexPath) as! RecentEntryTableViewCell
                     cell.configure(for: categoryTree, asRange: isRange)
                     cell.delegate = self
-//                    cell.backgroundColor = .secondarySystemGroupedBackground
+                    cell.backgroundColor = backgroundColor
                     return cell
                 
                 case .entries:
                     let cell = tableView.dequeueReusableCell(withIdentifier: DisclosureIndicatorButtonTableViewCell.reuseID, for: indexPath) as! DisclosureIndicatorButtonTableViewCell
                     cell.buttonText = NSLocalizedString("Show All Entries", comment: "")
-//                    cell.backgroundColor = .secondarySystemGroupedBackground
+                    cell.backgroundColor = backgroundColor
                     return cell
                 
                 default:
                     let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
                     cell.textLabel?.text = ""
                     cell.detailTextLabel?.text = controlType.rawValue
-                    cell.backgroundColor = .secondarySystemGroupedBackground
+                    cell.backgroundColor = backgroundColor
                     return cell
             }
         }
@@ -504,7 +517,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                 cell.detailTextLabel?.text = controlType.rawValue
             }
             
-            cell.backgroundColor = .secondarySystemGroupedBackground
+            cell.backgroundColor = backgroundColor
             return cell
         }
         
@@ -516,7 +529,6 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         }
         let category = categoryTree.node
         
-        var backgroundColor: UIColor = .secondarySystemGroupedBackground
         if self.moving {
             let isValidTarget = Time.shared.store.canMove(self.movingCategory!, to: category)
             let isSelf = self.movingCategory?.id == category.id
@@ -530,11 +542,12 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             return cell
         }
             
-        let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
-        let displayDepth = categoryTree.depth - 1 // Will not show account cell
-        let padding = String(repeating: "    ", count: displayDepth)
-        cell.textLabel?.text = "\(category.id)"
-        cell.detailTextLabel?.text = padding + category.name
+        let cell = tableView.dequeueReusableCell(withIdentifier: CategoryTableViewCell.reuseID, for: indexPath) as! CategoryTableViewCell
+        
+        let depth = categoryTree.depth - 1 // Will not show account cell
+        let isExpanded = categoryTree.expanded || self.moving
+        let hasChildren = categoryTree.children.count > 0
+        cell.configure(with: category.name, depth: depth, isExpanded: isExpanded, hasChildren: hasChildren)
         cell.backgroundColor = backgroundColor
         
         return cell
@@ -678,7 +691,10 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                 } else {
                     self.tableView.insertRows(at: modifyPaths, with: .automatic)
                 }
-            }, completion: nil)
+            }, completion: { _ in
+                // None prevents post-expand/collapse pulse on cell
+                self.tableView.reloadRows(at: [indexPath], with: .none)
+            })
         }
     }
     
