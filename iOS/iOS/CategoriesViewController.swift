@@ -30,7 +30,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         var title: String? {
             switch self {
                 case .recents:
-                    return NSLocalizedString("Recent", comment: "")
+                    return NSLocalizedString("Recents", comment: "")
                 case .addAccount:
                     return NSLocalizedString("Add Account", comment: "")
                 case .importRecords:
@@ -99,6 +99,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     func configureTableView() {
         self.tableView.rowHeight = UITableView.automaticDimension
         self.tableView.estimatedRowHeight = 44.0
+        
+        self.tableView.sectionHeaderHeight = UITableView.automaticDimension
         
         let detailCellNib = UINib(nibName: DisclosureIndicatorButtonTableViewCell.nibName, bundle: nil)
         self.tableView.register(detailCellNib, forCellReuseIdentifier: DisclosureIndicatorButtonTableViewCell.reuseID)
@@ -439,15 +441,48 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         
         return controlsSections + accountSections + moreControlsSection
     }
-    
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        guard section >= self.controls.count else {
-            let controlType = self.controls[section]
-            return controlType.title
-        }
+
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let isControl = section < self.controls.count
+        let isFirstAccount = section == self.controls.count
         
-        // No title for 'more' section or accounts. Root is title
-        return nil
+        let shouldShowHeader = isControl || isFirstAccount
+        guard shouldShowHeader else { return nil }
+        
+        let title = isControl ? self.controls[section].title : NSLocalizedString("Accounts", comment: "")
+        
+        let view = UIView(frame: .zero)
+        let label = UILabel(frame: .zero)
+        label.text = title
+        label.font = UIFont.systemFont(ofSize: 19.0, weight: .semibold)
+        label.autoresizesSubviews = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.setContentCompressionResistancePriority(.required, for: .vertical)
+        
+        view.addSubview(label)
+        NSLayoutConstraint.activate([
+            view.topAnchor.constraint(equalTo: label.topAnchor, constant: -8),
+            view.bottomAnchor.constraint(equalTo: label.bottomAnchor, constant: 8),
+            label.leftAnchor.constraint(equalToSystemSpacingAfter: view.leftAnchor, multiplier: 0),
+            view.rightAnchor.constraint(greaterThanOrEqualTo: label.rightAnchor, constant: 0)
+        ])
+        
+        view.autoresizesSubviews = true
+        
+        view.backgroundColor = .clear
+        label.backgroundColor = .clear
+        
+        return view
+    }
+    
+    func tableView(_ tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
+        let isControl = section < self.controls.count
+        let isFirstAccount = section == self.controls.count
+        
+        let shouldShowHeader = isControl || isFirstAccount
+        guard shouldShowHeader else { return 0 }
+        
+        return 37.0
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
