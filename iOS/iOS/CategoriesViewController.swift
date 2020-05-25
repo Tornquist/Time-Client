@@ -31,6 +31,12 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             switch self {
                 case .recents:
                     return NSLocalizedString("Recent", comment: "")
+                case .addAccount:
+                    return NSLocalizedString("Add Account", comment: "")
+                case .importRecords:
+                    return NSLocalizedString("Import Records", comment: "")
+                case .signOut:
+                    return NSLocalizedString("Sign Out", comment: "")
                 default:
                     return nil
             }
@@ -507,17 +513,16 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         }
         
         if indexPath.section == self.controls.count + Time.shared.store.accountIDs.count {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
+            let cell = tableView.dequeueReusableCell(withIdentifier: CategoryTableViewCell.reuseID, for: indexPath) as! CategoryTableViewCell
             if indexPath.row == 0 {
-                cell.textLabel?.text = ""
-                cell.detailTextLabel?.text = "More"
+                cell.configure(with: NSLocalizedString("More", comment: ""), depth: 0, isExpanded: self.expandMoreControls, hasChildren: true)
             } else {
                 let controlType = self.moreControls[indexPath.row - 1]
-                cell.textLabel?.text = ""
-                cell.detailTextLabel?.text = controlType.rawValue
+                let title = controlType.title ?? controlType.rawValue
+                cell.configure(with: title, depth: 0, isExpanded: false, hasChildren: false)
             }
             
-            cell.backgroundColor = backgroundColor
+            cell.backgroundColor = .clear
             return cell
         }
         
