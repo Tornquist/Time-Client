@@ -29,6 +29,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         
         var title: String? {
             switch self {
+                case .metric:
+                    return NSLocalizedString("Metrics", comment: "")
                 case .recents:
                     return NSLocalizedString("Recents", comment: "")
                 case .addAccount:
@@ -42,8 +44,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             }
         }
     }
-    var controls: [ControlSectionType] = [.recents, .entries]
+    var controls: [ControlSectionType] = [.metric, .recents, .entries]
     let controlRows: [ControlSectionType: Int] = [
+        ControlSectionType.metric: 2, /* This Day, and This Week */
         ControlSectionType.entries: 1
     ]
     let moreControls: [ControlSectionType] = [
@@ -54,6 +57,14 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     var expandMoreControls: Bool = false
     
     var recentCategories: [CategoryTree] = []
+    
+    var closedWeekEntries: [Entry]? = nil
+    var closedWeekTime: Double? = nil
+    var closedDayEntries: [Entry]? = nil
+    var closedDayTime: Double? = nil
+    var openEntries: [Entry]? = nil
+    
+    var secondUpdateTimer: Timer? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -76,6 +87,17 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         self.loadData()
         
         self.calculateRecents()
+        self.calculateMetrics()
+        
+        self.secondUpdateTimer = Timer(timeInterval: 1.0, target: self, selector: #selector(timerTick), userInfo: nil, repeats: true)
+        RunLoop.main.add(self.secondUpdateTimer!, forMode: .common)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        self.secondUpdateTimer?.invalidate()
+        self.secondUpdateTimer = nil
     }
     
     func configureTheme() {
@@ -346,6 +368,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     
     @objc func handleEntryNotification(_ notification:Notification) {
         self.calculateRecents()
+        self.calculateMetrics()
     }
     
     func calculateRecents() {
@@ -405,7 +428,89 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             self.tableView.reloadData()
         }
     }
+    
+    func calculateMetrics() {
+        let now = Date()
+        let calendar = Calendar.current
         
+        let dayComps = calendar.dateComponents([.day, .month, .year], from: now)
+        let weekComps = calendar.dateComponents([.weekOfYear, .yearForWeekOfYear], from: now)
+        
+        let startOfDay = calendar.date(from: dayComps)!
+        let startOfWeek = calendar.date(from: weekComps)!
+        
+        Time.shared.store.getEntries(after: startOfDay) { (dayEntries, error) in
+            guard error == nil && dayEntries != nil else {
+                self.closedDayTime = nil
+                self.closedDayEntries = nil
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+                return
+            }
+            
+            var closedRanges: [Entry] = []
+            var openRanges: [Entry] = []
+            
+            dayEntries!.forEach { (entry) in
+                guard entry.type == .range else { return }
+                
+                if entry.endedAt == nil {
+                    openRanges.append(entry)
+                } else {
+                    closedRanges.append(entry)
+                }
+            }
+            
+            let closedTime = closedRanges.map({ (entry) -> Double in
+                return entry.endedAt!.timeIntervalSince(entry.startedAt)
+            }).reduce(0, { $0 + $1 })
+            
+            self.closedDayEntries = closedRanges
+            self.closedDayTime = closedTime
+            self.openEntries = openRanges
+            
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }
+        
+        Time.shared.store.getEntries(after: startOfWeek) { (weekEntries, error) in
+            guard error == nil && weekEntries != nil  else {
+                self.closedWeekTime = nil
+                self.closedWeekEntries = nil
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+                return
+            }
+            
+            var closedRanges: [Entry] = []
+            var openRanges: [Entry] = []
+            
+            weekEntries!.forEach { (entry) in
+                guard entry.type == .range else { return }
+                
+                if entry.endedAt == nil {
+                    openRanges.append(entry)
+                } else {
+                    closedRanges.append(entry)
+                }
+            }
+            
+            let closedTime = closedRanges.map({ (entry) -> Double in
+                return entry.endedAt!.timeIntervalSince(entry.startedAt)
+            }).reduce(0, { $0 + $1 })
+            
+            self.closedWeekEntries = closedRanges
+            self.closedWeekTime = closedTime
+            
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }
+    }
+            
     // MARK: - Events
     
     @IBAction func signOutPressed(_ sender: Any) {
@@ -427,6 +532,10 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         guard let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "importListView") as? ImportListViewController else { return }
         let importNavVC = UINavigationController(rootViewController: vc)
         self.present(importNavVC, animated: true, completion: nil)
+    }
+    
+    @objc func timerTick() {
+        self.refreshMetrics()
     }
     
     // MARK: - Table View
@@ -511,6 +620,32 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             let controlType = self.controls[indexPath.section]
             
             switch controlType {
+                case .metric:
+                    let isDay = indexPath.row == 0
+                    let title = isDay ? NSLocalizedString("Today", comment: "") : NSLocalizedString("This Week", comment: "")
+                    
+                    let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
+                    cell.textLabel?.text = title
+                    cell.backgroundColor = backgroundColor
+                    
+                    let hasData = isDay ? self.closedDayTime != nil : self.closedWeekTime != nil
+                    guard hasData else {
+                        cell.detailTextLabel?.text = "XX:XX:XX"
+                        return cell
+                    }
+                    
+                    let additionalTime = self.openEntries?.map({ Date().timeIntervalSince($0.startedAt) }).reduce(0, { $0 + $1 }) ?? 0
+                    let totalTime = (isDay ? self.closedDayTime! : self.closedWeekTime!) + additionalTime
+                    let ti = Int(totalTime)
+
+                    let seconds = (ti % 60)
+                    let minutes = (ti / 60) % 60
+                    let hours = (ti / 3600)
+                    
+                    let timeString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+                    cell.detailTextLabel?.text = timeString
+                    
+                    return cell
                 case .recents:
                     let categoryTree = self.recentCategories[indexPath.row]
                     let categoryID = categoryTree.node.id
@@ -746,6 +881,18 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                 self.tableView.reloadData()
             }
         }
+    }
+    
+    func refreshMetrics() {
+        guard
+            self.openEntries != nil &&
+            self.openEntries!.count > 0,
+            let section = self.controls.firstIndex(of: .metric),
+            let numRows = self.controlRows[.metric]
+            else { return }
+        
+        let indexPaths = (0..<numRows).map { IndexPath(row: $0, section: section) }
+        self.tableView.reloadRows(at: indexPaths, with: .automatic)
     }
     
     // MARK: - TableView <-> Data store support methods

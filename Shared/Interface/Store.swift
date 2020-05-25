@@ -360,6 +360,29 @@ public class Store {
         }
     }
     
+    public func getEntries(after date: Date, completion: (([Entry]?, Error?) -> ())? = nil) {
+        self.getEntries(.asNeeded) { (entries, error) in
+            guard error == nil else {
+                self.handleNetworkError(error)
+                completion?(nil, error)
+                return
+            }
+            
+            let realEntries = entries ?? []
+            let safeEntries = realEntries.filter { (entry) -> Bool in
+                if entry.endedAt?.compare(date) == .orderedDescending {
+                    return true
+                }
+                
+                guard entry.endedAt == nil else { return false }
+                
+                return entry.startedAt.compare(date) == .orderedDescending
+            }
+            
+            completion?(safeEntries, nil)
+        }
+    }
+    
     // MARK: Category Interface
     
     public func recordEvent(for category: TimeSDK.Category, completion: ((Bool) -> Void)?) {
