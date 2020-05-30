@@ -39,7 +39,7 @@ class CategoryTableViewCell: UITableViewCell {
         self.nameLabel.font = UIFont.systemFont(ofSize: 15.0)
         
         self.expandedIconView.contentMode = .center
-        self.expandedIconView.tintColor = UIColor.systemBlue
+        self.expandedIconView.tintColor = Colors.button
         
         self.nameLabel.text = nil
         self.expandedIconView.image = nil

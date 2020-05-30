@@ -628,16 +628,23 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                     }
                                         
                     // Will group all into "unknown" if no category keys exist
-                    var displayGroups: [String: Double] = [:]
+                    var displayGroups: [String: (Double, Bool)] = [:]
+                    let activeCategories = Set((self.openEntries ?? []).map({ $0.categoryID }))
+                    
                     totalByCategory.forEach { (record) in
                         let categoryID = record.key
+                        let active = activeCategories.contains(categoryID)
+                        
                         let category = Time.shared.store.categories.first(where: { $0.id == categoryID })
                         let name = category?.name
                         
                         let unknownName = NSLocalizedString("Unknown", comment: "")
                         let safeName = name ?? unknownName
                         
-                        displayGroups[safeName] = (displayGroups[safeName] ?? 0) + record.value
+                        let newValue = (displayGroups[safeName]?.0 ?? 0) + record.value
+                        let newActive = (displayGroups[safeName]?.1 ?? false) || active
+                        
+                        displayGroups[safeName] = (newValue, newActive)
                     }
                     
                     let getTimeString = { (time: Int) -> String in
@@ -651,10 +658,10 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                         return timeString
                     }
                     
-                    var displaySplits: [String: String] = [:]
+                    var displaySplits: [String: (String, Bool)] = [:]
                     displayGroups.forEach { (record) in
-                        let timeString = getTimeString(Int(record.value))
-                        displaySplits[record.key] = timeString
+                        let timeString = getTimeString(Int(record.value.0))
+                        displaySplits[record.key] = (timeString, record.value.1)
                     }
 
                     let totalTime = totalByCategory.values.reduce(0, +)
@@ -662,7 +669,6 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                     let timeString = getTimeString(ti)
                     
                     cell.configure(forRange: title, withTime: timeString, andSplits: displaySplits)
-                    cell.layoutIfNeeded()
                     return cell
                 case .recents:
                     let categoryTree = self.recentCategories[indexPath.row]

@@ -41,9 +41,13 @@ class MetricTotalTableViewCell: UITableViewCell {
         self.timeRangeLabel.font = UIFont.systemFont(ofSize: 12.0)
     }
     
-    public func configure(forRange range: String, withTime time: String, andSplits splits: [String:String]?) {
+    public func configure(forRange range: String, withTime time: String, andSplits splits: [String:(String, Bool)]?) {
         self.timeLabel.text = time
         self.timeRangeLabel.text = range
+        
+        let someSplitActive = (splits ?? [:]).values.reduce(false, { $0 || $1.1 })
+        let timeColor = someSplitActive ? Colors.active : UIColor.label
+        self.timeLabel.textColor = timeColor
         
         guard splits != nil else {
             self.splitStackView.isHidden = true
@@ -61,19 +65,19 @@ class MetricTotalTableViewCell: UITableViewCell {
         let updatingSplits = expectedSplits.subtracting(neededSplits)
         
         extraSplits.forEach({ (splitName) in self.removeSplit(withName: splitName) })
-        neededSplits.forEach({ self.insertSplit(withName: $0, andValue: splits![$0] ?? "" )})
-        updatingSplits.forEach({ self.updateSplit(withName: $0, andValue: splits![$0] ?? "" )})
+        neededSplits.forEach({ self.insertSplit(withName: $0, andValue: splits![$0]?.0 ?? "", isActive: splits![$0]?.1 ?? false )})
+        updatingSplits.forEach({ self.updateSplit(withName: $0, andValue: splits![$0]?.0 ?? "", isActive: splits![$0]?.1 ?? false )})
     }
     
-    private func updateSplit(withName name: String, andValue value: String) {
+    private func updateSplit(withName name: String, andValue value: String, isActive active: Bool) {
         guard let splitView = self.storedSplits[name] else { return }
-        splitView.configure(withName: name, andValue: value)
+        splitView.configure(withName: name, andValue: value, isActive: active)
     }
     
-    private func insertSplit(withName name: String, andValue value: String) {
+    private func insertSplit(withName name: String, andValue value: String, isActive active: Bool) {
         let newSplitView = MetricTotalSplitView(frame: .zero)
         newSplitView.translatesAutoresizingMaskIntoConstraints = false
-        newSplitView.configure(withName: name, andValue: value)
+        newSplitView.configure(withName: name, andValue: value, isActive: active)
         
         let expectedKeys: [String] = (Array(self.storedSplits.keys) + [name]).sorted()
         let expectedIndex: Int = expectedKeys.firstIndex(of: name)!

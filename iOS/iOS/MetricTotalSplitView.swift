@@ -64,8 +64,13 @@ class MetricTotalSplitView: UIView {
         self.valueLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 12.0, weight: .regular)
     }
     
-    public func configure(withName name: String, andValue value: String) {
+    public func configure(withName name: String, andValue value: String, isActive active: Bool) {
+        let textColor = active ? Colors.active : UIColor.label
+        
         self.nameLabel.text = name
+        self.nameLabel.textColor = textColor
+        
         self.valueLabel.text = value
+        self.valueLabel.textColor = textColor
     }
 }

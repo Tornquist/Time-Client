@@ -45,6 +45,6 @@ class DisclosureIndicatorButtonTableViewCell: UITableViewCell {
         self.selectionStyle = .none
         
         self.buttonLabel.font = UIFont.systemFont(ofSize: 15.0)
-        self.buttonLabel.textColor = .systemBlue
+        self.buttonLabel.textColor = Colors.button
     }
 }

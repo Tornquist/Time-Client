@@ -53,6 +53,7 @@ class RecentEntryTableViewCell: UITableViewCell {
         self.actionButton.setTitle(nil, for: .normal)
         let imageConfiguration = UIImage.SymbolConfiguration(scale: .large)
         self.actionButton.setImage(UIImage(systemName: "play.circle", withConfiguration: imageConfiguration), for: .normal)
+        self.actionButton.tintColor = Colors.button
     }
     
     public func configure(for tree: CategoryTree, asRange: Bool) {
@@ -78,29 +79,21 @@ class RecentEntryTableViewCell: UITableViewCell {
         
         self.entryNameLabel.text = entryName
         self.entryParentsLabel.text = parentName
-        
+                
         let category = tree.node
-        if asRange {
-            let isRangeOpen = Time.shared.store.isRangeOpen(for: category) == true
-            let imageName = isRangeOpen ? "pause.circle" : "play.circle"
-            self.actionButton.setImage(
-                UIImage(
-                    systemName: imageName,
-                    withConfiguration:
-                    UIImage.SymbolConfiguration(scale: .large)
-                ),
-                for: .normal
-            )
-        } else {
-            self.actionButton.setImage(
-                UIImage(
-                    systemName: "smallcircle.fill.circle",
-                    withConfiguration:
-                    UIImage.SymbolConfiguration(scale: .large)
-                ),
-                for: .normal
-            )
-        }
+        let isRangeOpen = asRange && Time.shared.store.isRangeOpen(for: category) == true
+        let imageName = !asRange ? "smallcircle.fill.circle" : (isRangeOpen ? "pause.circle" : "play.circle")
+        
+        let nameColor = isRangeOpen ? Colors.active : UIColor.label
+        self.entryNameLabel.textColor = nameColor
+        
+        self.actionButton.setImage(
+            UIImage(
+                systemName: imageName,
+                withConfiguration: UIImage.SymbolConfiguration(scale: .large)
+            ),
+            for: .normal
+        )
     }
     
     @IBAction func actionButtonTapped(_ sender: Any) {
