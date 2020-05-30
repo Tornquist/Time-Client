@@ -13,7 +13,7 @@
             <rect key="frame" x="0.0" y="0.0" width="414" height="148"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="751" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3Ol-hM-EdZ">
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="751" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3Ol-hM-EdZ">
                     <rect key="frame" x="16" y="60" width="42" height="20"/>
                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                     <nil key="textColor"/>
@@ -42,7 +42,7 @@
                 <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="OFB-oN-Uma" secondAttribute="trailing" constant="16" id="HxB-rJ-U4I"/>
                 <constraint firstItem="Tch-Zf-2py" firstAttribute="leading" secondItem="3Ol-hM-EdZ" secondAttribute="leading" id="Pd6-EI-XxS"/>
                 <constraint firstItem="OFB-oN-Uma" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="3Ol-hM-EdZ" secondAttribute="trailing" constant="16" id="aYT-Dy-wxb"/>
-                <constraint firstItem="OFB-oN-Uma" firstAttribute="width" secondItem="vUN-kp-3ea" secondAttribute="width" multiplier="0.5" constant="-16" id="b6F-PY-mai"/>
+                <constraint firstItem="OFB-oN-Uma" firstAttribute="width" secondItem="vUN-kp-3ea" secondAttribute="width" multiplier="0.5" priority="751" constant="-16" id="b6F-PY-mai"/>
                 <constraint firstItem="OFB-oN-Uma" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="16" id="dJA-md-v0I"/>
                 <constraint firstItem="3Ol-hM-EdZ" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="16" id="l8u-CX-Fjd"/>
             </constraints>

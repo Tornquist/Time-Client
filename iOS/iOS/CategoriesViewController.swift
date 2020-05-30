@@ -603,7 +603,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                 case .metric:
                     let isDay = indexPath.row == 0
                     let title = isDay ? NSLocalizedString("Today", comment: "") : NSLocalizedString("This Week", comment: "")
-                    let showSeconds = false
+                    let showSeconds = true
                     // TODO: Add controls for seconds
                     
                     let cell = tableView.dequeueReusableCell(withIdentifier: MetricTotalTableViewCell.reuseID, for: indexPath) as! MetricTotalTableViewCell
