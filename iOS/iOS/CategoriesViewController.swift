@@ -58,17 +58,15 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     
     var recentCategories: [CategoryTree] = []
     
-    var closedWeekEntries: [Entry]? = nil
-    var closedWeekTime: Double? = nil
-    var closedDayEntries: [Entry]? = nil
-    var closedDayTime: Double? = nil
+    var closedWeekTimes: [Int: Double]? = nil
+    var closedDayTimes: [Int: Double]? = nil
     var openEntries: [Entry]? = nil
-    
+
     var secondUpdateTimer: Timer? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         self.configureTheme()
         
         NotificationCenter.default.addObserver(self, selector: #selector(safeReload), name: .TimeBackgroundStoreUpdate, object: nil)
@@ -132,6 +130,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         
         let categoryCellNib = UINib(nibName: CategoryTableViewCell.nibName, bundle: nil)
         self.tableView.register(categoryCellNib, forCellReuseIdentifier: CategoryTableViewCell.reuseID)
+        
+        let metricTotalNib = UINib(nibName: MetricTotalTableViewCell.nibName, bundle: nil)
+        self.tableView.register(metricTotalNib, forCellReuseIdentifier: MetricTotalTableViewCell.reuseID)
     }
     
     func refreshNavigation() {
@@ -439,76 +440,55 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         let startOfDay = calendar.date(from: dayComps)!
         let startOfWeek = calendar.date(from: weekComps)!
         
-        Time.shared.store.getEntries(after: startOfDay) { (dayEntries, error) in
-            guard error == nil && dayEntries != nil else {
-                self.closedDayTime = nil
-                self.closedDayEntries = nil
+        let handleEntries = { (day: Bool) -> (([Entry]?, Error?) -> ()) in
+            return { (entries: [Entry]?, error: Error?) in
+                guard error == nil && entries != nil else {
+                    if day {
+                        self.closedDayTimes = nil
+                    } else {
+                        self.closedWeekTimes = nil
+                    }
+                    
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
+                    return
+                }
+                
+                var closedRanges: [Entry] = []
+                var openRanges: [Entry] = []
+                
+                entries!.forEach { (entry) in
+                    guard entry.type == .range else { return }
+                    
+                    if entry.endedAt == nil {
+                        openRanges.append(entry)
+                    } else {
+                        closedRanges.append(entry)
+                    }
+                }
+                
+                var closedTimes: [Int: Double] = [:]
+                closedRanges.forEach { (entry) in
+                    let duration = entry.endedAt!.timeIntervalSince(entry.startedAt)
+                    closedTimes[entry.categoryID] = (closedTimes[entry.categoryID] ?? 0) + duration
+                }
+                
+                if day {
+                    self.closedDayTimes = closedTimes
+                    self.openEntries = openRanges
+                } else {
+                    self.closedWeekTimes = closedTimes
+                }
+                
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
                 }
-                return
-            }
-            
-            var closedRanges: [Entry] = []
-            var openRanges: [Entry] = []
-            
-            dayEntries!.forEach { (entry) in
-                guard entry.type == .range else { return }
-                
-                if entry.endedAt == nil {
-                    openRanges.append(entry)
-                } else {
-                    closedRanges.append(entry)
-                }
-            }
-            
-            let closedTime = closedRanges.map({ (entry) -> Double in
-                return entry.endedAt!.timeIntervalSince(entry.startedAt)
-            }).reduce(0, { $0 + $1 })
-            
-            self.closedDayEntries = closedRanges
-            self.closedDayTime = closedTime
-            self.openEntries = openRanges
-            
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
             }
         }
         
-        Time.shared.store.getEntries(after: startOfWeek) { (weekEntries, error) in
-            guard error == nil && weekEntries != nil  else {
-                self.closedWeekTime = nil
-                self.closedWeekEntries = nil
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
-                return
-            }
-            
-            var closedRanges: [Entry] = []
-            var openRanges: [Entry] = []
-            
-            weekEntries!.forEach { (entry) in
-                guard entry.type == .range else { return }
-                
-                if entry.endedAt == nil {
-                    openRanges.append(entry)
-                } else {
-                    closedRanges.append(entry)
-                }
-            }
-            
-            let closedTime = closedRanges.map({ (entry) -> Double in
-                return entry.endedAt!.timeIntervalSince(entry.startedAt)
-            }).reduce(0, { $0 + $1 })
-            
-            self.closedWeekEntries = closedRanges
-            self.closedWeekTime = closedTime
-            
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-            }
-        }
+        Time.shared.store.getEntries(after: startOfDay, completion: handleEntries(true))
+        Time.shared.store.getEntries(after: startOfWeek, completion: handleEntries(false))
     }
             
     // MARK: - Events
@@ -624,27 +604,52 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                     let isDay = indexPath.row == 0
                     let title = isDay ? NSLocalizedString("Today", comment: "") : NSLocalizedString("This Week", comment: "")
                     
-                    let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
-                    cell.textLabel?.text = title
+                    let cell = tableView.dequeueReusableCell(withIdentifier: MetricTotalTableViewCell.reuseID, for: indexPath) as! MetricTotalTableViewCell
                     cell.backgroundColor = backgroundColor
-                    
-                    let hasData = isDay ? self.closedDayTime != nil : self.closedWeekTime != nil
+                                        
+                    let hasData = isDay ? self.closedDayTimes != nil : self.closedWeekTimes != nil
                     guard hasData else {
-                        cell.detailTextLabel?.text = "XX:XX:XX"
+                        cell.configure(forRange: title, withTime: "XX:XX:XX")
                         return cell
                     }
                     
-                    let additionalTime = self.openEntries?.map({ Date().timeIntervalSince($0.startedAt) }).reduce(0, { $0 + $1 }) ?? 0
-                    let totalTime = (isDay ? self.closedDayTime! : self.closedWeekTime!) + additionalTime
-                    let ti = Int(totalTime)
+                    var totalByCategory: [Int: Double] = [:]
 
-                    let seconds = (ti % 60)
-                    let minutes = (ti / 60) % 60
-                    let hours = (ti / 3600)
+                    (self.openEntries ?? []).forEach { (entry) in
+                        let duration = Date().timeIntervalSince(entry.startedAt)
+                        totalByCategory[entry.categoryID] = (totalByCategory[entry.categoryID] ?? 0) + duration
+                    }
+
+                    (isDay ? self.closedDayTimes! : self.closedWeekTimes!).forEach { (record) in
+                        totalByCategory[record.key] = (totalByCategory[record.key] ?? 0) + record.value
+                    }
                     
-                    let timeString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
-                    cell.detailTextLabel?.text = timeString
+                    let getTimeString = { (time: Int) -> String in
+                        let seconds = (time % 60)
+                        let minutes = (time / 60) % 60
+                        let hours = (time / 3600)
+                        
+                        let timeString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+                        return timeString
+                    }
                     
+                    print("isDay \(isDay)")
+                    totalByCategory.forEach { (record) in
+                        let categoryID = record.key
+                        let category = Time.shared.store.categories.first(where: { $0.id == categoryID })
+                        let name = category?.name
+                        
+                        let timeString = getTimeString(Int(record.value))
+                        
+                        print("\(name) \(timeString)")
+                    }
+
+                    let totalTime = totalByCategory.values.reduce(0, +)
+                    let ti = Int(totalTime)
+                    let timeString = getTimeString(ti)
+                    
+                    cell.configure(forRange: title, withTime: timeString)
+
                     return cell
                 case .recents:
                     let categoryTree = self.recentCategories[indexPath.row]
@@ -892,7 +897,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             else { return }
         
         let indexPaths = (0..<numRows).map { IndexPath(row: $0, section: section) }
-        self.tableView.reloadRows(at: indexPaths, with: .automatic)
+        self.tableView.reloadRows(at: indexPaths, with: .none)
     }
     
     // MARK: - TableView <-> Data store support methods

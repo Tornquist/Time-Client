@@ -23,6 +23,8 @@
 		D85B0A4C2246DD2100835E55 /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85B0A4B2246DD2100835E55 /* CategoriesViewController.swift */; };
 		D85CFB012462ED07005E1AE2 /* CategoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85CFB002462ED07005E1AE2 /* CategoryTableViewCell.swift */; };
 		D85CFB032462ED13005E1AE2 /* CategoryTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D85CFB022462ED13005E1AE2 /* CategoryTableViewCell.xib */; };
+		D8C3726724829C75002E9C85 /* MetricTotalTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C3726624829C75002E9C85 /* MetricTotalTableViewCell.swift */; };
+		D8C3726924829C82002E9C85 /* MetricTotalTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D8C3726824829C82002E9C85 /* MetricTotalTableViewCell.xib */; };
 		D8D3BA9623C4C024002B0082 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D8D3BA9523C4C024002B0082 /* Settings.bundle */; };
 		D8DD2A432331083600F26665 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DD2A422331083500F26665 /* HomeViewController.swift */; };
 		D8E85C34229D682C00204D14 /* EntriesViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E85C33229D682C00204D14 /* EntriesViewController+Alerts.swift */; };
@@ -65,6 +67,8 @@
 		D85B0A4B2246DD2100835E55 /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesViewController.swift; sourceTree = "<group>"; };
 		D85CFB002462ED07005E1AE2 /* CategoryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryTableViewCell.swift; sourceTree = "<group>"; };
 		D85CFB022462ED13005E1AE2 /* CategoryTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CategoryTableViewCell.xib; sourceTree = "<group>"; };
+		D8C3726624829C75002E9C85 /* MetricTotalTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTotalTableViewCell.swift; sourceTree = "<group>"; };
+		D8C3726824829C82002E9C85 /* MetricTotalTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MetricTotalTableViewCell.xib; sourceTree = "<group>"; };
 		D8D3BA9423C42BA7002B0082 /* Time-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Time-iOS.entitlements"; sourceTree = "<group>"; };
 		D8D3BA9523C4C024002B0082 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		D8DD2A422331083500F26665 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -95,6 +99,8 @@
 				D85108132456262E001752B1 /* RecentEntryTableViewCell.swift */,
 				D85CFB022462ED13005E1AE2 /* CategoryTableViewCell.xib */,
 				D85CFB002462ED07005E1AE2 /* CategoryTableViewCell.swift */,
+				D8C3726824829C82002E9C85 /* MetricTotalTableViewCell.xib */,
+				D8C3726624829C75002E9C85 /* MetricTotalTableViewCell.swift */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -209,6 +215,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D8C3726924829C82002E9C85 /* MetricTotalTableViewCell.xib in Resources */,
 				D8D3BA9623C4C024002B0082 /* Settings.bundle in Resources */,
 				D85CFB032462ED13005E1AE2 /* CategoryTableViewCell.xib in Resources */,
 				D851080E24561DDA001752B1 /* DisclosureIndicatorButtonTableViewCell.xib in Resources */,
@@ -234,6 +241,7 @@
 				D855812521BDE9A200DCB577 /* LandingViewController.swift in Sources */,
 				D8E85C34229D682C00204D14 /* EntriesViewController+Alerts.swift in Sources */,
 				D8DD2A432331083600F26665 /* HomeViewController.swift in Sources */,
+				D8C3726724829C75002E9C85 /* MetricTotalTableViewCell.swift in Sources */,
 				D855812B21BDE9A200DCB577 /* Time_iOS.xcdatamodeld in Sources */,
 				D851081024561DEC001752B1 /* DisclosureIndicatorButtonTableViewCell.swift in Sources */,
 				D8F549B123A9005D009E8512 /* ImportListViewController.swift in Sources */,
