@@ -603,13 +603,15 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                 case .metric:
                     let isDay = indexPath.row == 0
                     let title = isDay ? NSLocalizedString("Today", comment: "") : NSLocalizedString("This Week", comment: "")
+                    let showSeconds = false
                     
                     let cell = tableView.dequeueReusableCell(withIdentifier: MetricTotalTableViewCell.reuseID, for: indexPath) as! MetricTotalTableViewCell
                     cell.backgroundColor = backgroundColor
                                         
                     let hasData = isDay ? self.closedDayTimes != nil : self.closedWeekTimes != nil
                     guard hasData else {
-                        cell.configure(forRange: title, withTime: "XX:XX:XX")
+                        let blank = showSeconds ? "XX:XX:XX" : "XX:XX"
+                        cell.configure(forRange: title, withTime: blank, andSplits: nil)
                         return cell
                     }
                     
@@ -623,32 +625,42 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                     (isDay ? self.closedDayTimes! : self.closedWeekTimes!).forEach { (record) in
                         totalByCategory[record.key] = (totalByCategory[record.key] ?? 0) + record.value
                     }
+                                        
+                    // Will group all into "unknown" if no category keys exist
+                    var displayGroups: [String: Double] = [:]
+                    totalByCategory.forEach { (record) in
+                        let categoryID = record.key
+                        let category = Time.shared.store.categories.first(where: { $0.id == categoryID })
+                        let name = category?.name
+                        
+                        let unknownName = NSLocalizedString("Unknown", comment: "")
+                        let safeName = name ?? unknownName
+                        
+                        displayGroups[safeName] = (displayGroups[safeName] ?? 0) + record.value
+                    }
                     
                     let getTimeString = { (time: Int) -> String in
                         let seconds = (time % 60)
                         let minutes = (time / 60) % 60
                         let hours = (time / 3600)
                         
-                        let timeString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+                        let timeString = showSeconds
+                            ? String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+                            : String(format: "%02d:%02d", hours, minutes)
                         return timeString
                     }
                     
-                    print("isDay \(isDay)")
-                    totalByCategory.forEach { (record) in
-                        let categoryID = record.key
-                        let category = Time.shared.store.categories.first(where: { $0.id == categoryID })
-                        let name = category?.name
-                        
+                    var displaySplits: [String: String] = [:]
+                    displayGroups.forEach { (record) in
                         let timeString = getTimeString(Int(record.value))
-                        
-                        print("\(name) \(timeString)")
+                        displaySplits[record.key] = timeString
                     }
 
                     let totalTime = totalByCategory.values.reduce(0, +)
                     let ti = Int(totalTime)
                     let timeString = getTimeString(ti)
                     
-                    cell.configure(forRange: title, withTime: timeString)
+                    cell.configure(forRange: title, withTime: timeString, andSplits: displaySplits)
 
                     return cell
                 case .recents:
