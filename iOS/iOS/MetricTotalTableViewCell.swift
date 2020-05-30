@@ -13,12 +13,13 @@ class MetricTotalTableViewCell: UITableViewCell {
     // Views
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var timeRangeLabel: UILabel!
-    @IBOutlet weak var splitNameLabel: UILabel!
-    @IBOutlet weak var splitValueLabel: UILabel!
+    @IBOutlet weak var splitStackView: UIStackView!
         
     // Other
     static let nibName: String = "MetricTotalTableViewCell"
     static let reuseID: String = "metricTotalTableViewCell"
+    
+    var storedSplits: [String: MetricTotalSplitView] = [:]
     
     // MARK: - init
     
@@ -38,9 +39,6 @@ class MetricTotalTableViewCell: UITableViewCell {
 
         self.timeLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 34.0, weight: .regular)
         self.timeRangeLabel.font = UIFont.systemFont(ofSize: 12.0)
-        
-        self.splitNameLabel.font = UIFont.systemFont(ofSize: 12.0)
-        self.splitValueLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 12.0, weight: .regular)
     }
     
     public func configure(forRange range: String, withTime time: String, andSplits splits: [String:String]?) {
@@ -48,61 +46,47 @@ class MetricTotalTableViewCell: UITableViewCell {
         self.timeRangeLabel.text = range
         
         guard splits != nil else {
-            self.splitNameLabel.text = nil
-            self.splitNameLabel.isHidden = true
-            self.splitValueLabel.text = nil
-            self.splitValueLabel.isHidden = true
+            self.splitStackView.isHidden = true
+            self.storedSplits.keys.forEach { (splitName) in
+                self.removeSplit(withName: splitName)
+            }
             return
         }
         
-        self.splitNameLabel.isHidden = false
-        self.splitValueLabel.isHidden = false
-                
-        let names = Array(splits!.keys).sorted()
-        let values = names.map({ splits![$0] ?? "" })
-        
-        let currentWidth = self.splitNameLabel.frame.width
-        let displayNames = names.map { (name) -> String in
-            let giantFrame = CGSize(width: 1000, height: 1000)
-            
-            let size = (name as NSString?)?.boundingRect(
-                with: giantFrame,
-                options: [.truncatesLastVisibleLine, .usesLineFragmentOrigin],
-                attributes: [NSAttributedString.Key.font: self.splitValueLabel.font ?? UIFont.systemFont(ofSize: 12.0)],
-                context: nil
-            ).size
-            
-            guard size?.width ?? giantFrame.width > currentWidth else {
-                // Exit if no truncation needed
-                return name
-            }
-            
-            var searching = true
-            var step = 0
-            var truncatedName = name
-            let addition = "..."
-            
-            while searching {
-                _ = truncatedName.removeLast()
-                let testSize = ((truncatedName + addition) as NSString?)?.boundingRect(
-                    with: giantFrame,
-                    options: [.truncatesLastVisibleLine, .usesLineFragmentOrigin],
-                    attributes: [NSAttributedString.Key.font: self.splitValueLabel.font ?? UIFont.systemFont(ofSize: 12.0)],
-                    context: nil
-                ).size
-                
-                if testSize?.width ?? giantFrame.width < currentWidth || step > 50 {
-                    searching = false
-                }
-                step = step + 1
-            }
-            return truncatedName + addition
-        }
-        
-        let namesText = displayNames.joined(separator: "\n")
-        let valuesText = values.joined(separator: "\n")
+        let activeSplits = Set(self.storedSplits.keys)
+        let expectedSplits = Set(splits!.keys)
 
-        self.splitNameLabel.text = namesText
-        self.splitValueLabel.text = valuesText
+        let extraSplits = activeSplits.subtracting(expectedSplits)
+        let neededSplits = expectedSplits.subtracting(activeSplits)
+        let updatingSplits = expectedSplits.subtracting(neededSplits)
+        
+        extraSplits.forEach({ (splitName) in self.removeSplit(withName: splitName) })
+        neededSplits.forEach({ self.insertSplit(withName: $0, andValue: splits![$0] ?? "" )})
+        updatingSplits.forEach({ self.updateSplit(withName: $0, andValue: splits![$0] ?? "" )})
+    }
+    
+    private func updateSplit(withName name: String, andValue value: String) {
+        guard let splitView = self.storedSplits[name] else { return }
+        splitView.configure(withName: name, andValue: value)
+    }
+    
+    private func insertSplit(withName name: String, andValue value: String) {
+        let newSplitView = MetricTotalSplitView(frame: .zero)
+        newSplitView.translatesAutoresizingMaskIntoConstraints = false
+        newSplitView.configure(withName: name, andValue: value)
+        
+        let expectedKeys: [String] = (Array(self.storedSplits.keys) + [name]).sorted()
+        let expectedIndex: Int = expectedKeys.firstIndex(of: name)!
+        
+        self.splitStackView.insertArrangedSubview(newSplitView, at: expectedIndex)
+        self.storedSplits[name] = newSplitView
+    }
+    
+    private func removeSplit(withName name: String) {
+        guard let splitView = self.storedSplits[name] else { return }
+        
+        self.splitStackView.removeArrangedSubview(splitView)
+        splitView.removeFromSuperview()
+        self.storedSplits.removeValue(forKey: name)
     }
 }

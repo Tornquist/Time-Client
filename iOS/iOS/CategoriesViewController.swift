@@ -604,6 +604,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                     let isDay = indexPath.row == 0
                     let title = isDay ? NSLocalizedString("Today", comment: "") : NSLocalizedString("This Week", comment: "")
                     let showSeconds = false
+                    // TODO: Add controls for seconds
                     
                     let cell = tableView.dequeueReusableCell(withIdentifier: MetricTotalTableViewCell.reuseID, for: indexPath) as! MetricTotalTableViewCell
                     cell.backgroundColor = backgroundColor
@@ -661,7 +662,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                     let timeString = getTimeString(ti)
                     
                     cell.configure(forRange: title, withTime: timeString, andSplits: displaySplits)
-
+                    cell.layoutIfNeeded()
                     return cell
                 case .recents:
                     let categoryTree = self.recentCategories[indexPath.row]
