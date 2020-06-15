@@ -374,7 +374,9 @@ public class Store {
                     return true
                 }
                 
-                guard entry.endedAt == nil else { return false }
+                if entry.endedAt == nil && entry.type == .range {
+                    return true
+                }
                 
                 return entry.startedAt.compare(date) == .orderedDescending
             }

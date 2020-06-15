@@ -382,51 +382,56 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         let maxResults = 5 // Max recent entries
         let sortMode: RecentSortMode = .name
         
-        let entries = Time.shared.store.entries
-        
         let cutoff = Date().addingTimeInterval(Double(-maxDays * 24 * 60 * 60))
-        
-        let filteredEntries = entries.filter { (entry) -> Bool in
-            return entry.startedAt > cutoff
-        }
-        let orderedEntries = filteredEntries.sorted(by: { $0.startedAt > $1.startedAt })
-        let orderedCategoryIDs = orderedEntries.map({ $0.categoryID })
-        var reducedOrderedIDs: [Int] = []
-        orderedCategoryIDs.forEach { (id) in
-            guard !reducedOrderedIDs.contains(id) else { return }
-            reducedOrderedIDs.append(id)
-        }
-        
-        let recentCategoryIDs = reducedOrderedIDs.prefix(maxResults)
-                
-        let recentCategories = recentCategoryIDs.compactMap { (id) -> CategoryTree? in
-            guard
-                let category = Time.shared.store.categories.first(where: { $0.id == id }),
-                let root = Time.shared.store.categoryTrees[category.accountID],
-                let categoryTree = root.findItem(withID: category.id)
-            else { return nil }
-            
-            return categoryTree
-        }
-        
-        switch sortMode {
-            case .date:
-                // Date sorting is default
-                self.recentCategories = recentCategories
-            case .name:
-                self.recentCategories = recentCategories.sorted { $0.node.name < $1.node.name }
-        }
 
-        if self.recentCategories.count == 0 {
-            self.controls = self.controls.filter({ $0 != .recents })
-        } else {
-            if !self.controls.contains(.recents) {
-                self.controls.insert(.recents, at: 0)
+        Time.shared.store.getEntries(after: cutoff) { (entries, error) in
+            guard let entries = entries, error == nil else {
+                self.controls = self.controls.filter({ $0 != .recents })
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+                return
             }
-        }
+            
+            let orderedEntries = entries.sorted(by: { $0.startedAt > $1.startedAt })
+            let orderedCategoryIDs = orderedEntries.map({ $0.categoryID })
+            var reducedOrderedIDs: [Int] = []
+            orderedCategoryIDs.forEach { (id) in
+                guard !reducedOrderedIDs.contains(id) else { return }
+                reducedOrderedIDs.append(id)
+            }
+            
+            let recentCategoryIDs = reducedOrderedIDs.prefix(maxResults)
+                    
+            let recentCategories = recentCategoryIDs.compactMap { (id) -> CategoryTree? in
+                guard
+                    let category = Time.shared.store.categories.first(where: { $0.id == id }),
+                    let root = Time.shared.store.categoryTrees[category.accountID],
+                    let categoryTree = root.findItem(withID: category.id)
+                else { return nil }
+                
+                return categoryTree
+            }
+            
+            switch sortMode {
+                case .date:
+                    // Date sorting is default
+                    self.recentCategories = recentCategories
+                case .name:
+                    self.recentCategories = recentCategories.sorted { $0.node.name < $1.node.name }
+            }
 
-        DispatchQueue.main.async {
-            self.tableView.reloadData()
+            if self.recentCategories.count == 0 {
+                self.controls = self.controls.filter({ $0 != .recents })
+            } else {
+                if !self.controls.contains(.recents) {
+                    self.controls.insert(.recents, at: 0)
+                }
+            }
+
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
         }
     }
     
@@ -683,8 +688,9 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                         .sorted(by: { (a, b) -> Bool in
                             return a.startedAt > b.startedAt
                         }).first
+                    let isOpen = self.openEntries?.filter({ $0.categoryID == categoryID }).count ?? 0 > 0
 
-                    let isRange = matchingEntry?.type == .range
+                    let isRange = isOpen || matchingEntry?.type == .range
                     let cell = tableView.dequeueReusableCell(withIdentifier: RecentEntryTableViewCell.reuseID, for: indexPath) as! RecentEntryTableViewCell
                     cell.configure(for: categoryTree, asRange: isRange)
                     cell.delegate = self
