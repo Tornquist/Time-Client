@@ -23,6 +23,8 @@
 		D85B0A4C2246DD2100835E55 /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85B0A4B2246DD2100835E55 /* CategoriesViewController.swift */; };
 		D85CFB012462ED07005E1AE2 /* CategoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85CFB002462ED07005E1AE2 /* CategoryTableViewCell.swift */; };
 		D85CFB032462ED13005E1AE2 /* CategoryTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D85CFB022462ED13005E1AE2 /* CategoryTableViewCell.xib */; };
+		D86AB86F24982E3300F71BE1 /* EntryTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D86AB86E24982E3300F71BE1 /* EntryTableViewCell.xib */; };
+		D86AB87124982E3E00F71BE1 /* EntryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86AB87024982E3E00F71BE1 /* EntryTableViewCell.swift */; };
 		D89CEA0D2482BBE9002913AA /* MetricTotalSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89CEA0C2482BBE9002913AA /* MetricTotalSplitView.swift */; };
 		D89CEA0F2482BBF8002913AA /* MetricTotalSplitView.xib in Resources */ = {isa = PBXBuildFile; fileRef = D89CEA0E2482BBF8002913AA /* MetricTotalSplitView.xib */; };
 		D89CEA112482CB07002913AA /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89CEA102482CB07002913AA /* Colors.swift */; };
@@ -70,6 +72,8 @@
 		D85B0A4B2246DD2100835E55 /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesViewController.swift; sourceTree = "<group>"; };
 		D85CFB002462ED07005E1AE2 /* CategoryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryTableViewCell.swift; sourceTree = "<group>"; };
 		D85CFB022462ED13005E1AE2 /* CategoryTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CategoryTableViewCell.xib; sourceTree = "<group>"; };
+		D86AB86E24982E3300F71BE1 /* EntryTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EntryTableViewCell.xib; sourceTree = "<group>"; };
+		D86AB87024982E3E00F71BE1 /* EntryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryTableViewCell.swift; sourceTree = "<group>"; };
 		D89CEA0C2482BBE9002913AA /* MetricTotalSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTotalSplitView.swift; sourceTree = "<group>"; };
 		D89CEA0E2482BBF8002913AA /* MetricTotalSplitView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MetricTotalSplitView.xib; sourceTree = "<group>"; };
 		D89CEA102482CB07002913AA /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
@@ -99,16 +103,18 @@
 		D851080B24561D22001752B1 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
-				D851080D24561DDA001752B1 /* DisclosureIndicatorButtonTableViewCell.xib */,
-				D851080F24561DEC001752B1 /* DisclosureIndicatorButtonTableViewCell.swift */,
-				D851081124562622001752B1 /* RecentEntryTableViewCell.xib */,
-				D85108132456262E001752B1 /* RecentEntryTableViewCell.swift */,
-				D85CFB022462ED13005E1AE2 /* CategoryTableViewCell.xib */,
 				D85CFB002462ED07005E1AE2 /* CategoryTableViewCell.swift */,
-				D8C3726824829C82002E9C85 /* MetricTotalTableViewCell.xib */,
-				D8C3726624829C75002E9C85 /* MetricTotalTableViewCell.swift */,
-				D89CEA0E2482BBF8002913AA /* MetricTotalSplitView.xib */,
+				D85CFB022462ED13005E1AE2 /* CategoryTableViewCell.xib */,
+				D851080F24561DEC001752B1 /* DisclosureIndicatorButtonTableViewCell.swift */,
+				D851080D24561DDA001752B1 /* DisclosureIndicatorButtonTableViewCell.xib */,
+				D86AB87024982E3E00F71BE1 /* EntryTableViewCell.swift */,
+				D86AB86E24982E3300F71BE1 /* EntryTableViewCell.xib */,
 				D89CEA0C2482BBE9002913AA /* MetricTotalSplitView.swift */,
+				D89CEA0E2482BBF8002913AA /* MetricTotalSplitView.xib */,
+				D8C3726624829C75002E9C85 /* MetricTotalTableViewCell.swift */,
+				D8C3726824829C82002E9C85 /* MetricTotalTableViewCell.xib */,
+				D85108132456262E001752B1 /* RecentEntryTableViewCell.swift */,
+				D851081124562622001752B1 /* RecentEntryTableViewCell.xib */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -226,6 +232,7 @@
 			files = (
 				D8C3726924829C82002E9C85 /* MetricTotalTableViewCell.xib in Resources */,
 				D8D3BA9623C4C024002B0082 /* Settings.bundle in Resources */,
+				D86AB86F24982E3300F71BE1 /* EntryTableViewCell.xib in Resources */,
 				D85CFB032462ED13005E1AE2 /* CategoryTableViewCell.xib in Resources */,
 				D851080E24561DDA001752B1 /* DisclosureIndicatorButtonTableViewCell.xib in Resources */,
 				D89CEA0F2482BBF8002913AA /* MetricTotalSplitView.xib in Resources */,
@@ -249,6 +256,7 @@
 				D89CEA112482CB07002913AA /* Colors.swift in Sources */,
 				D85B0A4C2246DD2100835E55 /* CategoriesViewController.swift in Sources */,
 				D89CEA0D2482BBE9002913AA /* MetricTotalSplitView.swift in Sources */,
+				D86AB87124982E3E00F71BE1 /* EntryTableViewCell.swift in Sources */,
 				D85B0A4A2246DD1A00835E55 /* LoginViewController.swift in Sources */,
 				D855812521BDE9A200DCB577 /* LandingViewController.swift in Sources */,
 				D8E85C34229D682C00204D14 /* EntriesViewController+Alerts.swift in Sources */,
