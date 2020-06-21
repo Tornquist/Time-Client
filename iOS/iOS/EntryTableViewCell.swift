@@ -89,6 +89,8 @@ class EntryTableViewCell: UITableViewCell {
         
         let isOpen = entry.type == .range && entry.endedAt == nil
         self.actionButton.isHidden = !isOpen
+        
+        self.topLabel.textColor = isOpen ? Colors.active : UIColor.label
     }
     
     @IBAction func actionButtonTapped(_ sender: Any) {

@@ -45,7 +45,7 @@ class CategoryTableViewCell: UITableViewCell {
         self.expandedIconView.image = nil
     }
     
-    public func configure(with name: String, depth: Int, isExpanded expanded: Bool, hasChildren children: Bool) {
+    public func configure(with name: String, depth: Int, isExpanded expanded: Bool, hasChildren children: Bool, isActive active: Bool) {
         self.nameLabel.text = name
         
         let imageConfiguration = UIImage.SymbolConfiguration(font: UIFont.systemFont(ofSize: 12.0, weight: .semibold))
@@ -55,5 +55,7 @@ class CategoryTableViewCell: UITableViewCell {
         
         let cellOffset: CGFloat = CGFloat(depth) * (16 /* icon width */ + 12 /* icon to label space */) + 12 /* base offset */
         self.leadingContraint.constant = cellOffset
+        
+        self.nameLabel.textColor = active ? Colors.active : UIColor.label
     }
 }

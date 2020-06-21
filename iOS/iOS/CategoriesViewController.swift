@@ -732,11 +732,11 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         if indexPath.section == self.controls.count + Time.shared.store.accountIDs.count {
             let cell = tableView.dequeueReusableCell(withIdentifier: CategoryTableViewCell.reuseID, for: indexPath) as! CategoryTableViewCell
             if indexPath.row == 0 {
-                cell.configure(with: NSLocalizedString("More", comment: ""), depth: 0, isExpanded: self.expandMoreControls, hasChildren: true)
+                cell.configure(with: NSLocalizedString("More", comment: ""), depth: 0, isExpanded: self.expandMoreControls, hasChildren: true, isActive: false)
             } else {
                 let controlType = self.moreControls[indexPath.row - 1]
                 let title = controlType.title ?? controlType.rawValue
-                cell.configure(with: title, depth: 0, isExpanded: false, hasChildren: false)
+                cell.configure(with: title, depth: 0, isExpanded: false, hasChildren: false, isActive: false)
             }
             
             cell.backgroundColor = .clear
@@ -769,7 +769,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         let depth = categoryTree.depth - 1 // Will not show account cell
         let isExpanded = categoryTree.expanded || self.moving
         let hasChildren = categoryTree.children.count > 0
-        cell.configure(with: category.name, depth: depth, isExpanded: isExpanded, hasChildren: hasChildren)
+        let isActive = self.openEntries?.contains(where: { $0.categoryID == categoryTree.node.id }) ?? false
+        cell.configure(with: category.name, depth: depth, isExpanded: isExpanded, hasChildren: hasChildren, isActive: isActive)
         cell.backgroundColor = backgroundColor
         
         return cell
