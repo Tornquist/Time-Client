@@ -51,7 +51,7 @@ class EntryTableViewCell: UITableViewCell {
         
         self.actionButton.setTitle(nil, for: .normal)
         let imageConfiguration = UIImage.SymbolConfiguration(scale: .large)
-        self.actionButton.setImage(UIImage(systemName: "pause.circle", withConfiguration: imageConfiguration), for: .normal)
+        self.actionButton.setImage(UIImage(systemName: "stop.circle", withConfiguration: imageConfiguration), for: .normal)
         self.actionButton.tintColor = Colors.button
     }
     
