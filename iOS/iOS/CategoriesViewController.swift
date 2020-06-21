@@ -180,8 +180,14 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                 
                 DispatchQueue.main.async {
                     self.tableView.performBatchUpdates({
-                        // Sections currently sorted by ID -> Always added to end
-                        let indexSet = IndexSet(arrayLiteral: Time.shared.store.accountIDs.count - 1)
+                        // Account sections currently sorted by ID -> Always added to end
+                        let headerSections = self.controls.count
+                        let accountSections = Time.shared.store.accountIDs.count
+                        
+                        let totalSections = headerSections + accountSections
+                        let zeroOffset = totalSections - 1
+                        
+                        let indexSet = IndexSet(arrayLiteral: zeroOffset)
                         self.tableView.insertSections(indexSet, with: .automatic)
                     }, completion: nil)
                 }
