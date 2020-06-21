@@ -121,18 +121,25 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         self.tableView.estimatedRowHeight = 44.0
         
         self.tableView.sectionHeaderHeight = UITableView.automaticDimension
-        
-        let detailCellNib = UINib(nibName: DisclosureIndicatorButtonTableViewCell.nibName, bundle: nil)
-        self.tableView.register(detailCellNib, forCellReuseIdentifier: DisclosureIndicatorButtonTableViewCell.reuseID)
-        
-        let recentCellNib = UINib(nibName: RecentEntryTableViewCell.nibName, bundle: nil)
-        self.tableView.register(recentCellNib, forCellReuseIdentifier: RecentEntryTableViewCell.reuseID)
+
+        // Account and Category Cells
+
+        let accountCellNib = UINib(nibName: AccountTableViewCell.nibName, bundle: nil)
+        self.tableView.register(accountCellNib, forCellReuseIdentifier: AccountTableViewCell.reuseID)
         
         let categoryCellNib = UINib(nibName: CategoryTableViewCell.nibName, bundle: nil)
         self.tableView.register(categoryCellNib, forCellReuseIdentifier: CategoryTableViewCell.reuseID)
         
+        // Metrics and Specific Controls
+        
         let metricTotalNib = UINib(nibName: MetricTotalTableViewCell.nibName, bundle: nil)
         self.tableView.register(metricTotalNib, forCellReuseIdentifier: MetricTotalTableViewCell.reuseID)
+        
+        let recentCellNib = UINib(nibName: RecentEntryTableViewCell.nibName, bundle: nil)
+        self.tableView.register(recentCellNib, forCellReuseIdentifier: RecentEntryTableViewCell.reuseID)
+        
+        let detailCellNib = UINib(nibName: DisclosureIndicatorButtonTableViewCell.nibName, bundle: nil)
+        self.tableView.register(detailCellNib, forCellReuseIdentifier: DisclosureIndicatorButtonTableViewCell.reuseID)
     }
     
     func refreshNavigation() {
@@ -758,8 +765,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         }
         
         if category.parentID == nil {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "accountCell", for: indexPath)
-            cell.textLabel?.text = "ACCOUNT \(category.accountID)"
+            let cell = tableView.dequeueReusableCell(withIdentifier: AccountTableViewCell.reuseID, for: indexPath) as! AccountTableViewCell
+            cell.configure(with: "ACCOUNT \(category.accountID)")
             cell.backgroundColor = backgroundColor
             return cell
         }
