@@ -18,7 +18,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     var moving: Bool { return self.movingCategory != nil }
     var movingCategory: TimeSDK.Category? = nil
     
-    enum ControlSectionType: String {
+    enum ControlType: String {
         case metric
         case favorites
         case recents
@@ -44,17 +44,16 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             }
         }
     }
-    var controls: [ControlSectionType] = [.metric, .recents, .entries]
-    let controlRows: [ControlSectionType: Int] = [
-        ControlSectionType.metric: 2, /* This Day, and This Week */
-        ControlSectionType.entries: 1
+    
+    var headerControls: [ControlType] = [.metric, .recents, .entries]
+    var footerControls: [ControlType] = [.addAccount, .importRecords, .signOut]
+    var expandFooterControls: Bool = false
+    
+    let controlRows: [ControlType: Int] = [
+        ControlType.metric: 2, /* This Day, and This Week */
+        ControlType.entries: 1
     ]
-    let moreControls: [ControlSectionType] = [
-        .addAccount,
-        .importRecords,
-        .signOut
-    ]
-    var expandMoreControls: Bool = false
+    
     
     var recentCategories: [CategoryTree] = []
     
@@ -188,7 +187,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                 DispatchQueue.main.async {
                     self.tableView.performBatchUpdates({
                         // Account sections currently sorted by ID -> Always added to end
-                        let headerSections = self.controls.count
+                        let headerSections = self.headerControls.count
                         let accountSections = Time.shared.store.accountIDs.count
                         
                         let totalSections = headerSections + accountSections
@@ -410,7 +409,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
 
         Time.shared.store.getEntries(after: cutoff) { (entries, error) in
             guard let entries = entries, error == nil else {
-                self.controls = self.controls.filter({ $0 != .recents })
+                self.headerControls = self.headerControls.filter({ $0 != .recents })
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
                 }
@@ -446,10 +445,10 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             }
 
             if self.recentCategories.count == 0 {
-                self.controls = self.controls.filter({ $0 != .recents })
+                self.headerControls = self.headerControls.filter({ $0 != .recents })
             } else {
-                if !self.controls.contains(.recents) {
-                    self.controls.insert(.recents, at: 0)
+                if !self.headerControls.contains(.recents) {
+                    self.headerControls.insert(.recents, at: 0)
                 }
             }
 
@@ -553,21 +552,17 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        let controlsSections = self.controls.count
-        let accountSections = Time.shared.store.accountIDs.count
-        let moreControlsSection = self.moreControls.count > 0 ? 1 : 0
-        
-        return controlsSections + accountSections + moreControlsSection
+        return self.getNumberOfSections()
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let isControl = section < self.controls.count
-        let isFirstAccount = section == self.controls.count
+        let isControl = section < self.headerControls.count
+        let isFirstAccount = section == self.headerControls.count
         
         let shouldShowHeader = isControl || isFirstAccount
         guard shouldShowHeader else { return nil }
         
-        let title = isControl ? self.controls[section].title : NSLocalizedString("Accounts", comment: "")
+        let title = isControl ? self.headerControls[section].title : NSLocalizedString("Accounts", comment: "")
         
         let view = UIView(frame: .zero)
         let label = UILabel(frame: .zero)
@@ -594,39 +589,25 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func tableView(_ tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
-        let isControl = section < self.controls.count
-        let isFirstAccount = section == self.controls.count
+        let isControl = section < self.headerControls.count
+        let isFirstAccount = section == self.headerControls.count
         
         let shouldShowHeader = isControl || isFirstAccount
         guard shouldShowHeader else { return 0 }
         
         return 37.0
     }
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard section >= self.controls.count else {
-            let controlType = self.controls[section]
-            guard controlType != .recents else {
-                return self.recentCategories.count
-            }
-            guard let rows = self.controlRows[controlType] else { return 0 }
-            return rows
-        }
-        if section == self.controls.count + Time.shared.store.accountIDs.count {
-            let header = 1
-            let controls = self.expandMoreControls ? self.moreControls.count : 0
-            return header + controls
-        }
 
-        guard let tree = self.getTree(for: section) else { return 0 }
-        return tree.numberOfDisplayRows(overrideExpanded: self.moving, includeRoot: true)
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        let sectionType = self.getTypeFor(section: section)
+        return self.getRowsFor(type: sectionType)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var backgroundColor: UIColor = .secondarySystemGroupedBackground
         
-        guard indexPath.section >= self.controls.count else {
-            let controlType = self.controls[indexPath.section]
+        guard indexPath.section >= self.headerControls.count else {
+            let controlType = self.headerControls[indexPath.section]
             
             switch controlType {
                 case .metric:
@@ -736,12 +717,12 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             }
         }
         
-        if indexPath.section == self.controls.count + Time.shared.store.accountIDs.count {
+        if indexPath.section == self.headerControls.count + Time.shared.store.accountIDs.count {
             let cell = tableView.dequeueReusableCell(withIdentifier: CategoryTableViewCell.reuseID, for: indexPath) as! CategoryTableViewCell
             if indexPath.row == 0 {
-                cell.configure(with: NSLocalizedString("More", comment: ""), depth: 0, isExpanded: self.expandMoreControls, hasChildren: true, isActive: false)
+                cell.configure(with: NSLocalizedString("More", comment: ""), depth: 0, isExpanded: self.expandFooterControls, hasChildren: true, isActive: false)
             } else {
-                let controlType = self.moreControls[indexPath.row - 1]
+                let controlType = self.footerControls[indexPath.row - 1]
                 let title = controlType.title ?? controlType.rawValue
                 cell.configure(with: title, depth: 0, isExpanded: false, hasChildren: false, isActive: false)
             }
@@ -784,11 +765,11 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let isControl = indexPath.section < self.controls.count
-        let isRecent = isControl && self.controls[indexPath.section] == .recents
+        let isControl = indexPath.section < self.headerControls.count
+        let isRecent = isControl && self.headerControls[indexPath.section] == .recents
         guard isRecent || !isControl else { return nil }
 
-        if indexPath.section == self.controls.count + Time.shared.store.accountIDs.count {
+        if indexPath.section == self.headerControls.count + Time.shared.store.accountIDs.count {
             return nil
         }
         
@@ -852,8 +833,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard indexPath.section >= self.controls.count else {
-            let control = self.controls[indexPath.section]
+        guard indexPath.section >= self.headerControls.count else {
+            let control = self.headerControls[indexPath.section]
             switch control {
             case .entries:
                 let storyboard = UIStoryboard(name: "Main", bundle: nil)
@@ -865,16 +846,16 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
             return
         }
         
-        if indexPath.section == self.controls.count + Time.shared.store.accountIDs.count {
+        if indexPath.section == self.headerControls.count + Time.shared.store.accountIDs.count {
             guard self.moving == false else { return }
             
             if indexPath.row == 0 {
-                self.expandMoreControls = !self.expandMoreControls
+                self.expandFooterControls = !self.expandFooterControls
                 self.tableView.reloadSections([indexPath.section], with: .automatic)
                 return
             }
             
-            let control = self.moreControls[indexPath.row - 1]
+            let control = self.footerControls[indexPath.row - 1]
             switch control {
             case .addAccount:
                 self.addPressed(self)
@@ -933,7 +914,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         guard
             self.openEntries != nil &&
             self.openEntries!.count > 0,
-            let section = self.controls.firstIndex(of: .metric),
+            let section = self.headerControls.firstIndex(of: .metric),
             let numRows = self.controlRows[.metric]
             else { return }
         
@@ -944,11 +925,18 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     // MARK: - TableView <-> Data store support methods
     
     func getTree(for section: Int) -> CategoryTree? {
-        guard section >= self.controls.count else { return nil }
+        guard section >= self.headerControls.count else { return nil }
 
-        let correctedSection = section - self.controls.count
+        let correctedSection = section - self.headerControls.count
         guard correctedSection < Time.shared.store.accountIDs.count else { return nil }
         let accountID = Time.shared.store.accountIDs[correctedSection]
+        guard let tree = Time.shared.store.categoryTrees[accountID] else { return nil }
+        
+        return tree
+    }
+    
+    func getTree(forAdjusted section: Int) -> CategoryTree? {
+        let accountID = Time.shared.store.accountIDs[section]
         guard let tree = Time.shared.store.categoryTrees[accountID] else { return nil }
         
         return tree

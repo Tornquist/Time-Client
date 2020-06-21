@@ -10,6 +10,7 @@
 		D806B91222772507005DC715 /* CategoriesViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D806B91122772507005DC715 /* CategoriesViewController+Alerts.swift */; };
 		D8216FE7249F96A4000C72FD /* AccountTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D8216FE6249F96A4000C72FD /* AccountTableViewCell.xib */; };
 		D8216FE9249F96AF000C72FD /* AccountTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8216FE8249F96AF000C72FD /* AccountTableViewCell.swift */; };
+		D8216FEB24A0125A000C72FD /* CategoriesViewController+TableViewManagement.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8216FEA24A0125A000C72FD /* CategoriesViewController+TableViewManagement.swift */; };
 		D8500CB3228AF16D009052DC /* EntriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8500CB2228AF16D009052DC /* EntriesViewController.swift */; };
 		D851080E24561DDA001752B1 /* DisclosureIndicatorButtonTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D851080D24561DDA001752B1 /* DisclosureIndicatorButtonTableViewCell.xib */; };
 		D851081024561DEC001752B1 /* DisclosureIndicatorButtonTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D851080F24561DEC001752B1 /* DisclosureIndicatorButtonTableViewCell.swift */; };
@@ -59,6 +60,7 @@
 		D806B91122772507005DC715 /* CategoriesViewController+Alerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CategoriesViewController+Alerts.swift"; sourceTree = "<group>"; };
 		D8216FE6249F96A4000C72FD /* AccountTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AccountTableViewCell.xib; sourceTree = "<group>"; };
 		D8216FE8249F96AF000C72FD /* AccountTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountTableViewCell.swift; sourceTree = "<group>"; };
+		D8216FEA24A0125A000C72FD /* CategoriesViewController+TableViewManagement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CategoriesViewController+TableViewManagement.swift"; sourceTree = "<group>"; };
 		D8500CB2228AF16D009052DC /* EntriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntriesViewController.swift; sourceTree = "<group>"; };
 		D851080D24561DDA001752B1 /* DisclosureIndicatorButtonTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DisclosureIndicatorButtonTableViewCell.xib; sourceTree = "<group>"; };
 		D851080F24561DEC001752B1 /* DisclosureIndicatorButtonTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclosureIndicatorButtonTableViewCell.swift; sourceTree = "<group>"; };
@@ -166,6 +168,7 @@
 				D8DD2A422331083500F26665 /* HomeViewController.swift */,
 				D85B0A4B2246DD2100835E55 /* CategoriesViewController.swift */,
 				D806B91122772507005DC715 /* CategoriesViewController+Alerts.swift */,
+				D8216FEA24A0125A000C72FD /* CategoriesViewController+TableViewManagement.swift */,
 				D8500CB2228AF16D009052DC /* EntriesViewController.swift */,
 				D8E85C33229D682C00204D14 /* EntriesViewController+Alerts.swift */,
 				D8F549B023A9005D009E8512 /* ImportListViewController.swift */,
@@ -270,6 +273,7 @@
 				D8E85C34229D682C00204D14 /* EntriesViewController+Alerts.swift in Sources */,
 				D8DD2A432331083600F26665 /* HomeViewController.swift in Sources */,
 				D8C3726724829C75002E9C85 /* MetricTotalTableViewCell.swift in Sources */,
+				D8216FEB24A0125A000C72FD /* CategoriesViewController+TableViewManagement.swift in Sources */,
 				D855812B21BDE9A200DCB577 /* Time_iOS.xcdatamodeld in Sources */,
 				D851081024561DEC001752B1 /* DisclosureIndicatorButtonTableViewCell.swift in Sources */,
 				D8F549B123A9005D009E8512 /* ImportListViewController.swift in Sources */,
