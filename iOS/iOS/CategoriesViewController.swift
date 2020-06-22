@@ -556,13 +556,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let isControl = section < self.headerControls.count
-        let isFirstAccount = section == self.headerControls.count
-        
-        let shouldShowHeader = isControl || isFirstAccount
-        guard shouldShowHeader else { return nil }
-        
-        let title = isControl ? self.headerControls[section].title : NSLocalizedString("Accounts", comment: "")
+        let sectionType = self.getTypeFor(section: section)
+        guard let title = self.getTitleFor(type: sectionType) else { return nil }
         
         let view = UIView(frame: .zero)
         let label = UILabel(frame: .zero)
@@ -589,11 +584,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func tableView(_ tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
-        let isControl = section < self.headerControls.count
-        let isFirstAccount = section == self.headerControls.count
-        
-        let shouldShowHeader = isControl || isFirstAccount
-        guard shouldShowHeader else { return 0 }
+        let sectionType = self.getTypeFor(section: section)
+        guard let _ = self.getTitleFor(type: sectionType) else { return 0 }
         
         return 37.0
     }
@@ -604,164 +596,102 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        var backgroundColor: UIColor = .secondarySystemGroupedBackground
+        let defaultBackgroundColor: UIColor = .secondarySystemGroupedBackground
         
-        guard indexPath.section >= self.headerControls.count else {
-            let controlType = self.headerControls[indexPath.section]
-            
-            switch controlType {
-                case .metric:
-                    let isDay = indexPath.row == 0
-                    let title = isDay ? NSLocalizedString("Today", comment: "") : NSLocalizedString("This Week", comment: "")
-                    let showSeconds = true
-                    // TODO: Add controls for seconds
+        let sectionType = self.getTypeFor(section: indexPath.section)
+        switch sectionType {
+            case .control(let controlId):
+                let controlType = self.getHeaderSections()[controlId]
+                switch controlType {
+                    case .metric:
+                        // Replace with metric enum/config
+                        let isDay = indexPath.row == 0
+                        // TODO: Add controls for seconds
+                        let showSeconds = true
                     
-                    let cell = tableView.dequeueReusableCell(withIdentifier: MetricTotalTableViewCell.reuseID, for: indexPath) as! MetricTotalTableViewCell
-                    cell.backgroundColor = backgroundColor
-                                        
-                    let hasData = isDay ? self.closedDayTimes != nil : self.closedWeekTimes != nil
-                    guard hasData else {
-                        let blank = showSeconds ? "XX:XX:XX" : "XX:XX"
-                        cell.configure(forRange: title, withTime: blank, andSplits: nil)
+                        let cell = tableView.dequeueReusableCell(withIdentifier: MetricTotalTableViewCell.reuseID, for: indexPath) as! MetricTotalTableViewCell
+                        cell.backgroundColor = defaultBackgroundColor
+
+                        let title = self.getMetricTitle(forDay: isDay)
+
+                        guard let data = self.getFormattedMetricData(forDay: isDay, showSeconds: showSeconds) else {
+                            let blank = showSeconds ? "XX:XX:XX" : "XX:XX"
+                            cell.configure(forRange: title, withTime: blank, andSplits: nil)
+                            return cell
+                        }
+                    
+                        cell.configure(forRange: title, withTime: data.0, andSplits: data.1)
                         return cell
-                    }
-                    
-                    var totalByCategory: [Int: Double] = [:]
 
-                    (self.openEntries ?? []).forEach { (entry) in
-                        let duration = Date().timeIntervalSince(entry.startedAt)
-                        totalByCategory[entry.categoryID] = (totalByCategory[entry.categoryID] ?? 0) + duration
-                    }
+                    case .recents:
+                        let (categoryTree, isRange) = self.getRecentData(forRow: indexPath.row)
+                        let cell = tableView.dequeueReusableCell(withIdentifier: RecentEntryTableViewCell.reuseID, for: indexPath) as! RecentEntryTableViewCell
+                        cell.configure(for: categoryTree, asRange: isRange)
+                        cell.delegate = self
+                        cell.backgroundColor = defaultBackgroundColor
+                        return cell
 
-                    (isDay ? self.closedDayTimes! : self.closedWeekTimes!).forEach { (record) in
-                        totalByCategory[record.key] = (totalByCategory[record.key] ?? 0) + record.value
-                    }
-                                        
-                    // Will group all into "unknown" if no category keys exist
-                    var displayGroups: [String: (Double, Bool)] = [:]
-                    let activeCategories = Set((self.openEntries ?? []).map({ $0.categoryID }))
+                    case .entries:
+                        let cell = tableView.dequeueReusableCell(withIdentifier: DisclosureIndicatorButtonTableViewCell.reuseID, for: indexPath) as! DisclosureIndicatorButtonTableViewCell
+                        cell.buttonText = NSLocalizedString("Show All Entries", comment: "")
+                        cell.backgroundColor = defaultBackgroundColor
+                        return cell
                     
-                    totalByCategory.forEach { (record) in
-                        let categoryID = record.key
-                        let active = activeCategories.contains(categoryID)
-                        
-                        let category = Time.shared.store.categories.first(where: { $0.id == categoryID })
-                        let name = category?.name
-                        
-                        let unknownName = NSLocalizedString("Unknown", comment: "")
-                        let safeName = name ?? unknownName
-                        
-                        let newValue = (displayGroups[safeName]?.0 ?? 0) + record.value
-                        let newActive = (displayGroups[safeName]?.1 ?? false) || active
-                        
-                        displayGroups[safeName] = (newValue, newActive)
-                    }
-                    
-                    let getTimeString = { (time: Int) -> String in
-                        let seconds = (time % 60)
-                        let minutes = (time / 60) % 60
-                        let hours = (time / 3600)
-                        
-                        let timeString = showSeconds
-                            ? String(format: "%02d:%02d:%02d", hours, minutes, seconds)
-                            : String(format: "%02d:%02d", hours, minutes)
-                        return timeString
-                    }
-                    
-                    var displaySplits: [String: (String, Bool)] = [:]
-                    displayGroups.forEach { (record) in
-                        let timeString = getTimeString(Int(record.value.0))
-                        displaySplits[record.key] = (timeString, record.value.1)
-                    }
+                    default:
+                        let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
+                        cell.textLabel?.text = ""
+                        cell.detailTextLabel?.text = controlType.rawValue
+                        cell.backgroundColor = defaultBackgroundColor
+                        return cell
+                }
+            case .account(let accountOffset):
+                var backgroundColor: UIColor = .secondarySystemGroupedBackground
+                guard
+                    let parentTree = self.getTree(forAdjusted: accountOffset),
+                    let categoryTree = parentTree.getChild(withOffset: indexPath.row, overrideExpanded: self.moving)
+                    else {
+                        let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
+                        cell.textLabel?.text = "ERROR"
+                        cell.detailTextLabel?.text = "ERROR"
+                        return cell
+                }
+                let category = categoryTree.node
 
-                    let totalTime = totalByCategory.values.reduce(0, +)
-                    let ti = Int(totalTime)
-                    let timeString = getTimeString(ti)
-                    
-                    cell.configure(forRange: title, withTime: timeString, andSplits: displaySplits)
-                    return cell
-                case .recents:
-                    let categoryTree = self.recentCategories[indexPath.row]
-                    let categoryID = categoryTree.node.id
-                    
-                    let maxDays = 7 // TODO: Merge with recent calculations
-                    let cutoff = Date().addingTimeInterval(Double(-maxDays * 24 * 60 * 60))
-                    let matchingEntry = Time.shared.store.entries
-                        .filter({ (entry) -> Bool in
-                            return entry.categoryID == categoryID && entry.startedAt > cutoff
-                        })
-                        .sorted(by: { (a, b) -> Bool in
-                            return a.startedAt > b.startedAt
-                        }).first
-                    let isOpen = self.openEntries?.filter({ $0.categoryID == categoryID }).count ?? 0 > 0
-
-                    let isRange = isOpen || matchingEntry?.type == .range
-                    let cell = tableView.dequeueReusableCell(withIdentifier: RecentEntryTableViewCell.reuseID, for: indexPath) as! RecentEntryTableViewCell
-                    cell.configure(for: categoryTree, asRange: isRange)
-                    cell.delegate = self
-                    cell.backgroundColor = backgroundColor
-                    return cell
+                if self.moving {
+                    let isValidTarget = Time.shared.store.canMove(self.movingCategory!, to: category)
+                    let isSelf = self.movingCategory?.id == category.id
+                    backgroundColor = isSelf ? .systemYellow : (isValidTarget ? .secondarySystemGroupedBackground : .systemGroupedBackground)
+                }
                 
-                case .entries:
-                    let cell = tableView.dequeueReusableCell(withIdentifier: DisclosureIndicatorButtonTableViewCell.reuseID, for: indexPath) as! DisclosureIndicatorButtonTableViewCell
-                    cell.buttonText = NSLocalizedString("Show All Entries", comment: "")
+                guard category.parentID != nil else {
+                    let cell = tableView.dequeueReusableCell(withIdentifier: AccountTableViewCell.reuseID, for: indexPath) as! AccountTableViewCell
+                    cell.configure(with: "ACCOUNT \(category.accountID)")
                     cell.backgroundColor = backgroundColor
                     return cell
+                }
                 
-                default:
-                    let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
-                    cell.textLabel?.text = ""
-                    cell.detailTextLabel?.text = controlType.rawValue
-                    cell.backgroundColor = backgroundColor
-                    return cell
-            }
-        }
-        
-        if indexPath.section == self.headerControls.count + Time.shared.store.accountIDs.count {
-            let cell = tableView.dequeueReusableCell(withIdentifier: CategoryTableViewCell.reuseID, for: indexPath) as! CategoryTableViewCell
-            if indexPath.row == 0 {
-                cell.configure(with: NSLocalizedString("More", comment: ""), depth: 0, isExpanded: self.expandFooterControls, hasChildren: true, isActive: false)
-            } else {
-                let controlType = self.footerControls[indexPath.row - 1]
-                let title = controlType.title ?? controlType.rawValue
-                cell.configure(with: title, depth: 0, isExpanded: false, hasChildren: false, isActive: false)
-            }
+                let cell = tableView.dequeueReusableCell(withIdentifier: CategoryTableViewCell.reuseID, for: indexPath) as! CategoryTableViewCell
+                let depth = categoryTree.depth - 1 // Will not show account cell
+                let isExpanded = categoryTree.expanded || self.moving
+                let hasChildren = categoryTree.children.count > 0
+                let isActive = self.openEntries?.contains(where: { $0.categoryID == categoryTree.node.id }) ?? false
+                cell.configure(with: category.name, depth: depth, isExpanded: isExpanded, hasChildren: hasChildren, isActive: isActive)
+                cell.backgroundColor = backgroundColor
+                return cell
             
-            cell.backgroundColor = .clear
-            return cell
+            case .moreControls:
+                let cell = tableView.dequeueReusableCell(withIdentifier: CategoryTableViewCell.reuseID, for: indexPath) as! CategoryTableViewCell
+                let isTitle = indexPath.row == 0
+                let controlType = isTitle ? nil : self.footerControls[indexPath.row - 1]
+                
+                let title = isTitle ? NSLocalizedString("More", comment: "") : (controlType!.title ?? controlType!.rawValue)
+                let expanded = isTitle ? self.expandFooterControls : false
+                let hasChildren = isTitle
+                
+                cell.configure(with: title, depth: 0, isExpanded: expanded, hasChildren: hasChildren, isActive: false)
+                cell.backgroundColor = .clear
+                return cell
         }
-        
-        guard let categoryTree = self.getTree(for: indexPath) else {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
-            cell.textLabel?.text = "ERROR"
-            cell.detailTextLabel?.text = "ERROR"
-            return cell
-        }
-        let category = categoryTree.node
-        
-        if self.moving {
-            let isValidTarget = Time.shared.store.canMove(self.movingCategory!, to: category)
-            let isSelf = self.movingCategory?.id == category.id
-            backgroundColor = isSelf ? .systemYellow : (isValidTarget ? .secondarySystemGroupedBackground : .systemGroupedBackground)
-        }
-        
-        if category.parentID == nil {
-            let cell = tableView.dequeueReusableCell(withIdentifier: AccountTableViewCell.reuseID, for: indexPath) as! AccountTableViewCell
-            cell.configure(with: "ACCOUNT \(category.accountID)")
-            cell.backgroundColor = backgroundColor
-            return cell
-        }
-            
-        let cell = tableView.dequeueReusableCell(withIdentifier: CategoryTableViewCell.reuseID, for: indexPath) as! CategoryTableViewCell
-        
-        let depth = categoryTree.depth - 1 // Will not show account cell
-        let isExpanded = categoryTree.expanded || self.moving
-        let hasChildren = categoryTree.children.count > 0
-        let isActive = self.openEntries?.contains(where: { $0.categoryID == categoryTree.node.id }) ?? false
-        cell.configure(with: category.name, depth: depth, isExpanded: isExpanded, hasChildren: hasChildren, isActive: isActive)
-        cell.backgroundColor = backgroundColor
-        
-        return cell
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
