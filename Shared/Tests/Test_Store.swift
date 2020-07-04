@@ -1139,4 +1139,105 @@ class Test_Store: XCTestCase {
         _ = self.expectation(forNotification: .TimeBackgroundStoreUpdate, object: nil, handler: nil)
         waitForExpectations(timeout: 5, handler: nil)
     }
+    
+    // MARK: - Get Entries (Date Manipulations)
+    
+    func test_32_getEntriesWithExpectedDates() {
+        guard let categoryID = self.store.categories.first?.id else {
+            XCTFail("CategoryID required to preform tests")
+            return
+        }
+        
+        let calendar = Calendar.current
+        
+        let now = Date()
+        let fiveDaysAgo = calendar.date(byAdding: .day, value: -5, to: now)!
+        let fourDaysAgo = calendar.date(byAdding: .day, value: -4, to: now)!
+        let threeDaysAgo = calendar.date(byAdding: .day, value: -3, to: now)!
+        let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: now)!
+        let oneDayAgo = calendar.date(byAdding: .day, value: -1, to: now)!
+        
+        let fiveToThree = Entry(id: 0, type: .range, categoryID: categoryID, startedAt: fiveDaysAgo, endedAt: threeDaysAgo)
+        let fiveToPresent = Entry(id: 1, type: .range, categoryID: categoryID, startedAt: fiveDaysAgo, endedAt: nil)
+        let twoToOne = Entry(id: 2, type: .range, categoryID: categoryID, startedAt: twoDaysAgo, endedAt: oneDayAgo)
+        let oneToPresent = Entry(id: 3, type: .range, categoryID: categoryID, startedAt: oneDayAgo, endedAt: nil)
+        
+        let five = Entry(id: 4, type: .event, categoryID: categoryID, startedAt: fiveDaysAgo, endedAt: nil)
+        let three = Entry(id: 5, type: .event, categoryID: categoryID, startedAt: threeDaysAgo, endedAt: nil)
+        let two = Entry(id: 6, type: .event, categoryID: categoryID, startedAt: twoDaysAgo, endedAt: nil)
+        
+        self.store.entries = [fiveToThree, fiveToPresent, twoToOne, oneToPresent, five, three, two]
+        
+        // Verify four days ago
+        let fourDaysFetch = self.expectation(description: "getEntriesFromFourDays")
+        self.store.getEntries(after: fourDaysAgo) { (entries, error) in
+            XCTAssertNotNil(entries)
+            XCTAssertNil(error)
+            
+            let expected = [
+                fiveToThree,
+                fiveToPresent,
+                twoToOne,
+                oneToPresent,
+                // five,
+                three,
+                two
+            ].map({ $0.id }).sorted()
+            let actual = (entries ?? []).map({ $0.id }).sorted()
+            
+            XCTAssertEqual(actual.count, expected.count)
+            XCTAssertEqual(actual, expected)
+            
+            fourDaysFetch.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Verify two days ago
+        let twoDaysFetch = self.expectation(description: "getEntriesFromTwoDays")
+        self.store.getEntries(after: twoDaysAgo) { (entries, error) in
+            XCTAssertNotNil(entries)
+            XCTAssertNil(error)
+            
+            let expected = [
+                // fiveToThree,
+                fiveToPresent,
+                twoToOne,
+                oneToPresent,
+                // five,
+                // three,
+                // two -- date range is not inclusive
+            ].map({ $0.id }).sorted()
+            let actual = (entries ?? []).map({ $0.id }).sorted()
+            
+            XCTAssertEqual(actual.count, expected.count)
+            XCTAssertEqual(actual, expected)
+            
+            twoDaysFetch.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Verify now
+        let nowFetch = self.expectation(description: "getEntriesForNow")
+        self.store.getEntries(after: now) { (entries, error) in
+            XCTAssertNotNil(entries)
+            XCTAssertNil(error)
+            
+            let expected = [
+                // fiveToThree,
+                fiveToPresent,
+                // twoToOne,
+                oneToPresent,
+                // five,
+                // three,
+                // two
+            ].map({ $0.id }).sorted()
+            let actual = (entries ?? []).map({ $0.id }).sorted()
+            
+            XCTAssertEqual(actual.count, expected.count)
+            XCTAssertEqual(actual, expected)
+            
+            nowFetch.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
 }
