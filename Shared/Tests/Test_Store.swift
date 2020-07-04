@@ -774,6 +774,7 @@ class Test_Store: XCTestCase {
         let category = rootA.children[0].node
         
         let recordExpectation = self.expectation(description: "recordEvent")
+        _ = self.expectation(forNotification: .TimeEntryRecorded, object: nil, handler: nil)
         self.store.recordEvent(for: category) { (success) in
             XCTAssert(success)
             recordExpectation.fulfill()
@@ -837,6 +838,7 @@ class Test_Store: XCTestCase {
         XCTAssertTrue(self.store.isRangeOpen(for: category) ?? false)
         
         let changeEndTimeExpectation = self.expectation(description: "toggleEnd")
+        _ = self.expectation(forNotification: .TimeEntryStopped, object: nil, handler: nil)
         let endDate = Date()
         self.store.update(entry: entry, setEndedAt: endDate) { (success) in
             XCTAssert(success)
@@ -866,6 +868,7 @@ class Test_Store: XCTestCase {
         XCTAssertFalse(self.store.isRangeOpen(for: category) ?? true)
         
         let toggleOpenExpectation = self.expectation(description: "toggleOpen")
+        _ = self.expectation(forNotification: .TimeEntryStarted, object: nil, handler: nil)
         self.store.toggleRange(for: category) { (success) in
             XCTAssert(success)
             toggleOpenExpectation.fulfill()
@@ -879,6 +882,7 @@ class Test_Store: XCTestCase {
         XCTAssertTrue(self.store.isRangeOpen(for: category) ?? false)
        
         let stopExpectation = self.expectation(description: "stopRange")
+        _ = self.expectation(forNotification: .TimeEntryStopped, object: nil, handler: nil)
         self.store.stop(entry: newEntry) { (success) in
             XCTAssert(success)
             stopExpectation.fulfill()
@@ -908,6 +912,7 @@ class Test_Store: XCTestCase {
         XCTAssertEqual(entry.categoryID, category.id)
         
         let moveExpectation = self.expectation(description: "moveEntry")
+        _ = self.expectation(forNotification: .TimeEntryModified, object: nil, handler: nil)
         self.store.update(entry: entry, setCategory: otherCategory) { (success) in
             XCTAssert(success)
             moveExpectation.fulfill()
@@ -926,6 +931,10 @@ class Test_Store: XCTestCase {
         }
         
         let updateExpectation = self.expectation(description: "emptyUpdate")
+        let entryNotStoppedExpectation = self.expectation(forNotification: .TimeEntryStopped, object: nil, handler: nil)
+        entryNotStoppedExpectation.isInverted = true
+        let entryNotModifiedExpectation = self.expectation(forNotification: .TimeEntryModified, object: nil, handler: nil)
+        entryNotModifiedExpectation.isInverted = true
         self.store.update(entry: entry) { (success) in
             XCTAssert(success)
             updateExpectation.fulfill()
@@ -958,6 +967,7 @@ class Test_Store: XCTestCase {
         }
         
         let deleteExpectation = self.expectation(description: "deleteEntry")
+        _ = self.expectation(forNotification: .TimeEntryDeleted, object: nil, handler: nil)
         self.store.delete(entry: entry) { (success) in
             XCTAssert(success)
             deleteExpectation.fulfill()
