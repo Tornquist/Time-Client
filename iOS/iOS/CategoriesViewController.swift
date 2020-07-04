@@ -448,7 +448,16 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                 self.headerControls = self.headerControls.filter({ $0 != .recents })
             } else {
                 if !self.headerControls.contains(.recents) {
-                    self.headerControls.insert(.recents, at: 0)
+                    if let firstIndex = self.headerControls.firstIndex(of: .metric) {
+                        // After Metrics
+                        self.headerControls.insert(.recents, at: firstIndex + 1)
+                    } else if let secondIndex = self.headerControls.firstIndex(of: .entries) {
+                        // Before Entries
+                        self.headerControls.insert(.recents, at: secondIndex)
+                    } else {
+                        // Fallback to first
+                        self.headerControls.insert(.recents, at: 0)
+                    }
                 }
             }
 
