@@ -54,7 +54,6 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         ControlType.entries: 1
     ]
     
-    
     var recentCategories: [CategoryTree] = []
     
     var closedWeekTimes: [Int: Double]? = nil
