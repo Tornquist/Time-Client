@@ -9,15 +9,13 @@
 import UIKit
 import TimeSDK
 
-class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, EntryTableViewCellDelegate {
     
-    var signOutButton: UIBarButtonItem!
     var refreshControl: UIRefreshControl!
     @IBOutlet weak var tableView: UITableView!
     
     var entries: [Entry] = []
-    var dateFormatters: [String:DateFormatter] = [:]
-    
+
     // +Alerts Support
     var pickerData: [(String,Any?)] = []
     
@@ -27,6 +25,12 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         self.configureTheme()
         
         NotificationCenter.default.addObserver(self, selector: #selector(safeReload), name: .TimeBackgroundStoreUpdate, object: nil)
+        
+        let entryNib = UINib(nibName: EntryTableViewCell.nibName, bundle: nil)
+        self.tableView.register(entryNib, forCellReuseIdentifier: EntryTableViewCell.reuseID)
+        
+        self.tableView.rowHeight = UITableView.automaticDimension
+        self.tableView.estimatedRowHeight = 63.0
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -36,8 +40,6 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func configureTheme() {
-        self.signOutButton = UIBarButtonItem(title: NSLocalizedString("Sign Out", comment: ""), style: .plain, target: self, action: #selector(signOutPressed(_:)))
-        
         let topConstraint = NSLayoutConstraint(item: self.view!, attribute: .top, relatedBy: .equal, toItem: self.tableView, attribute: .top, multiplier: 1, constant: 0)
         let bottomConstraint = NSLayoutConstraint(item: self.view!, attribute: .bottom, relatedBy: .equal, toItem: self.tableView, attribute: .bottom, multiplier: 1, constant: 0)
         self.view.addConstraints([topConstraint, bottomConstraint])
@@ -50,7 +52,7 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func refreshNavigation() {
-        self.navigationItem.leftBarButtonItem = self.signOutButton
+        self.navigationItem.title = NSLocalizedString("Entries", comment: "")
     }
     
     // MARK: - Data Methods and Actions
@@ -149,13 +151,6 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // MARK: - Events
-    
-    @IBAction func signOutPressed(_ sender: Any) {
-        Time.shared.deauthenticate()
-        self.dismiss(animated: true, completion: nil)
-    }
-    
     // MARK: - Table View
     @objc func handleRefresh(_ refreshControl: UIRefreshControl) {
         self.loadData(refresh: true)
@@ -170,41 +165,17 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "entryCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: EntryTableViewCell.reuseID, for: indexPath) as! EntryTableViewCell
         let entry = self.entries[indexPath.row]
         
-        guard
-            let category = Time.shared.store.categories.first(where: { $0.id == entry.categoryID }),
-            let accountTree = Time.shared.store.categoryTrees[category.accountID],
-            let categoryTree = accountTree.findItem(withID: category.id)
-        else {
-            let errorText = NSLocalizedString("Error", comment: "")
-            cell.textLabel?.text = errorText
-            cell.detailTextLabel?.text = errorText
-            return cell
-        }
-        
-        var displayNameParts = [categoryTree.node.name]
-        var position = categoryTree.parent
-        while position != nil {
-            // Make sure exists and is not root
-            if position != nil && position?.parent != nil {
-                displayNameParts.append(position!.node.name)
-            }
-            position = position?.parent
-        }
-        
-        let displayName = displayNameParts.reversed().joined(separator: " > ")
-        let timeText = self.getTimeString(for: entry)
-        
-        cell.textLabel?.text = displayName
-        cell.detailTextLabel?.text = timeText
+        cell.configure(for: entry)
+        cell.delegate = self
         cell.backgroundColor = .systemBackground
         
         return cell
     }
     
-    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let entry = self.entries[indexPath.row]
         
         let editTitle = NSLocalizedString("Edit", comment: "")
@@ -217,29 +188,11 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
             self.delete(entry: entry, at: indexPath, completion: completion)
         })
 
-        let config = UISwipeActionsConfiguration(actions: [edit, delete])
+        let config = UISwipeActionsConfiguration(actions: [delete, edit])
         config.performsFirstActionWithFullSwipe = false
         return config
     }
-    
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let entry = self.entries[indexPath.row]
         
-        let stopTitle = NSLocalizedString("Stop", comment: "")
-        let stop = UIContextualAction(style: .normal, title: stopTitle, handler: { (action, view, completion) in
-            self.stop(entry: entry, at: indexPath, completion: completion)
-        })
-        
-        let isRunning = entry.type == .range && entry.endedAt == nil
-        
-        let config = UISwipeActionsConfiguration(actions: isRunning ? [stop] : [])
-        config.performsFirstActionWithFullSwipe = false
-        return config
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    }
-    
     @objc func safeReload() {
         if Thread.isMainThread {
             self.tableView.reloadData()
@@ -250,43 +203,19 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // MARK: - Time Formatting
+    // MARK: - EntryTableViewCellDelegate
     
-    func getTimeString(for entry: Entry) -> String {
-        let startedAtString = self.format(time: entry.startedAt, with: entry.startedAtTimezone)
-        let endedAtString = entry.endedAt != nil ? self.format(time: entry.endedAt!, with: entry.endedAtTimezone) : nil
+    func stop(entryID: Int, sender: EntryTableViewCell) {
+        guard let entry = self.entries.first(where: { $0.id == entryID }) else { return }
         
-        var timeText = ""
-        if entry.type == .event {
-            timeText = "@ \(startedAtString)"
-        } else if entry.endedAt == nil {
-            timeText = "\(startedAtString) - \(NSLocalizedString("Present", comment: ""))"
-        } else {
-            // Depends on stable string formatting
-            let sameDay = endedAtString != nil && (startedAtString.prefix(8) == endedAtString!.prefix(8))
-            if !sameDay {
-                timeText = "\(startedAtString) - \(endedAtString!)"
-            } else {
-                let endedAtWithoutDate = endedAtString!.dropFirst(9)
-                timeText = "\(startedAtString) - \(endedAtWithoutDate)"
+        Time.shared.store.stop(entry: entry) { (success) in
+            DispatchQueue.main.async {
+                if let indexPath = self.tableView.indexPath(for: sender) {
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
+                } else {
+                    self.safeReload()
+                }
             }
         }
-        return timeText
-    }
-    
-    func format(time: Date, with timezoneIdentifier: String?) -> String {
-        let defaultTimezone = TimeZone.autoupdatingCurrent
-        let safeTimezone = timezoneIdentifier ?? defaultTimezone.identifier
-        if (self.dateFormatters[safeTimezone] == nil) {
-            let timezone = TimeZone(identifier: safeTimezone) ?? defaultTimezone
-            if (self.dateFormatters[timezone.identifier] == nil) {
-                let newFormatter = DateFormatter.init()
-                newFormatter.dateFormat = "MM/dd/YY hh:mm a zzz"
-                newFormatter.timeZone = timezone
-                self.dateFormatters[safeTimezone] = newFormatter
-            }
-        }
-        
-        return self.dateFormatters[safeTimezone]!.string(from: time)
     }
 }

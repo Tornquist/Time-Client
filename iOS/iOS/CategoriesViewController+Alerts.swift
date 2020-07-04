@@ -29,10 +29,91 @@ extension CategoriesViewController {
             }
         }
     }
+        
+    enum CategoryAction {
+        case addChild(String)
+        case move
+        case rename(String)
+        case delete(Bool)
+    }
     
-    func showAlertFor(addingChildTo category: TimeSDK.Category, completion: @escaping (String?) -> Void) {
+    func showAlertFor(modifying tree: CategoryTree, completion: @escaping (CategoryAction?) -> Void) {
+        let category = tree.node
+        let addAction = UIAlertAction(title: NSLocalizedString("Add Child", comment: ""), style: .default, handler: { _ in
+            self.showAlertFor(addingChildTo: category) { (name) in
+                guard let newChildName = name else {
+                    completion(nil)
+                    return
+                }
+                completion(CategoryAction.addChild(newChildName))
+            }
+        })
+        
+        let moveAction = UIAlertAction(title: NSLocalizedString("Move", comment: ""), style: .default, handler: { _ in
+            self.showAlertFor(startingMoveOf: category) { (shouldMove) in
+                guard shouldMove else {
+                    completion(nil)
+                    return
+                }
+                completion(CategoryAction.move)
+            }
+        })
+        
+        let renameAction = UIAlertAction(title: NSLocalizedString("Rename", comment: ""), style: .default, handler: { _ in
+            self.showAlertFor(renaming: category) { (newName) in
+                guard let newName = newName else {
+                    completion(nil)
+                    return
+                }
+                completion(CategoryAction.rename(newName))
+            }
+        })
+        
+        let deleteAction = UIAlertAction(title: NSLocalizedString("Delete", comment: ""), style: .destructive, handler: { _ in
+            self.showAlertFor(deleting: tree) { (delete, removeChildren) in
+                guard delete else {
+                    completion(nil)
+                    return
+                }
+                completion(CategoryAction.delete(removeChildren))
+            }
+        })
+        
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(nil) })
+        
+        var actions: [UIAlertAction] = [addAction]
+        
+        let isRoot = category.parentID == nil
+        if !isRoot {
+            actions.append(moveAction)
+            actions.append(renameAction)
+            actions.append(deleteAction)
+        }
+        
+        actions.append(cancelAction)
+
+        let name = isRoot ? NSLocalizedString("Account \(category.accountID)", comment: "") : category.name
+        let modifyTitle = NSLocalizedString("Modify \(name)", comment: "")
+        let modifyMenuAlert = UIAlertController(title: modifyTitle, message: nil, preferredStyle: .alert)
+        actions.forEach { (action) in
+            modifyMenuAlert.addAction(action)
+        }
+
+        if Thread.current.isMainThread {
+            self.present(modifyMenuAlert, animated: true, completion: nil)
+        } else {
+            DispatchQueue.main.async {
+                self.present(modifyMenuAlert, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    private func showAlertFor(addingChildTo category: TimeSDK.Category, completion: @escaping (String?) -> Void) {
         let title = NSLocalizedString("Create Category", comment: "")
-        let message = NSLocalizedString("Under \(category.id)", comment: "")
+        
+        let isRoot = category.parentID == nil
+        let name = isRoot ? NSLocalizedString("account \(category.accountID)", comment: "") : category.name
+        let message = NSLocalizedString("Under \(name)", comment: "")
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
         let create = UIAlertAction(title: NSLocalizedString("Create", comment: ""), style: .default) { _ -> Void in
@@ -67,6 +148,18 @@ extension CategoriesViewController {
         }
     }
     
+    private func showAlertFor(startingMoveOf category: TimeSDK.Category, completion: @escaping (Bool) -> Void) {
+        let moveTitle = NSLocalizedString("Move Item", comment: "")
+        let moveDescription = NSLocalizedString("Select a destination.\n\nMoving a category will also move its children. Moving to a new account may change access permissions.", comment: "")
+        let moveAlert = UIAlertController(title: moveTitle, message: moveDescription, preferredStyle: .alert)
+        moveAlert.addAction(UIAlertAction(title: NSLocalizedString("Select Destination", comment: ""), style: .default, handler: { _ in
+            completion(true)
+        }))
+        moveAlert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(false) }))
+        
+        self.present(moveAlert, animated: true, completion: nil)
+    }
+    
     func showAlertFor(confirmingMoveOf category: TimeSDK.Category, to newParent: TimeSDK.Category, completion: @escaping (Bool) -> Void) {
         let title = NSLocalizedString("Confirm Move", comment: "")
         let destinationDescription = newParent.parentID != nil ? newParent.name : NSLocalizedString("Account \(newParent.accountID)", comment: "")
@@ -88,15 +181,7 @@ extension CategoriesViewController {
         }
     }
     
-    func showAlertFor(editing category: TimeSDK.Category, completion: @escaping (Bool, String?) -> Void) {
-        let moveTitle = NSLocalizedString("Move Item", comment: "")
-        let moveDescription = NSLocalizedString("Select a destination.\n\nMoving a category will also move its children. Moving to a new account may change access permissions.", comment: "")
-        let moveAlert = UIAlertController(title: moveTitle, message: moveDescription, preferredStyle: .alert)
-        moveAlert.addAction(UIAlertAction(title: NSLocalizedString("Select Destination", comment: ""), style: .default, handler: { _ in
-            completion(true, nil)
-        }))
-        moveAlert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(false, nil) }))
-        
+    private func showAlertFor(renaming category: TimeSDK.Category, completion: @escaping (String?) -> Void) {
         let renameTitle = NSLocalizedString("Rename Item", comment: "")
         let renameDescription = NSLocalizedString("Enter a new name for \"\(category.name)\"", comment: "")
         let renameAlert = UIAlertController(title: renameTitle, message: renameDescription, preferredStyle: .alert)
@@ -104,15 +189,15 @@ extension CategoriesViewController {
             let nameTextField = renameAlert.textFields![0] as UITextField
             let name = nameTextField.text
             guard name != nil && name!.count > 0 else {
-                completion(false, nil)
+                completion(nil)
                 return
             }
             
-            completion(false, name)
+            completion(name)
         }
         renameConfirmAction.isEnabled = false
         
-        let renameCancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(false, nil) })
+        let renameCancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(nil) })
         renameAlert.addTextField { (textField : UITextField!) -> Void in
             textField.placeholder = "New Name"
             NotificationCenter.default.addObserver(forName: UITextField.textDidChangeNotification, object: textField, queue: OperationQueue.main) { (notification) in
@@ -122,38 +207,10 @@ extension CategoriesViewController {
         renameAlert.addAction(renameConfirmAction)
         renameAlert.addAction(renameCancelAction)
         
-        let editTitle = NSLocalizedString("Edit \"\(category.name)\"", comment: "")
-        let editMenuAlert = UIAlertController(title: editTitle, message: nil, preferredStyle: .alert)
-        editMenuAlert.addAction(UIAlertAction(title: NSLocalizedString("Rename", comment: ""), style: .default, handler: { _ in
-            if Thread.current.isMainThread {
-                self.present(renameAlert, animated: true, completion: nil)
-            } else {
-                DispatchQueue.main.async {
-                    self.present(renameAlert, animated: true, completion: nil)
-                }
-            }
-        }))
-        editMenuAlert.addAction(UIAlertAction(title: NSLocalizedString("Move", comment: ""), style: .default, handler: { _ in
-            if Thread.current.isMainThread {
-                self.present(moveAlert, animated: true, completion: nil)
-            } else {
-                DispatchQueue.main.async {
-                    self.present(moveAlert, animated: true, completion: nil)
-                }
-            }
-        }))
-        editMenuAlert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { _ in completion(false, nil) }))
-        
-        if Thread.current.isMainThread {
-            self.present(editMenuAlert, animated: true, completion: nil)
-        } else {
-            DispatchQueue.main.async {
-                self.present(editMenuAlert, animated: true, completion: nil)
-            }
-        }
+        self.present(renameAlert, animated: true, completion: nil)
     }
-    
-    func showAlertFor(deleting tree: CategoryTree, completion: @escaping (Bool, Bool) -> Void) {
+         
+    private func showAlertFor(deleting tree: CategoryTree, completion: @escaping (Bool, Bool) -> Void) {
         let category = tree.node
         let hasChildren = tree.children.count > 0
         

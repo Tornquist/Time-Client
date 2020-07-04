@@ -728,7 +728,7 @@ class Test_Store: XCTestCase {
         }
         waitForExpectations(timeout: 5, handler: nil)
         
-        XCTAssertEqual(timeElapsed, 0, accuracy: 0.0002)
+        XCTAssertEqual(timeElapsed, 0, accuracy: 0.001)
     }
     
     func test_17_isOpenFalseAfterToggleOnOpen() {
@@ -774,6 +774,7 @@ class Test_Store: XCTestCase {
         let category = rootA.children[0].node
         
         let recordExpectation = self.expectation(description: "recordEvent")
+        _ = self.expectation(forNotification: .TimeEntryRecorded, object: nil, handler: nil)
         self.store.recordEvent(for: category) { (success) in
             XCTAssert(success)
             recordExpectation.fulfill()
@@ -837,6 +838,7 @@ class Test_Store: XCTestCase {
         XCTAssertTrue(self.store.isRangeOpen(for: category) ?? false)
         
         let changeEndTimeExpectation = self.expectation(description: "toggleEnd")
+        _ = self.expectation(forNotification: .TimeEntryStopped, object: nil, handler: nil)
         let endDate = Date()
         self.store.update(entry: entry, setEndedAt: endDate) { (success) in
             XCTAssert(success)
@@ -866,6 +868,7 @@ class Test_Store: XCTestCase {
         XCTAssertFalse(self.store.isRangeOpen(for: category) ?? true)
         
         let toggleOpenExpectation = self.expectation(description: "toggleOpen")
+        _ = self.expectation(forNotification: .TimeEntryStarted, object: nil, handler: nil)
         self.store.toggleRange(for: category) { (success) in
             XCTAssert(success)
             toggleOpenExpectation.fulfill()
@@ -879,6 +882,7 @@ class Test_Store: XCTestCase {
         XCTAssertTrue(self.store.isRangeOpen(for: category) ?? false)
        
         let stopExpectation = self.expectation(description: "stopRange")
+        _ = self.expectation(forNotification: .TimeEntryStopped, object: nil, handler: nil)
         self.store.stop(entry: newEntry) { (success) in
             XCTAssert(success)
             stopExpectation.fulfill()
@@ -908,6 +912,7 @@ class Test_Store: XCTestCase {
         XCTAssertEqual(entry.categoryID, category.id)
         
         let moveExpectation = self.expectation(description: "moveEntry")
+        _ = self.expectation(forNotification: .TimeEntryModified, object: nil, handler: nil)
         self.store.update(entry: entry, setCategory: otherCategory) { (success) in
             XCTAssert(success)
             moveExpectation.fulfill()
@@ -926,6 +931,10 @@ class Test_Store: XCTestCase {
         }
         
         let updateExpectation = self.expectation(description: "emptyUpdate")
+        let entryNotStoppedExpectation = self.expectation(forNotification: .TimeEntryStopped, object: nil, handler: nil)
+        entryNotStoppedExpectation.isInverted = true
+        let entryNotModifiedExpectation = self.expectation(forNotification: .TimeEntryModified, object: nil, handler: nil)
+        entryNotModifiedExpectation.isInverted = true
         self.store.update(entry: entry) { (success) in
             XCTAssert(success)
             updateExpectation.fulfill()
@@ -958,6 +967,7 @@ class Test_Store: XCTestCase {
         }
         
         let deleteExpectation = self.expectation(description: "deleteEntry")
+        _ = self.expectation(forNotification: .TimeEntryDeleted, object: nil, handler: nil)
         self.store.delete(entry: entry) { (success) in
             XCTAssert(success)
             deleteExpectation.fulfill()
@@ -1137,6 +1147,107 @@ class Test_Store: XCTestCase {
         
         // Verify after import completion is received a background update is triggered
         _ = self.expectation(forNotification: .TimeBackgroundStoreUpdate, object: nil, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    // MARK: - Get Entries (Date Manipulations)
+    
+    func test_32_getEntriesWithExpectedDates() {
+        guard let categoryID = self.store.categories.first?.id else {
+            XCTFail("CategoryID required to preform tests")
+            return
+        }
+        
+        let calendar = Calendar.current
+        
+        let now = Date()
+        let fiveDaysAgo = calendar.date(byAdding: .day, value: -5, to: now)!
+        let fourDaysAgo = calendar.date(byAdding: .day, value: -4, to: now)!
+        let threeDaysAgo = calendar.date(byAdding: .day, value: -3, to: now)!
+        let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: now)!
+        let oneDayAgo = calendar.date(byAdding: .day, value: -1, to: now)!
+        
+        let fiveToThree = Entry(id: 0, type: .range, categoryID: categoryID, startedAt: fiveDaysAgo, endedAt: threeDaysAgo)
+        let fiveToPresent = Entry(id: 1, type: .range, categoryID: categoryID, startedAt: fiveDaysAgo, endedAt: nil)
+        let twoToOne = Entry(id: 2, type: .range, categoryID: categoryID, startedAt: twoDaysAgo, endedAt: oneDayAgo)
+        let oneToPresent = Entry(id: 3, type: .range, categoryID: categoryID, startedAt: oneDayAgo, endedAt: nil)
+        
+        let five = Entry(id: 4, type: .event, categoryID: categoryID, startedAt: fiveDaysAgo, endedAt: nil)
+        let three = Entry(id: 5, type: .event, categoryID: categoryID, startedAt: threeDaysAgo, endedAt: nil)
+        let two = Entry(id: 6, type: .event, categoryID: categoryID, startedAt: twoDaysAgo, endedAt: nil)
+        
+        self.store.entries = [fiveToThree, fiveToPresent, twoToOne, oneToPresent, five, three, two]
+        
+        // Verify four days ago
+        let fourDaysFetch = self.expectation(description: "getEntriesFromFourDays")
+        self.store.getEntries(after: fourDaysAgo) { (entries, error) in
+            XCTAssertNotNil(entries)
+            XCTAssertNil(error)
+            
+            let expected = [
+                fiveToThree,
+                fiveToPresent,
+                twoToOne,
+                oneToPresent,
+                // five,
+                three,
+                two
+            ].map({ $0.id }).sorted()
+            let actual = (entries ?? []).map({ $0.id }).sorted()
+            
+            XCTAssertEqual(actual.count, expected.count)
+            XCTAssertEqual(actual, expected)
+            
+            fourDaysFetch.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Verify two days ago
+        let twoDaysFetch = self.expectation(description: "getEntriesFromTwoDays")
+        self.store.getEntries(after: twoDaysAgo) { (entries, error) in
+            XCTAssertNotNil(entries)
+            XCTAssertNil(error)
+            
+            let expected = [
+                // fiveToThree,
+                fiveToPresent,
+                twoToOne,
+                oneToPresent,
+                // five,
+                // three,
+                // two -- date range is not inclusive
+            ].map({ $0.id }).sorted()
+            let actual = (entries ?? []).map({ $0.id }).sorted()
+            
+            XCTAssertEqual(actual.count, expected.count)
+            XCTAssertEqual(actual, expected)
+            
+            twoDaysFetch.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Verify now
+        let nowFetch = self.expectation(description: "getEntriesForNow")
+        self.store.getEntries(after: now) { (entries, error) in
+            XCTAssertNotNil(entries)
+            XCTAssertNil(error)
+            
+            let expected = [
+                // fiveToThree,
+                fiveToPresent,
+                // twoToOne,
+                oneToPresent,
+                // five,
+                // three,
+                // two
+            ].map({ $0.id }).sorted()
+            let actual = (entries ?? []).map({ $0.id }).sorted()
+            
+            XCTAssertEqual(actual.count, expected.count)
+            XCTAssertEqual(actual, expected)
+            
+            nowFetch.fulfill()
+        }
         waitForExpectations(timeout: 5, handler: nil)
     }
 }

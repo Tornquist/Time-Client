@@ -51,7 +51,7 @@ public class Store {
     }
     
     private var _categoryTrees: [Int: CategoryTree] = [:]
-    public var categoryTrees: [Int:CategoryTree] {
+    public var categoryTrees: [Int: CategoryTree] {
         let hasCategories = self.categories.count != 0
         let hasTrees = self._categoryTrees.count > 0
         let needsGeneration = self.staleTrees || (hasCategories && !hasTrees)
@@ -360,6 +360,31 @@ public class Store {
         }
     }
     
+    public func getEntries(after date: Date, completion: (([Entry]?, Error?) -> ())? = nil) {
+        self.getEntries(.asNeeded) { (entries, error) in
+            guard error == nil else {
+                self.handleNetworkError(error)
+                completion?(nil, error)
+                return
+            }
+            
+            let realEntries = entries ?? []
+            let safeEntries = realEntries.filter { (entry) -> Bool in
+                if entry.endedAt?.compare(date) == .orderedDescending {
+                    return true
+                }
+                
+                if entry.endedAt == nil && entry.type == .range {
+                    return true
+                }
+                
+                return entry.startedAt.compare(date) == .orderedDescending
+            }
+            
+            completion?(safeEntries, nil)
+        }
+    }
+    
     // MARK: Category Interface
     
     public func recordEvent(for category: TimeSDK.Category, completion: ((Bool) -> Void)?) {
@@ -371,6 +396,7 @@ public class Store {
             }
             
             self.entries.append(newEntry!)
+            NotificationCenter.default.post(name: .TimeEntryRecorded, object: newEntry!)
             completion?(true)
         }
     }
@@ -399,15 +425,18 @@ public class Store {
             
             if action == .start {
                 self.entries.append(entry!)
+                NotificationCenter.default.post(name: .TimeEntryStarted, object: entry!)
             } else {
                 if let updatedEntry = self.entries.first(where: { $0.id == entry!.id }) {
                     updatedEntry.endedAt = entry!.endedAt
                     self.archive(data: self.entries)
+                    NotificationCenter.default.post(name: .TimeEntryStopped, object: updatedEntry)
                 } else {
                     self.entries.append(entry!)
+                    NotificationCenter.default.post(name: .TimeEntryStopped, object: entry!)
                 }
             }
-            
+
             completion?(true)
         }
     }
@@ -430,6 +459,9 @@ public class Store {
         guard endedAt == nil || (endedAt != nil && (entry.type == .range || type == .range)) else { completion?(false); return }
         guard endedAtTimezone == nil || (endedAtTimezone != nil && (entry.type == .range || type == .range)) else { completion?(false); return }
         
+        let onlyEndSet = category == nil && type == nil && startedAt == nil && startedAtTimezone == nil && endedAt != nil
+        let wasStopAction = onlyEndSet && Date().timeIntervalSince(endedAt!) < 1.0
+        
         self.api.updateEntry(with: entry.id, setCategory: category, setType: type, setStartedAt: startedAt, setStartedAtTimezone: startedAtTimezone, setEndedAt: endedAt, setEndedAtTimezone: endedAtTimezone) { (updatedEntry, error) in
             guard error == nil && updatedEntry != nil else {
                 self.handleNetworkError(error)
@@ -445,6 +477,13 @@ public class Store {
             entry.endedAtTimezone = updatedEntry!.endedAtTimezone
             
             self.archive(data: self.entries)
+            
+            if wasStopAction {
+                NotificationCenter.default.post(name: .TimeEntryStopped, object: entry)
+            } else {
+                NotificationCenter.default.post(name: .TimeEntryModified, object: entry)
+            }
+            
             completion?(true)
         }
     }
@@ -461,6 +500,7 @@ public class Store {
             if let index = self.entries.firstIndex(where: { $0.id == entry.id }) {
                 self.entries.remove(at: index)
             }
+            NotificationCenter.default.post(name: .TimeEntryDeleted, object: entry)
             completion?(true)
         }
     }

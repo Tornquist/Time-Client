@@ -39,7 +39,7 @@ class LandingViewController: UIViewController {
         
         let action = {
             if self.authenticated {
-                let controller = self.buildTabBarController()
+                let controller = self.buildApp()
                 controller.modalPresentationStyle = .fullScreen
                 self.present(controller, animated: false, completion: nil)
             } else {
@@ -54,30 +54,11 @@ class LandingViewController: UIViewController {
         else { DispatchQueue.main.async { action() } }
     }
     
-    func buildTabBarController() -> UIViewController {
-        let tabBarVC = HomeViewController()
-        
+    func buildApp() -> UIViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let categoriesVC = storyboard.instantiateViewController(withIdentifier: "categoriesView")
-        let entriesVC = storyboard.instantiateViewController(withIdentifier: "entriesView")
-        
-        let categoriesNavVC = UINavigationController(rootViewController: categoriesVC)
-        let entriesNavVC = UINavigationController(rootViewController: entriesVC)
-        
-        categoriesNavVC.tabBarItem = UITabBarItem(
-            title: NSLocalizedString("Categories", comment: ""),
-            image: UIImage(named: "icon_categories"),
-            selectedImage: UIImage(named: "icon_categories_selected")
-        )
-        
-        entriesNavVC.tabBarItem = UITabBarItem(
-            title: NSLocalizedString("Entries", comment: ""),
-            image: UIImage(named: "icon_entries"),
-            selectedImage: UIImage(named: "icon_entries_selected")
-        )
-        
-        tabBarVC.setViewControllers([categoriesNavVC, entriesNavVC], animated: false)
-        
-        return tabBarVC
+        let categoriesNavVC = HomeViewController(rootViewController: categoriesVC)
+
+        return categoriesNavVC
     }
 }

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="CategoryTableViewCell" customModule="Time_iOS" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="414" height="109"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Category Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="12" translatesAutoresizingMaskIntoConstraints="NO" id="d3j-55-fWU">
+                    <rect key="frame" x="36" y="60" width="120" height="33"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="5h1-I5-btw">
+                    <rect key="frame" x="12" y="68.5" width="16" height="16"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="16" id="Yxe-ue-bSr"/>
+                        <constraint firstAttribute="width" secondItem="5h1-I5-btw" secondAttribute="height" multiplier="1:1" id="sir-NW-dAE"/>
+                    </constraints>
+                </imageView>
+            </subviews>
+            <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+            <constraints>
+                <constraint firstItem="d3j-55-fWU" firstAttribute="leading" secondItem="5h1-I5-btw" secondAttribute="trailing" constant="8" id="0qn-1N-qrb"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="d3j-55-fWU" secondAttribute="bottom" constant="16" id="Mjb-BU-Jj6"/>
+                <constraint firstItem="5h1-I5-btw" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="12" id="fw1-tK-8Ue"/>
+                <constraint firstItem="d3j-55-fWU" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="16" id="izj-ba-iTt"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="d3j-55-fWU" secondAttribute="trailing" constant="16" id="oUO-yj-o3P"/>
+                <constraint firstItem="5h1-I5-btw" firstAttribute="centerY" secondItem="d3j-55-fWU" secondAttribute="centerY" id="zW3-x7-MdS"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="expandedIconView" destination="5h1-I5-btw" id="jqC-bB-QvY"/>
+                <outlet property="leadingContraint" destination="fw1-tK-8Ue" id="JDL-PF-YhA"/>
+                <outlet property="nameLabel" destination="d3j-55-fWU" id="56F-EW-YOO"/>
+            </connections>
+            <point key="canvasLocation" x="137.68115942028987" y="416.18303571428572"/>
+        </view>
+    </objects>
+</document>

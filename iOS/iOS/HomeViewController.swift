@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HomeViewController: UITabBarController {
+class HomeViewController: UINavigationController {
     
     var showingNetworkError: Bool = false
     
@@ -17,6 +17,8 @@ class HomeViewController: UITabBarController {
         
         NotificationCenter.default.addObserver(self, selector: #selector(showReauthentication), name: .TimeUserSignInNeeded, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(unableToReachServer), name: .TimeUnableToReachServer, object: nil)
+        
+        self.navigationBar.prefersLargeTitles = true
     }
     
     @objc func showReauthentication() {

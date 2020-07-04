@@ -21,4 +21,10 @@ extension Notification.Name {
     public static let TimeImportRequestCompleted = Notification.Name("TimeImportRequestCompleted")
     
     public static let TimeBackgroundStoreUpdate = Notification.Name("TimeBackgroundStoreUpdate")
+    
+    public static let TimeEntryStarted = Notification.Name("TimeEntryStarted")
+    public static let TimeEntryStopped = Notification.Name("TimeEntryStopped")
+    public static let TimeEntryRecorded = Notification.Name("TimeEntryRecorded")
+    public static let TimeEntryModified = Notification.Name("TimeEntryModified")
+    public static let TimeEntryDeleted = Notification.Name("TimeEntryDeleted")
 }
