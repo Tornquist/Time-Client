@@ -33,7 +33,7 @@ class API: APIQueueDelegate {
         }
         set {
             if self.enableURLCachingBehavior {
-                UserDefaults.standard.set(newValue, forKey: self.urlOverrideKey)
+                Globals.userDefaults.set(newValue, forKey: self.urlOverrideKey)
             }
             
             self._activeURLStorage = API.generateSafe(url: newValue)
@@ -44,7 +44,7 @@ class API: APIQueueDelegate {
     var baseURL: String { self.activeURL }
     func set(url newURL: String) -> Bool {
         let urlDifferent = self.enableURLCachingBehavior
-            ? newURL != UserDefaults.standard.string(forKey: self.urlOverrideKey)
+            ? newURL != Globals.userDefaults.string(forKey: self.urlOverrideKey)
             : newURL != self.activeURL
         guard urlDifferent else { return false }
         
@@ -73,14 +73,14 @@ class API: APIQueueDelegate {
         self.enableURLCachingBehavior = enableURLCachingBehavior
         self.urlOverrideKey = urlOverrideKey ?? API.defaultURLOverrideKey
         
-        let storedURL = UserDefaults.standard.string(forKey: self.urlOverrideKey)
+        let storedURL = Globals.userDefaults.string(forKey: self.urlOverrideKey)
         let startingURL = baseURL != nil ? baseURL : (self.enableURLCachingBehavior ? storedURL : nil)
         
         // Similar to activeURL setter. Required because self has not completed initialzation
         // Only store when urls match to avoid erasing "" and causing additional deauth
         let trueURL = API.generateSafe(url: startingURL)
         if self.enableURLCachingBehavior && trueURL == startingURL {
-            UserDefaults.standard.set(trueURL, forKey: self.urlOverrideKey)
+            Globals.userDefaults.set(trueURL, forKey: self.urlOverrideKey)
         }
         self._activeURLStorage = trueURL
         

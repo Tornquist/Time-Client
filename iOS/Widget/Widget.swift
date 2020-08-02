@@ -33,7 +33,7 @@ extension Color {
 
 @main
 struct SummaryWidget: Widget {
-    private let kind: String = "SummaryWidget"
+    private let kind: String = "com.nathantornquist.time.SummaryWidget"
     public var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: TimeTimeline()) { entry in
             TimeWidgetView(entry: entry)
@@ -63,12 +63,19 @@ struct TimeLoader {
             guard dayTime != nil && weekTime != nil else { return }
             
             let status = TimeStatus(today: dayTime!, week: weekTime!, active: isActive)
+            print("Done with fetch")
             completion(.success(status))
         }
         
-        let serverURLOverride = UserDefaults.standard.string(forKey: "server_url_override")
-        Time.shared.initialize(for: serverURLOverride, completionHandler: { (error) in
-            guard error != nil else {
+        let containerUrl = Constants.containerUrl
+        let serverURLOverride = UserDefaults.init(suiteName: containerUrl)?.string(forKey: "server_url_override")
+        Time.refreshShared()
+        Time.shared.initialize(
+            for: serverURLOverride,
+            containerUrlOverride: containerUrl,
+            userDefaultsSuiteName: containerUrl
+        ) { error in
+            guard error == nil else {
                 completion(.failure(error!))
                 return
             }
@@ -77,20 +84,22 @@ struct TimeLoader {
             self.getFrom(date: startOfDay) { (dayString, active) in
                 dayTime = dayString
                 isActive = isActive || active
+                print("Day active \(active)")
                 doneWithRange()
             }
             // Check week total
             self.getFrom(date: startOfWeek) { (weekString, active) in
                 weekTime = weekString
                 isActive = isActive || active
+                print("Week active \(active)")
                 doneWithRange()
             }
-        })
+        }
     }
     
     static internal func getFrom(date: Date, completion: @escaping (String, Bool) -> ()) {
         Time.shared.store.getEntries(after: date) { (entries: [Entry]?, error: Error?) -> () in
-            guard entries != nil && error != nil else {
+            guard entries != nil && error == nil else {
                 completion("XX:XX:XX", false)
                 return
             }
@@ -154,7 +163,8 @@ struct TimeTimeline: TimelineProvider {
     // Real information
     public func timeline(with context: Context, completion: @escaping (Timeline<TimeEntry>) -> ()) {
         let currentDate = Date()
-        let refreshDate = Calendar.current.date(byAdding: .minute, value: 5, to: currentDate)!
+        let earlyDate = Calendar.current.date(byAdding: .minute, value: 5, to: currentDate)!
+        let farDate = Calendar.current.date(byAdding: .minute, value: 120, to: currentDate)!
         
         TimeLoader.fetch { (result) in
             let status: TimeStatus
@@ -164,7 +174,7 @@ struct TimeTimeline: TimelineProvider {
                 status = TimeStatus(today: "00:00:00", week: "00:00:00", active: false)
             }
             let entry = TimeEntry(date: currentDate, status: status)
-            let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
+            let timeline = Timeline(entries: [entry], policy: .after(status.active ? earlyDate : farDate))
             completion(timeline)
         }
     }

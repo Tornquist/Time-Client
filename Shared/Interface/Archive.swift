@@ -42,21 +42,27 @@ class Archive {
             return [.accountIDs, .categories, .entries]
         }
     }
-    
-    private static var applicationSupportFolderURL: URL? {
-        return try? FileManager.default.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        )
+        
+    private static var url: URL? {
+        guard let containerUrl = Globals.containerUrlOverride else {
+            print("Using default")
+            return try? FileManager.default.url(
+                for: .applicationSupportDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            )
+        }
+        
+        print("Using group")
+        return FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: containerUrl)
     }
     
     static func record<T>(_ data: T) -> Bool where T : Codable {
         guard
             let type = ArchiveType.identifyType(for: T.self),
             let encodedData = try? JSONEncoder().encode(data),
-            let url = Archive.applicationSupportFolderURL else {
+            let url = Archive.url else {
                 return false
         }
         
@@ -70,9 +76,10 @@ class Archive {
     }
     
     static func retrieveData<T>() -> T? where T : Codable {
+        print("retrieveData")
         guard
             let type = ArchiveType.identifyType(for: T.self),
-            let url = Archive.applicationSupportFolderURL,
+            let url = Archive.url,
             let data = try? Data.init(contentsOf:
                 url.appendingPathComponent(type.filename)
             ),
@@ -84,7 +91,7 @@ class Archive {
     }
     
     static func removeData(for type: ArchiveType) -> Bool {
-        guard let url = Archive.applicationSupportFolderURL else {
+        guard let url = Archive.url else {
             return false
         }
         

@@ -9,6 +9,7 @@
 import Foundation
 
 class TokenStore {
+    static let appIDPrefix = "99AECXNBFU"
     static let prefix = "com.nathantornquist.Time"
     static let description = "Authentication and Refresh tokens for Time Server"
     static private let defaultTag = "token"
@@ -25,6 +26,7 @@ class TokenStore {
         var base: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: "\(TokenStore.prefix).\(tag)",
+            kSecAttrAccessGroup as String: (appIDPrefix + "." + prefix) as AnyObject
         ]
         
         switch type {

@@ -30,6 +30,10 @@
 		D855812B21BDE9A200DCB577 /* Time_iOS.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D855812921BDE9A200DCB577 /* Time_iOS.xcdatamodeld */; };
 		D855812D21BDE9A400DCB577 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D855812C21BDE9A400DCB577 /* Assets.xcassets */; };
 		D855813021BDE9A400DCB577 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D855812E21BDE9A400DCB577 /* LaunchScreen.storyboard */; };
+		D856E83824D6EFD0001E564A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856E83724D6EFD0001E564A /* Constants.swift */; };
+		D856E83924D6EFD0001E564A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856E83724D6EFD0001E564A /* Constants.swift */; };
+		D856E83D24D70629001E564A /* TimeSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8FB6ABE220B18CD002C0456 /* TimeSDK.framework */; };
+		D856E83E24D70629001E564A /* TimeSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D8FB6ABE220B18CD002C0456 /* TimeSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D85B0A4A2246DD1A00835E55 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85B0A492246DD1A00835E55 /* LoginViewController.swift */; };
 		D85B0A4C2246DD2100835E55 /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85B0A4B2246DD2100835E55 /* CategoriesViewController.swift */; };
 		D85CFB012462ED07005E1AE2 /* CategoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85CFB002462ED07005E1AE2 /* CategoryTableViewCell.swift */; };
@@ -73,6 +77,17 @@
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D856E83F24D70629001E564A /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				D856E83E24D70629001E564A /* TimeSDK.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D8FB6AC1220B18CD002C0456 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -112,6 +127,8 @@
 		D855812C21BDE9A400DCB577 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D855812F21BDE9A400DCB577 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D855813121BDE9A400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D856E83524D6EA4C001E564A /* WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WidgetExtension.entitlements; sourceTree = "<group>"; };
+		D856E83724D6EFD0001E564A /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		D85B0A492246DD1A00835E55 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		D85B0A4B2246DD2100835E55 /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesViewController.swift; sourceTree = "<group>"; };
 		D85CFB002462ED07005E1AE2 /* CategoryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryTableViewCell.swift; sourceTree = "<group>"; };
@@ -137,6 +154,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D856E83D24D70629001E564A /* TimeSDK.framework in Frameworks */,
 				D852537824CD1D4000F724EC /* SwiftUI.framework in Frameworks */,
 				D852537624CD1D4000F724EC /* WidgetKit.framework in Frameworks */,
 			);
@@ -197,9 +215,11 @@
 		D855811621BDE9A200DCB577 = {
 			isa = PBXGroup;
 			children = (
+				D856E83524D6EA4C001E564A /* WidgetExtension.entitlements */,
 				D8FB6ABE220B18CD002C0456 /* TimeSDK.framework */,
 				D855812121BDE9A200DCB577 /* iOS */,
 				D852537924CD1D4000F724EC /* Widget */,
+				D856E83624D6EFBF001E564A /* Shared */,
 				D852537424CD1D4000F724EC /* Frameworks */,
 				D855812021BDE9A200DCB577 /* Products */,
 			);
@@ -227,6 +247,14 @@
 				D85B0A482246D72F00835E55 /* Views */,
 			);
 			path = iOS;
+			sourceTree = "<group>";
+		};
+		D856E83624D6EFBF001E564A /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				D856E83724D6EFD0001E564A /* Constants.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		D85B0A482246D72F00835E55 /* Views */ = {
@@ -260,6 +288,7 @@
 				D852536F24CD1D4000F724EC /* Sources */,
 				D852537024CD1D4000F724EC /* Frameworks */,
 				D852537124CD1D4000F724EC /* Resources */,
+				D856E83F24D70629001E564A /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -365,6 +394,7 @@
 				D852538024CD1D4100F724EC /* Widget.intentdefinition in Sources */,
 				D8A1B50524CD226900580DCA /* Colors.swift in Sources */,
 				D852537B24CD1D4000F724EC /* Widget.swift in Sources */,
+				D856E83924D6EFD0001E564A /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -378,6 +408,7 @@
 				D8F549B323A90429009E8512 /* NewImportViewController.swift in Sources */,
 				D85B0A4C2246DD2100835E55 /* CategoriesViewController.swift in Sources */,
 				D8216FED24A0DB39000C72FD /* CategoriesViewController+Metrics.swift in Sources */,
+				D856E83824D6EFD0001E564A /* Constants.swift in Sources */,
 				D8216FE9249F96AF000C72FD /* AccountTableViewCell.swift in Sources */,
 				D89CEA0D2482BBE9002913AA /* MetricTotalSplitView.swift in Sources */,
 				D86AB87124982E3E00F71BE1 /* EntryTableViewCell.swift in Sources */,
@@ -433,6 +464,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = WidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 99AECXNBFU;
 				INFOPLIST_FILE = Widget/Info.plist;
@@ -456,6 +488,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = WidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 99AECXNBFU;
 				INFOPLIST_FILE = Widget/Info.plist;

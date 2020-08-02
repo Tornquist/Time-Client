@@ -26,6 +26,9 @@ public class Time {
     var reauthenticating: Bool = false
     
     init(withAPI apiClient: API, andTokenIdentifier tokenIdentifier: String = "token") {
+        Globals.containerUrlOverride = "group.com.nathantornquist.time"
+        Globals.userDefaultsSuiteName = "group.com.nathantornquist.time"
+        
         self.api = apiClient
         self.tokenIdentifier = tokenIdentifier
         self.store = Store(api: self.api)
@@ -34,7 +37,15 @@ public class Time {
         NotificationCenter.default.addObserver(self, selector: #selector(autoRefreshFailed), name: .TimeAPIAutoRefreshFailed, object: self.api)
     }
     
-    public func initialize(for serverURL: String? = nil, completionHandler: ((Error?) -> ())? = nil) {
+    public func initialize(
+        for serverURL: String? = nil,
+        containerUrlOverride: String? = nil,
+        userDefaultsSuiteName: String? = nil,
+        completionHandler: ((Error?) -> ())? = nil
+    ) {
+        Globals.containerUrlOverride = containerUrlOverride
+        Globals.userDefaultsSuiteName = userDefaultsSuiteName
+        
         if serverURL != nil {
             let updatedURL = self.api.set(url: serverURL!)
             if updatedURL { self.deauthenticate() }
@@ -53,6 +64,11 @@ public class Time {
         self.api.token = fetchedToken
         // No special success handling. Token already stored
         completionHandler?(nil)
+    }
+    
+    // Required for use in Widget to force fresh load from disk
+    public static func refreshShared() {
+        Time._shared = Time(withAPI: API.shared)
     }
     
     public func authenticate(email: String, password: String, completionHandler: ((Error?) -> ())? = nil) {

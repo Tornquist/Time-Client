@@ -17,9 +17,14 @@ class LandingViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-                
-        let serverURLOverride = UserDefaults.standard.string(forKey: "server_url_override")
-        Time.shared.initialize(for: serverURLOverride) { error in
+        
+        let containerUrl = Constants.containerUrl
+        let serverURLOverride = UserDefaults.init(suiteName: containerUrl)?.string(forKey: "server_url_override")
+        Time.shared.initialize(
+            for: serverURLOverride,
+            containerUrlOverride: containerUrl,
+            userDefaultsSuiteName: containerUrl
+        ) { error in
             self.initialized = true
             self.authenticated = error == nil
             self.handleTransition()

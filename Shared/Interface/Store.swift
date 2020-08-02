@@ -711,18 +711,18 @@ public class Store {
     }
     
     private func getEntriesSync() -> Date? {
-        return UserDefaults.standard.object(forKey: StoreKeys.entriesSyncTimestamp.rawValue) as? Date
+        return Globals.userDefaults.object(forKey: StoreKeys.entriesSyncTimestamp.rawValue) as? Date
     }
     
     private func recordEntriesSync() {
-        UserDefaults.standard.set(Date(), forKey: StoreKeys.entriesSyncTimestamp.rawValue)
+        Globals.userDefaults.set(Date(), forKey: StoreKeys.entriesSyncTimestamp.rawValue)
     }
     
     private func getCategoriesSync() -> Date? {
-        return UserDefaults.standard.object(forKey: StoreKeys.categoriesSyncTimestamp.rawValue) as? Date
+        return Globals.userDefaults.object(forKey: StoreKeys.categoriesSyncTimestamp.rawValue) as? Date
     }
     
     private func recordCategoriesSync() {
-        UserDefaults.standard.set(Date(), forKey: StoreKeys.categoriesSyncTimestamp.rawValue)
+        Globals.userDefaults.set(Date(), forKey: StoreKeys.categoriesSyncTimestamp.rawValue)
     }
 }
