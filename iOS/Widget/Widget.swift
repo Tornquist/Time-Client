@@ -147,21 +147,21 @@ struct TimeEntry: TimelineEntry {
 struct TimeTimeline: TimelineProvider {
     typealias Entry = TimeEntry
     
-    public func placeholder(with: Context) -> TimeEntry {
+    public func placeholder(in context: Context) -> TimeEntry {
         let fakeStatus = TimeStatus(today: "01:38:04", week: "53:43:59", active: true)
         let entry = TimeEntry(date: Date(), status: fakeStatus)
         return entry
     }
     
     // Fake information for previews
-    public func snapshot(with context: Context, completion: @escaping (TimeEntry) -> ()) {
+    public func getSnapshot(in context: Context, completion: @escaping (TimeEntry) -> Void) {
         let fakeStatus = TimeStatus(today: "01:38:04", week: "53:43:59", active: true)
         let entry = TimeEntry(date: Date(), status: fakeStatus)
         completion(entry)
     }
     
     // Real information
-    public func timeline(with context: Context, completion: @escaping (Timeline<TimeEntry>) -> ()) {
+    public func getTimeline(in context: Context, completion: @escaping (Timeline<TimeEntry>) -> Void) {
         let currentDate = Date()
         let earlyDate = Calendar.current.date(byAdding: .minute, value: 5, to: currentDate)!
         let farDate = Calendar.current.date(byAdding: .minute, value: 120, to: currentDate)!
