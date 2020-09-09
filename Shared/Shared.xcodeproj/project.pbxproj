@@ -33,7 +33,6 @@
 		D855818421BDEB6400DCB577 /* Time_Shared.h in Headers */ = {isa = PBXBuildFile; fileRef = D855818221BDEB6400DCB577 /* Time_Shared.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D85581AD21BEABC300DCB577 /* EntryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85581AB21BEABC300DCB577 /* EntryType.swift */; };
 		D85581D821C14D6700DCB577 /* TimeSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D855818021BDEB6400DCB577 /* TimeSDK.framework */; };
-		D856E83B24D6F354001E564A /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856E83A24D6F354001E564A /* Globals.swift */; };
 		D85B0A552246F11700835E55 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85B0A542246F11700835E55 /* AppDelegate.swift */; };
 		D85B0A572246F11700835E55 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85B0A562246F11700835E55 /* ViewController.swift */; };
 		D85B0A5A2246F11700835E55 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D85B0A582246F11700835E55 /* Main.storyboard */; };
@@ -141,7 +140,6 @@
 		D85581AB21BEABC300DCB577 /* EntryType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryType.swift; sourceTree = "<group>"; };
 		D85581D321C14D6700DCB577 /* Shared-Tests-macOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Shared-Tests-macOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85581D721C14D6700DCB577 /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-macOS.plist"; sourceTree = "<group>"; };
-		D856E83A24D6F354001E564A /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		D856E83C24D6FB9B001E564A /* Time-Shared-iOS-Host.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Time-Shared-iOS-Host.entitlements"; sourceTree = "<group>"; };
 		D85B0A522246F11700835E55 /* Time-Shared-iOS-Host.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Time-Shared-iOS-Host.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85B0A542246F11700835E55 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -233,7 +231,6 @@
 				D87F5A9A22636C1700DD5DEA /* Time+Validation.swift */,
 				D87F5AA82264AC9300DD5DEA /* Store.swift */,
 				D8DD2A442334739400F26665 /* Archive.swift */,
-				D856E83A24D6F354001E564A /* Globals.swift */,
 			);
 			path = Interface;
 			sourceTree = "<group>";
@@ -589,7 +586,6 @@
 				D87F5A9B22636C1700DD5DEA /* Time+Validation.swift in Sources */,
 				D8437C5E21F4C6C300974B03 /* TokenStore.swift in Sources */,
 				D837025721CA82E20095B19F /* API.swift in Sources */,
-				D856E83B24D6F354001E564A /* Globals.swift in Sources */,
 				D8EA80EC222253D5002686D4 /* EntryAction.swift in Sources */,
 				D837025421CA7EAB0095B19F /* Token.swift in Sources */,
 				D811B17D21EA4269009F6C8E /* Account.swift in Sources */,

@@ -68,13 +68,17 @@ struct TimeLoader {
         }
         
         let containerUrl = Constants.containerUrl
-        let serverURLOverride = UserDefaults.init(suiteName: containerUrl)?.string(forKey: "server_url_override")
-        Time.refreshShared()
-        Time.shared.initialize(
-            for: serverURLOverride,
-            containerUrlOverride: containerUrl,
-            userDefaultsSuiteName: containerUrl
-        ) { error in
+        let serverURLOverride = UserDefaults(suiteName: containerUrl)?.string(forKey: "server_url_override")
+                
+        let config = TimeConfig(
+            serverURL: serverURLOverride,
+            containerURL: containerUrl,
+            userDefaultsSuite: containerUrl,
+            keychainGroup: "99AECXNBFU.com.nathantornquist.Time"
+        )
+        
+        Time.configureShared(config)
+        Time.shared.initialize() { error in
             guard error == nil else {
                 completion(.failure(error!))
                 return

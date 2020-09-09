@@ -9,6 +9,11 @@
 import Foundation
 
 class Archive {
+    
+    var config: TimeConfig
+    init(config: TimeConfig) {
+        self.config = config
+    }
 
     enum ArchiveType {
         case accountIDs
@@ -43,8 +48,8 @@ class Archive {
         }
     }
         
-    private static var url: URL? {
-        guard let containerUrl = Globals.containerUrlOverride else {
+    private var url: URL? {
+        guard let containerUrl = self.config.containerURL else {
             print("Using default")
             return try? FileManager.default.url(
                 for: .applicationSupportDirectory,
@@ -58,11 +63,11 @@ class Archive {
         return FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: containerUrl)
     }
     
-    static func record<T>(_ data: T) -> Bool where T : Codable {
+    func record<T>(_ data: T) -> Bool where T : Codable {
         guard
             let type = ArchiveType.identifyType(for: T.self),
             let encodedData = try? JSONEncoder().encode(data),
-            let url = Archive.url else {
+            let url = self.url else {
                 return false
         }
         
@@ -75,11 +80,11 @@ class Archive {
         }
     }
     
-    static func retrieveData<T>() -> T? where T : Codable {
+    func retrieveData<T>() -> T? where T : Codable {
         print("retrieveData")
         guard
             let type = ArchiveType.identifyType(for: T.self),
-            let url = Archive.url,
+            let url = self.url,
             let data = try? Data.init(contentsOf:
                 url.appendingPathComponent(type.filename)
             ),
@@ -90,8 +95,8 @@ class Archive {
         return decodedData
     }
     
-    static func removeData(for type: ArchiveType) -> Bool {
-        guard let url = Archive.url else {
+    func removeData(for type: ArchiveType) -> Bool {
+        guard let url = self.url else {
             return false
         }
         
@@ -107,9 +112,9 @@ class Archive {
         }
     }
     
-    static func removeAllData() -> Bool {
+    func removeAllData() -> Bool {
         return ArchiveType.all()
-            .map({ Archive.removeData(for: $0) })
+            .map({ self.removeData(for: $0) })
             .reduce(true, { $0 && $1 })
     }
 }

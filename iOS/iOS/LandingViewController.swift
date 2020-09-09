@@ -19,12 +19,17 @@ class LandingViewController: UIViewController {
         super.viewWillAppear(animated)
         
         let containerUrl = Constants.containerUrl
-        let serverURLOverride = UserDefaults.init(suiteName: containerUrl)?.string(forKey: "server_url_override")
-        Time.shared.initialize(
-            for: serverURLOverride,
-            containerUrlOverride: containerUrl,
-            userDefaultsSuiteName: containerUrl
-        ) { error in
+        let serverURLOverride = UserDefaults(suiteName: containerUrl)?.string(forKey: "server_url_override")
+        
+        let config = TimeConfig(
+            serverURL: serverURLOverride,
+            containerURL: containerUrl,
+            userDefaultsSuite: containerUrl,
+            keychainGroup: "99AECXNBFU.com.nathantornquist.Time"
+        )
+        
+        Time.configureShared(config)
+        Time.shared.initialize() { error in
             self.initialized = true
             self.authenticated = error == nil
             self.handleTransition()

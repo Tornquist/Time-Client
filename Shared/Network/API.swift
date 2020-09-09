@@ -15,15 +15,26 @@ class API: APIQueueDelegate {
     static private let defaultURLOverrideKey = "time-api-configuration-server-url-override"
     
     // Shared Interface
-    private static var _shared: API? = nil
+    /**
+        The system-wide API singleton.
+
+        This property will return the existing singleton or initialize and return a new one.
+        If you wish to configure the singleton properties (server url) it is best to first configure
+        the singleton using API.configureShared(...) prior to fetching this value.
+    */
     static var shared: API {
         if API._shared == nil {
-            API._shared = API(enableURLCachingBehavior: true)
+            API._shared = API(config: TimeConfig(), enableURLCachingBehavior: true)
         }
         return API._shared!
     }
-        
+    private static var _shared: API? = nil
+    static func configureShared(_ config: TimeConfig) {
+        API._shared = API(config: config, enableURLCachingBehavior: true)
+    }
+
     // Internal URL Interface and Configuration
+    private var config: TimeConfig
     private var _activeURLStorage: String
     private var enableURLCachingBehavior: Bool
     private var urlOverrideKey: String
@@ -33,7 +44,7 @@ class API: APIQueueDelegate {
         }
         set {
             if self.enableURLCachingBehavior {
-                Globals.userDefaults.set(newValue, forKey: self.urlOverrideKey)
+                config.userDefaults.set(newValue, forKey: self.urlOverrideKey)
             }
             
             self._activeURLStorage = API.generateSafe(url: newValue)
@@ -44,7 +55,7 @@ class API: APIQueueDelegate {
     var baseURL: String { self.activeURL }
     func set(url newURL: String) -> Bool {
         let urlDifferent = self.enableURLCachingBehavior
-            ? newURL != Globals.userDefaults.string(forKey: self.urlOverrideKey)
+            ? newURL != config.userDefaults.string(forKey: self.urlOverrideKey)
             : newURL != self.activeURL
         guard urlDifferent else { return false }
         
@@ -69,18 +80,19 @@ class API: APIQueueDelegate {
            Defaults to false
          
      */
-    init(baseURL: String? = nil, enableURLCachingBehavior: Bool = false, urlOverrideKey: String? = nil) {
+    init(config: TimeConfig, enableURLCachingBehavior: Bool = false, urlOverrideKey: String? = nil) {
+        self.config = config
         self.enableURLCachingBehavior = enableURLCachingBehavior
         self.urlOverrideKey = urlOverrideKey ?? API.defaultURLOverrideKey
         
-        let storedURL = Globals.userDefaults.string(forKey: self.urlOverrideKey)
-        let startingURL = baseURL != nil ? baseURL : (self.enableURLCachingBehavior ? storedURL : nil)
+        let storedURL = config.userDefaults.string(forKey: self.urlOverrideKey)
+        let startingURL = config.serverURL != nil ? config.serverURL : (self.enableURLCachingBehavior ? storedURL : nil)
         
         // Similar to activeURL setter. Required because self has not completed initialzation
         // Only store when urls match to avoid erasing "" and causing additional deauth
         let trueURL = API.generateSafe(url: startingURL)
         if self.enableURLCachingBehavior && trueURL == startingURL {
-            Globals.userDefaults.set(trueURL, forKey: self.urlOverrideKey)
+            config.userDefaults.set(trueURL, forKey: self.urlOverrideKey)
         }
         self._activeURLStorage = trueURL
         
