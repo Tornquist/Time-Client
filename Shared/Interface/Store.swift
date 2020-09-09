@@ -21,9 +21,15 @@ public class Store {
         case refreshAll
     }
     
-    var config: TimeConfig
+    var userDefaultsSuite: String?
     var api: API
     private var archive: Archive
+    
+    private var userDefaults: UserDefaults {
+        return self.userDefaultsSuite != nil
+            ? UserDefaults(suiteName: self.userDefaultsSuite!)!
+            : UserDefaults()
+    }
     
     private var hasInitialized: Bool = false
     
@@ -66,10 +72,10 @@ public class Store {
     private var _hasFetchedImportRequests: Bool = false
     public var importRequests: [FileImporter.Request] = []
     
-    init(config: TimeConfig, api: API) {
-        self.config = config
+    init(api: API, userDefaultsSuite: String? = nil, containerURL: String? = nil) {
+        self.userDefaultsSuite = userDefaultsSuite
         self.api = api
-        self.archive = Archive(config: config)
+        self.archive = Archive(containerURL: containerURL)
         
         self.restoreDataFromDisk()
         self.hasInitialized = true
@@ -79,6 +85,13 @@ public class Store {
             selector: #selector(categoryArchiveRequested),
             name: .TimeCategoryArchiveRequested,
             object: nil
+        )
+    }
+    convenience init(config: TimeConfig, api: API) {
+        self.init(
+            api: api,
+            userDefaultsSuite: config.userDefaultsSuite,
+            containerURL: config.containerURL
         )
     }
     
@@ -716,18 +729,18 @@ public class Store {
     }
     
     private func getEntriesSync() -> Date? {
-        return self.config.userDefaults.object(forKey: StoreKeys.entriesSyncTimestamp.rawValue) as? Date
+        return self.userDefaults.object(forKey: StoreKeys.entriesSyncTimestamp.rawValue) as? Date
     }
     
     private func recordEntriesSync() {
-        self.config.userDefaults.set(Date(), forKey: StoreKeys.entriesSyncTimestamp.rawValue)
+        self.userDefaults.set(Date(), forKey: StoreKeys.entriesSyncTimestamp.rawValue)
     }
     
     private func getCategoriesSync() -> Date? {
-        return self.config.userDefaults.object(forKey: StoreKeys.categoriesSyncTimestamp.rawValue) as? Date
+        return self.userDefaults.object(forKey: StoreKeys.categoriesSyncTimestamp.rawValue) as? Date
     }
     
     private func recordCategoriesSync() {
-        self.config.userDefaults.set(Date(), forKey: StoreKeys.categoriesSyncTimestamp.rawValue)
+        self.userDefaults.set(Date(), forKey: StoreKeys.categoriesSyncTimestamp.rawValue)
     }
 }

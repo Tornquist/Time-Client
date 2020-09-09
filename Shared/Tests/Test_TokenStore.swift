@@ -13,8 +13,8 @@ import XCTest
 
 class Test_TokenStore: XCTestCase {
     
-    static let config = TimeConfig(tokenIdentifier: "test-token")
-    static let tokenStore = TokenStore(config: config)
+    static let tokenIdentifier = "test-token"
+    static let tokenStore = TokenStore(tokenIdentifier: tokenIdentifier, keychainGroup: nil)
     
     var tokenStore: TokenStore { return Test_TokenStore.tokenStore }
     

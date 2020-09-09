@@ -9,8 +9,9 @@
 import Foundation
 
 class TokenStore {
-    
-    let config: TimeConfig
+
+    var tokenIdentifier: String?
+    var keychainGroup: String?
     
     static let prefix = "com.nathantornquist.Time"
     static let description = "Authentication and Refresh tokens for Time Server"
@@ -18,11 +19,18 @@ class TokenStore {
     private let defaultTag = "token"
     
     var tag: String {
-        return self.config.tokenIdentifier ?? self.defaultTag
+        return self.tokenIdentifier ?? self.defaultTag
     }
     
-    init(config: TimeConfig) {
-        self.config = config
+    init(tokenIdentifier: String? = nil, keychainGroup: String? = nil) {
+        self.tokenIdentifier = tokenIdentifier
+        self.keychainGroup = keychainGroup
+    }
+    convenience init(config: TimeConfig) {
+        self.init(
+            tokenIdentifier: config.tokenIdentifier,
+            keychainGroup: config.keychainGroup
+        )
     }
     
     // MARK: - Query Support
@@ -39,7 +47,7 @@ class TokenStore {
             kSecAttrService as String: "\(TokenStore.prefix).\(self.tag)"
         ]
         
-        if let group = config.keychainGroup {
+        if let group = self.keychainGroup {
             base[kSecAttrAccessGroup as String] = group as AnyObject
         }
         

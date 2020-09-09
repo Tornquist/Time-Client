@@ -10,9 +10,13 @@ import Foundation
 
 class Archive {
     
-    var config: TimeConfig
-    init(config: TimeConfig) {
-        self.config = config
+    var containerURL: String?
+    
+    init(containerURL: String? = nil) {
+        self.containerURL = containerURL
+    }
+    convenience init(config: TimeConfig) {
+        self.init(containerURL: config.containerURL)
     }
 
     enum ArchiveType {
@@ -49,7 +53,7 @@ class Archive {
     }
         
     private var url: URL? {
-        guard let containerUrl = self.config.containerURL else {
+        guard let containerUrl = self.containerURL else {
             print("Using default")
             return try? FileManager.default.url(
                 for: .applicationSupportDirectory,

@@ -13,7 +13,7 @@ import XCTest
 
 class Test_Archive: XCTestCase {
     
-    static let archive: Archive = Archive(config: TimeConfig())
+    static let archive: Archive = Archive()
     var archive: Archive { return Test_Archive.archive }
     
     func test_00_setup() {

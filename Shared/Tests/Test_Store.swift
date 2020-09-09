@@ -10,7 +10,6 @@ import XCTest
 @testable import TimeSDK
 
 class Test_Store: XCTestCase {
-    static var config = TimeConfig()
     static var api: API!
     static var archive: Archive!
     static var email = "\(UUID().uuidString)@time.com"
@@ -18,7 +17,6 @@ class Test_Store: XCTestCase {
     
     static var sharedEntry: Entry? = nil
     
-    var config: TimeConfig! { return Test_Store.config }
     var api: API! { return Test_Store.api }
     var archive: Archive! { return Test_Store.archive }
     
@@ -32,9 +30,8 @@ class Test_Store: XCTestCase {
     }
     
     override class func setUp() {
-        self.config = TimeConfig()
-        self.api = API(config: self.config)
-        self.archive = Archive(config: self.config)
+        self.api = API()
+        self.archive = Archive()
     }
     
     override func setUp() {
@@ -56,7 +53,7 @@ class Test_Store: XCTestCase {
         // and caches actions from above. Store is the same. The
         // public Time interface manages the reset lifecycle
         _ = self.archive.removeAllData()
-        self.store = Store(config: self.config, api: self.api)
+        self.store = Store(api: self.api)
         
         XCTAssertEqual(self.store.categories.count, 0)
         XCTAssertEqual(self.store.categoryTrees.count, 0)
