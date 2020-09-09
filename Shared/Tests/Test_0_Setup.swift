@@ -11,8 +11,11 @@ import XCTest
 
 class Test_0_Setup: XCTestCase {
     
+    static let config = TimeConfig()
+    var config: TimeConfig { return Test_0_Setup.config }
+    
     func test_createDefaultUserIfNeeded() {
-        let api = API()
+        let api = API(config: self.config)
         
         let email = "test@test.com"
         let password = "defaultPassword"

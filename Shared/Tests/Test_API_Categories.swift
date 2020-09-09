@@ -10,7 +10,8 @@ import XCTest
 @testable import TimeSDK
 
 class Test_API_Categories: XCTestCase {
-    static var tokenTag = "test-categories-tests"
+
+    static let config = TimeConfig(tokenIdentifier: "test-categories-tests")
     static var api: API!
     static var time: Time!
     static var email = "\(UUID().uuidString)@time.com"
@@ -19,7 +20,6 @@ class Test_API_Categories: XCTestCase {
     static var accounts: [Account] = []
     static var categories: [TimeSDK.Category] = []
     
-    var tokenTag: String { return Test_API_Categories.tokenTag }
     var api: API! { return Test_API_Categories.api }
     var time: Time! { return Test_API_Categories.time }
     
@@ -40,8 +40,8 @@ class Test_API_Categories: XCTestCase {
     }
     
     override class func setUp() {
-        Test_API_Categories.api = API()
-        Test_API_Categories.time = Time(withAPI: Test_API_Categories.api, andTokenIdentifier: self.tokenTag)
+        self.api = API(config: self.config)
+        self.time = Time(config: self.config, withAPI: self.api)
     }
     
     override func setUp() {

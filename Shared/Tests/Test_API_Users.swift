@@ -11,17 +11,16 @@ import XCTest
 
 class Test_API_Users: XCTestCase {
     
-    static var tokenTag = "test-users-tests"
+    static let config = TimeConfig(tokenIdentifier: "test-users-tests")
     static var api: API!
     static var time: Time!
     
-    var tokenTag: String { return Test_API_Users.tokenTag }
     var api: API! { return Test_API_Users.api }
     var time: Time! { return Test_API_Users.time }
     
     override class func setUp() {
-        Test_API_Users.api = API()
-        Test_API_Users.time = Time(withAPI: Test_API_Users.api, andTokenIdentifier: self.tokenTag)
+        self.api = API(config: self.config)
+        self.time = Time(config: self.config, withAPI: self.api)
     }
     
     override func setUp() { }

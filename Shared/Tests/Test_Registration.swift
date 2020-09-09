@@ -11,13 +11,13 @@ import XCTest
 
 class Test_Registration: XCTestCase {
 
-    static var tokenTag = "test-registration-tests"
+    static let config = TimeConfig(tokenIdentifier: "test-registration-tests")
     static var api: API!
     static var time: Time!
     static var email = "\(UUID().uuidString)@time.com"
     static var password = "defaultPassword"
     
-    var tokenTag: String { return Test_Registration.tokenTag }
+    var tokenTag: String { return Test_Registration.config.tokenIdentifier! }
     var api: API! { return Test_Registration.api }
     var time: Time! { return Test_Registration.time }
     
@@ -25,8 +25,8 @@ class Test_Registration: XCTestCase {
     var password: String { return Test_Registration.password }
     
     override class func setUp() {
-        Test_Registration.api = API()
-        Test_Registration.time = Time(withAPI: Test_Registration.api, andTokenIdentifier: self.tokenTag)
+        self.api = API(config: self.config)
+        self.time = Time(config: self.config, withAPI: self.api)
     }
     
     func test_1_registerANewAccount() {

@@ -13,13 +13,18 @@ import XCTest
 
 class Test_TokenStore: XCTestCase {
     
+    static let config = TimeConfig(tokenIdentifier: "test-token")
+    static let tokenStore = TokenStore(config: config)
+    
+    var tokenStore: TokenStore { return Test_TokenStore.tokenStore }
+    
     func test_0_clearAnyExistingToken() {
         // Note: This allows individual tests to be re-run without a global clear at start
-        _ = TokenStore.deleteToken(withTag: "test-token")
+        _ = self.tokenStore.deleteToken()
     }
 
     func test_1_startsWithNoToken() {
-        let token = TokenStore.getToken(withTag: "test-token")
+        let token = self.tokenStore.getToken()
         XCTAssertNil(token)
     }
     
@@ -32,12 +37,12 @@ class Test_TokenStore: XCTestCase {
             refresh: "myRefreshToken"
         )
         
-        let result = TokenStore.storeToken(token, withTag: "test-token")
+        let result = self.tokenStore.storeToken(token)
         XCTAssertTrue(result)
     }
     
     func test_3_allowsRetrievalOfAToken() {
-        guard let token = TokenStore.getToken(withTag: "test-token") else {
+        guard let token = self.tokenStore.getToken() else {
             XCTFail("Token not found.")
             return
         }
@@ -58,12 +63,12 @@ class Test_TokenStore: XCTestCase {
             refresh: "myNewRefreshToken"
         )
         
-        let result = TokenStore.storeToken(token, withTag: "test-token")
+        let result = self.tokenStore.storeToken(token)
         XCTAssertTrue(result)
     }
     
     func test_5_allowsRetrievalOfTheMostRecentToken() {
-        guard let token = TokenStore.getToken(withTag: "test-token") else {
+        guard let token = self.tokenStore.getToken() else {
             XCTFail("Token not found.")
             return
         }
@@ -76,12 +81,12 @@ class Test_TokenStore: XCTestCase {
     }
     
     func test_6_allowsDeletion() {
-        let result = TokenStore.deleteToken(withTag: "test-token")
+        let result = self.tokenStore.deleteToken()
         XCTAssertTrue(result)
     }
     
     func test_7_returnsNoTokenAfterDeletion() {
-        let token = TokenStore.getToken(withTag: "test-token")
+        let token = self.tokenStore.getToken()
         XCTAssertNil(token)
     }
 }

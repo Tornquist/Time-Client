@@ -11,7 +11,7 @@ import XCTest
 
 class Test_API: XCTestCase {
     
-    static var tokenTag = "test-api-tests"
+    static let config = TimeConfig(tokenIdentifier: "test-api-tests")
     static var api: API!
     static var time: Time!
     static var email = "\(UUID().uuidString)@time.com"
@@ -20,7 +20,6 @@ class Test_API: XCTestCase {
     static var accounts: [Account] = []
     static var categories: [TimeSDK.Category] = []
     
-    var tokenTag: String { return Test_API.tokenTag }
     var api: API! { return Test_API.api }
     var time: Time! { return Test_API.time }
     
@@ -28,8 +27,8 @@ class Test_API: XCTestCase {
     var password: String { return Test_API.password }
     
     override class func setUp() {
-        Test_API.api = API()
-        Test_API.time = Time(withAPI: Test_API.api, andTokenIdentifier: self.tokenTag)
+        self.api = API(config: self.config)
+        self.time = Time(config: self.config, withAPI: self.api)
     }
     
     override func setUp() {
@@ -49,7 +48,8 @@ class Test_API: XCTestCase {
     }
     
     func test_rejectsAllRequestsWithBadBaseURL() {
-        let newAPI = API(baseURL: "/\\")
+        let badConfig = TimeConfig(serverURL: "/\\")
+        let newAPI = API(config: badConfig)
         
         let expectation = self.expectation(description: "badURL")
         newAPI.timeRequest(path: "/endpoint", method: .GET, body: nil, encoding: nil, authorized: false, completion: { (user: User?, error: Error?) in
@@ -208,18 +208,18 @@ class Test_API: XCTestCase {
     // MARK: - URL Configuration Tests
     
     func test_defaultURLIsCorrect() {
-        let newAPI = API()
+        let newAPI = API(config: TimeConfig())
         XCTAssertEqual(newAPI.baseURL, "http://localhost:8000")
     }
     
     func test_canSetCustomURL() {
         let myURLOverride = "https://myCustomSubdomain.myCustomDomain.com"
-        let newAPI = API(baseURL: myURLOverride)
+        let newAPI = API(config: TimeConfig(serverURL: myURLOverride))
         XCTAssertEqual(newAPI.baseURL, myURLOverride)
     }
     
     func test_canChangeURLFromDefault() {
-        let newAPI = API()
+        let newAPI = API(config: TimeConfig())
         XCTAssertEqual(newAPI.baseURL, "http://localhost:8000")
         
         let newURL = "https://myCustomSubdomain.myCustomDomain.com"
@@ -233,7 +233,7 @@ class Test_API: XCTestCase {
         let baseURL = "https://myCustomSubdomain.myCustomDomain.com"
         let newURL = "https://www.myOtherCustomDomain.com"
         
-        let newAPI = API(baseURL: baseURL)
+        let newAPI = API(config: TimeConfig(serverURL: baseURL))
         XCTAssertEqual(newAPI.baseURL, baseURL)
         
         let didChange = newAPI.set(url: newURL)
@@ -243,7 +243,7 @@ class Test_API: XCTestCase {
     }
     
     func test_returnsDidChangeOnFirstChange() {
-        let newAPI = API()
+        let newAPI = API(config: TimeConfig())
         XCTAssertEqual(newAPI.baseURL, "http://localhost:8000")
         
         let newURL = "https://www.myOtherCustomDomain.com"
@@ -287,7 +287,7 @@ class Test_API: XCTestCase {
         let startingStoredValue = UserDefaults.standard.string(forKey: keyName)
         
         let newURL = "https://\(UUID.init().uuidString).com"
-        let newAPI = API()
+        let newAPI = API(config: TimeConfig())
         let didUpdate = newAPI.set(url: newURL)
         
         XCTAssertTrue(didUpdate)
@@ -302,7 +302,7 @@ class Test_API: XCTestCase {
         let keyName = "time-api-configuration-server-url-override"
 
         // Force reset
-        let api = API(enableURLCachingBehavior: true)
+        let api = API(config: TimeConfig(), enableURLCachingBehavior: true)
         _ = api.set(url: "https://default.domain.com")
         
         // Test
@@ -331,6 +331,7 @@ class Test_API: XCTestCase {
 
         // Create new API with caching and the correct key name
         let api = API(
+            config: TimeConfig(),
             enableURLCachingBehavior: true,
             urlOverrideKey: keyName
         )
@@ -346,7 +347,7 @@ class Test_API: XCTestCase {
         // Create a new API with caching and a custom URL
         let baseURLOverride = "https://otherSubdomain.myDomain.com"
         let newAPI = API(
-            baseURL: baseURLOverride,
+            config: TimeConfig(serverURL: baseURLOverride),
             enableURLCachingBehavior: true,
             urlOverrideKey: keyName
         )
@@ -366,7 +367,7 @@ class Test_API: XCTestCase {
         XCTAssertEqual(finalURL, newerStoredValue)
         
         // Create another api using the same key
-        let newerAPI = API(enableURLCachingBehavior: true, urlOverrideKey: keyName)
+        let newerAPI = API(config: TimeConfig(), enableURLCachingBehavior: true, urlOverrideKey: keyName)
         XCTAssertEqual(newerAPI.baseURL, finalURL)
     }
 }

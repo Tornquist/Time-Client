@@ -10,6 +10,7 @@ import XCTest
 @testable import TimeSDK
 
 class Test_API_Importer: XCTestCase {
+    static let config = TimeConfig()
     static var api: API!
     static var email = "\(UUID().uuidString)@time.com"
     static var password = "defaultPassword"
@@ -24,7 +25,7 @@ class Test_API_Importer: XCTestCase {
     var importID: Int? { return Test_API_Importer.importID }
 
     override class func setUp() {
-        Test_API_Importer.api = API()
+        self.api = API(config: self.config)
     }
     
     override func setUp() {
