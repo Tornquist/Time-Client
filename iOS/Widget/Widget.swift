@@ -67,14 +67,14 @@ struct TimeLoader {
             completion(.success(status))
         }
         
-        let containerUrl = Constants.containerUrl
-        let serverURLOverride = UserDefaults(suiteName: containerUrl)?.string(forKey: "server_url_override")
+        let sharedUserDefaults = UserDefaults(suiteName: Constants.userDefaultsSuite)
+        let serverURLOverride = sharedUserDefaults?.string(forKey: Constants.urlOverrideKey)
                 
         let config = TimeConfig(
             serverURL: serverURLOverride,
-            containerURL: containerUrl,
-            userDefaultsSuite: containerUrl,
-            keychainGroup: "99AECXNBFU.com.nathantornquist.Time"
+            containerURL: Constants.containerUrl,
+            userDefaultsSuite: Constants.userDefaultsSuite,
+            keychainGroup: Constants.keychainGroup
         )
         
         Time.configureShared(config)

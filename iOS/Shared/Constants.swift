@@ -9,5 +9,9 @@
 import Foundation
 
 struct Constants {
+    static let groupId = "99AECXNBFU"
     static let containerUrl = "group.com.nathantornquist.time"
+    static let userDefaultsSuite = "group.com.nathantornquist.time"
+    static let keychainGroup = "\(Constants.groupId).com.nathantornquist.Time"
+    static let urlOverrideKey = "server_url_override"
 }

@@ -18,14 +18,24 @@ class LandingViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        let containerUrl = Constants.containerUrl
-        let serverURLOverride = UserDefaults(suiteName: containerUrl)?.string(forKey: "server_url_override")
+        // Read from app container (to pull from iOS system settings)
+        let appContainerServerURLKey = "server_url_override"
+        let appContainerServerURLOverride = UserDefaults().string(forKey: appContainerServerURLKey)
+        
+        // Write to shared container to share with app extensions
+        let sharedUserDefaults = UserDefaults(suiteName: Constants.userDefaultsSuite)
+        if let override = appContainerServerURLOverride, let userDefaults = sharedUserDefaults {
+            userDefaults.set(override, forKey: Constants.urlOverrideKey)
+        }
+        
+        // Read from shared container (unneeded, but will allow following code to match Widget)
+        let serverURLOverride = sharedUserDefaults?.string(forKey: Constants.urlOverrideKey)
         
         let config = TimeConfig(
             serverURL: serverURLOverride,
-            containerURL: containerUrl,
-            userDefaultsSuite: containerUrl,
-            keychainGroup: "99AECXNBFU.com.nathantornquist.Time"
+            containerURL: Constants.containerUrl,
+            userDefaultsSuite: Constants.userDefaultsSuite,
+            keychainGroup: Constants.keychainGroup
         )
         
         Time.configureShared(config)
