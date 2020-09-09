@@ -1,6 +1,6 @@
 language: swift
 os: osx
-osx_image: xcode11
+osx_image: xcode12
 
 notifications:
   email: false
@@ -12,7 +12,7 @@ matrix:
       - DESTINATION="platform=macOS,arch=x86_64"
     - env:
       - SCHEME=Shared-Tests-iOS
-      - DESTINATION="platform=iOS Simulator,name=iPhone 11 Pro,OS=13.0"
+      - DESTINATION="platform=iOS Simulator,name=iPhone 11 Pro,OS=14.0"
 
 env:
   global:
