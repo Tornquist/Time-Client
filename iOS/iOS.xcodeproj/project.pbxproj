@@ -204,10 +204,11 @@
 		D852537924CD1D4000F724EC /* Widget */ = {
 			isa = PBXGroup;
 			children = (
-				D852537A24CD1D4000F724EC /* Widget.swift */,
-				D852537C24CD1D4000F724EC /* Widget.intentdefinition */,
+				D856E83524D6EA4C001E564A /* WidgetExtension.entitlements */,
 				D852537D24CD1D4100F724EC /* Assets.xcassets */,
+				D852537C24CD1D4000F724EC /* Widget.intentdefinition */,
 				D852537F24CD1D4100F724EC /* Info.plist */,
+				D852537A24CD1D4000F724EC /* Widget.swift */,
 			);
 			path = Widget;
 			sourceTree = "<group>";
@@ -215,7 +216,6 @@
 		D855811621BDE9A200DCB577 = {
 			isa = PBXGroup;
 			children = (
-				D856E83524D6EA4C001E564A /* WidgetExtension.entitlements */,
 				D8FB6ABE220B18CD002C0456 /* TimeSDK.framework */,
 				D855812121BDE9A200DCB577 /* iOS */,
 				D852537924CD1D4000F724EC /* Widget */,
@@ -252,6 +252,7 @@
 		D856E83624D6EFBF001E564A /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				D89CEA102482CB07002913AA /* Colors.swift */,
 				D856E83724D6EFD0001E564A /* Constants.swift */,
 			);
 			path = Shared;
@@ -272,7 +273,6 @@
 				D8E85C33229D682C00204D14 /* EntriesViewController+Alerts.swift */,
 				D8F549B023A9005D009E8512 /* ImportListViewController.swift */,
 				D8F549B223A90429009E8512 /* NewImportViewController.swift */,
-				D89CEA102482CB07002913AA /* Colors.swift */,
 				D851080B24561D22001752B1 /* Cells */,
 			);
 			name = Views;
@@ -464,7 +464,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CODE_SIGN_ENTITLEMENTS = WidgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Widget/WidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 99AECXNBFU;
 				INFOPLIST_FILE = Widget/Info.plist;
@@ -488,7 +488,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CODE_SIGN_ENTITLEMENTS = WidgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Widget/WidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 99AECXNBFU;
 				INFOPLIST_FILE = Widget/Info.plist;

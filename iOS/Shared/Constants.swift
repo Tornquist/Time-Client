@@ -9,9 +9,21 @@
 import Foundation
 
 struct Constants {
-    static let groupId = "99AECXNBFU"
+    private static var _groupId: String? = nil
+    
+    static var groupId: String {
+        guard Constants._groupId == nil else { return Constants._groupId! }
+        guard let fetchedPrefix = Bundle.main.infoDictionary!["AppIdentifierPrefix"] as? String else {
+            return "99AECXNBFU"
+        }
+        let cleanedPrefix = fetchedPrefix.trimmingCharacters(in: .punctuationCharacters)
+
+        Constants._groupId = cleanedPrefix
+        return cleanedPrefix
+    }
+    
     static let containerUrl = "group.com.nathantornquist.time"
     static let userDefaultsSuite = "group.com.nathantornquist.time"
-    static let keychainGroup = "\(Constants.groupId).com.nathantornquist.Time"
+    static var keychainGroup = "\(Constants.groupId).com.nathantornquist.Time"
     static let urlOverrideKey = "server_url_override"
 }

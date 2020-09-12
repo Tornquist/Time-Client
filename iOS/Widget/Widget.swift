@@ -11,12 +11,12 @@ import SwiftUI
 import Intents
 import TimeSDK
 
-extension Color {
+struct Theme {
     // System Colors
     static var label: Color {
         return Color(UIColor.label)
     }
-    static var secondarySystemGroupedBackground: Color {
+    static var background: Color {
         return Color(UIColor.secondarySystemGroupedBackground)
     }
     
@@ -29,7 +29,6 @@ extension Color {
         return Color(Colors.button)
     }
 }
-
 
 @main
 struct SummaryWidget: Widget {
@@ -63,7 +62,6 @@ struct TimeLoader {
             guard dayTime != nil && weekTime != nil else { return }
             
             let status = TimeStatus(today: dayTime!, week: weekTime!, active: isActive)
-            print("Done with fetch")
             completion(.success(status))
         }
         
@@ -88,14 +86,14 @@ struct TimeLoader {
             self.getFrom(date: startOfDay) { (dayString, active) in
                 dayTime = dayString
                 isActive = isActive || active
-                print("Day active \(active)")
+
                 doneWithRange()
             }
             // Check week total
             self.getFrom(date: startOfWeek) { (weekString, active) in
                 weekTime = weekString
                 isActive = isActive || active
-                print("Week active \(active)")
+
                 doneWithRange()
             }
         }
@@ -191,23 +189,23 @@ struct TimeWidgetView : View {
             VStack(alignment: .leading, spacing: 4, content: {
                 Text(entry.status.today)
                     .font(Font.system(size: 24.0, weight: .regular, design: .default).monospacedDigit())
-                    .foregroundColor(entry.status.active ? Color.active : Color.label)
+                    .foregroundColor(entry.status.active ? Theme.active : Theme.label)
                 Text("Today")
                     .font(Font.system(size: 10.0, weight: .regular, design: .default))
-                    .foregroundColor(.label)
+                    .foregroundColor(Theme.label)
             })
             Spacer()
             VStack(alignment: .leading, spacing: 4, content: {
                 Text(entry.status.week)
                     .font(Font.system(size: 24.0, weight: .regular, design: .default).monospacedDigit())
-                    .foregroundColor(entry.status.active ? Color.active : Color.label)
+                    .foregroundColor(entry.status.active ? Theme.active : Theme.label)
                 Text("This Week")
                     .font(Font.system(size: 10.0, weight: .regular, design: .default))
-                    .foregroundColor(.label)
+                    .foregroundColor(Theme.label)
             })
         }
         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .leading)
         .padding()
-        .background(Color.secondarySystemGroupedBackground)
+        .background(Theme.background)
     }
 }

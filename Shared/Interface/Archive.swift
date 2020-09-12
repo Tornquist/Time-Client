@@ -54,7 +54,6 @@ class Archive {
         
     private var url: URL? {
         guard let containerUrl = self.containerURL else {
-            print("Using default")
             return try? FileManager.default.url(
                 for: .applicationSupportDirectory,
                 in: .userDomainMask,
@@ -62,8 +61,7 @@ class Archive {
                 create: true
             )
         }
-        
-        print("Using group")
+
         return FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: containerUrl)
     }
     
@@ -85,7 +83,6 @@ class Archive {
     }
     
     func retrieveData<T>() -> T? where T : Codable {
-        print("retrieveData")
         guard
             let type = ArchiveType.identifyType(for: T.self),
             let url = self.url,
