@@ -84,6 +84,15 @@ public class Time {
         Time._shared = Time(config: config, withAPI: API.shared)
     }
     
+    /**
+        Initializing a time instance will configure it for full active usage
+
+        This will fetch and restore tokens cached in the keychain. It is only safe to call while
+        the app is open and in focus. Background usage of this method may result in a failure
+        to complete initialization.
+     
+        Read access to previous time data is supported without calling this method.
+    */
     public func initialize(completionHandler: ((Error?) -> ())? = nil) {
         guard self.api.token == nil else {
             completionHandler?(nil)

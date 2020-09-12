@@ -60,6 +60,7 @@ class TokenStore {
             base[kSecAttrComment as String] = TokenStore.description
             base[kSecAttrLabel as String] = "Time"
             base[kSecValueData as String] = data.data(using: .utf8)
+            base[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
         case .delete:
             break
         }
