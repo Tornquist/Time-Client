@@ -140,6 +140,7 @@
 		D85581AB21BEABC300DCB577 /* EntryType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryType.swift; sourceTree = "<group>"; };
 		D85581D321C14D6700DCB577 /* Shared-Tests-macOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Shared-Tests-macOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85581D721C14D6700DCB577 /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-macOS.plist"; sourceTree = "<group>"; };
+		D856E83C24D6FB9B001E564A /* Time-Shared-iOS-Host.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Time-Shared-iOS-Host.entitlements"; sourceTree = "<group>"; };
 		D85B0A522246F11700835E55 /* Time-Shared-iOS-Host.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Time-Shared-iOS-Host.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85B0A542246F11700835E55 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D85B0A562246F11700835E55 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -247,6 +248,7 @@
 		D855815621BDEA4E00DCB577 = {
 			isa = PBXGroup;
 			children = (
+				D856E83C24D6FB9B001E564A /* Time-Shared-iOS-Host.entitlements */,
 				D855818121BDEB6400DCB577 /* Config */,
 				D837025A21CA845D0095B19F /* Interface */,
 				D85581AA21BEAB8800DCB577 /* Models */,
@@ -822,6 +824,7 @@
 		D855818621BDEB6400DCB577 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
@@ -855,6 +858,7 @@
 		D855818721BDEB6400DCB577 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
@@ -946,6 +950,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Time-Shared-iOS-Host.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 99AECXNBFU;
 				INFOPLIST_FILE = "iOS-Host/Info.plist";
@@ -964,6 +969,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Time-Shared-iOS-Host.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 99AECXNBFU;
 				INFOPLIST_FILE = "iOS-Host/Info.plist";

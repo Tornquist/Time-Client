@@ -9,9 +9,29 @@
 import Foundation
 
 class TokenStore {
+
+    var tokenIdentifier: String?
+    var keychainGroup: String?
+    
     static let prefix = "com.nathantornquist.Time"
     static let description = "Authentication and Refresh tokens for Time Server"
-    static private let defaultTag = "token"
+    
+    private let defaultTag = "token"
+    
+    var tag: String {
+        return self.tokenIdentifier ?? self.defaultTag
+    }
+    
+    init(tokenIdentifier: String? = nil, keychainGroup: String? = nil) {
+        self.tokenIdentifier = tokenIdentifier
+        self.keychainGroup = keychainGroup
+    }
+    convenience init(config: TimeConfig) {
+        self.init(
+            tokenIdentifier: config.tokenIdentifier,
+            keychainGroup: config.keychainGroup
+        )
+    }
     
     // MARK: - Query Support
     
@@ -21,11 +41,15 @@ class TokenStore {
         case delete
     }
     
-    static private func getQuery(type: QueryType, withTag tag: String = TokenStore.defaultTag, withUserID userID: Int = 0, andData data: String = "") -> [String: Any] {
+    private func getQuery(type: QueryType, withUserID userID: Int = 0, andData data: String = "") -> [String: Any] {
         var base: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: "\(TokenStore.prefix).\(tag)",
+            kSecAttrService as String: "\(TokenStore.prefix).\(self.tag)"
         ]
+        
+        if let group = self.keychainGroup {
+            base[kSecAttrAccessGroup as String] = group as AnyObject
+        }
         
         switch type {
         case .get:
@@ -36,6 +60,7 @@ class TokenStore {
             base[kSecAttrComment as String] = TokenStore.description
             base[kSecAttrLabel as String] = "Time"
             base[kSecValueData as String] = data.data(using: .utf8)
+            base[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
         case .delete:
             break
         }
@@ -45,8 +70,8 @@ class TokenStore {
     
     // MARK: - External Interface
     
-    static func getToken(withTag tag: String = TokenStore.defaultTag) -> Token? {
-        let query = TokenStore.getQuery(type: .get, withTag: tag) as CFDictionary
+    func getToken() -> Token? {
+        let query = self.getQuery(type: .get) as CFDictionary
         
         var item: AnyObject?
         let status = SecItemCopyMatching(query, &item)
@@ -62,21 +87,21 @@ class TokenStore {
         return token
     }
     
-    static func storeToken(_ token: Token, withTag tag: String = TokenStore.defaultTag) -> Bool {
+    func storeToken(_ token: Token) -> Bool {
         guard let tokenData = try? JSONEncoder().encode(token),
             let tokenString = String(data: tokenData, encoding: String.Encoding.utf8) else {
             return false
         }
         
-        _ = TokenStore.deleteToken(withTag: tag)
+        _ = self.deleteToken()
         
-        let query = TokenStore.getQuery(type: .add, withTag: tag, withUserID: token.userID, andData: tokenString) as CFDictionary
+        let query = self.getQuery(type: .add, withUserID: token.userID, andData: tokenString) as CFDictionary
         let status = SecItemAdd(query, nil)
         return status == errSecSuccess
     }
     
-    static func deleteToken(withTag tag: String = TokenStore.defaultTag) -> Bool {
-        let query = TokenStore.getQuery(type: .delete, withTag: tag) as CFDictionary
+    func deleteToken() -> Bool {
+        let query = self.getQuery(type: .delete) as CFDictionary
         let status = SecItemDelete(query)
         return status == errSecSuccess
     }

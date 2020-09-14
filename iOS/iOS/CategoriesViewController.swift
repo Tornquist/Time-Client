@@ -8,6 +8,7 @@
 
 import UIKit
 import TimeSDK
+import WidgetKit
 
 class CategoriesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, RecentEntryTableViewCellDelegate {
     
@@ -392,6 +393,10 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     @objc func handleEntryNotification(_ notification:Notification) {
         self.calculateRecents()
         self.calculateMetrics()
+        
+        if #available(iOS 14.0, *) {
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
     
     func calculateRecents() {

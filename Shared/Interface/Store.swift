@@ -21,7 +21,15 @@ public class Store {
         case refreshAll
     }
     
+    var userDefaultsSuite: String?
     var api: API
+    private var archive: Archive
+    
+    private var userDefaults: UserDefaults {
+        return self.userDefaultsSuite != nil
+            ? UserDefaults(suiteName: self.userDefaultsSuite!)!
+            : UserDefaults()
+    }
     
     private var hasInitialized: Bool = false
     
@@ -64,8 +72,11 @@ public class Store {
     private var _hasFetchedImportRequests: Bool = false
     public var importRequests: [FileImporter.Request] = []
     
-    init(api: API) {
+    init(api: API, userDefaultsSuite: String? = nil, containerURL: String? = nil) {
+        self.userDefaultsSuite = userDefaultsSuite
         self.api = api
+        self.archive = Archive(containerURL: containerURL)
+        
         self.restoreDataFromDisk()
         self.hasInitialized = true
         
@@ -74,6 +85,13 @@ public class Store {
             selector: #selector(categoryArchiveRequested),
             name: .TimeCategoryArchiveRequested,
             object: nil
+        )
+    }
+    convenience init(config: TimeConfig, api: API) {
+        self.init(
+            api: api,
+            userDefaultsSuite: config.userDefaultsSuite,
+            containerURL: config.containerURL
         )
     }
     
@@ -630,21 +648,21 @@ public class Store {
     }
     
     public func resetDisk() {
-        _ = Archive.removeAllData()
+        _ = self.archive.removeAllData()
     }
     
     private func restoreDataFromDisk() {        
-        if let categories: [Category] = Archive.retrieveData() {
+        if let categories: [Category] = self.archive.retrieveData() {
             self.categories = categories
             self.staleTrees = true
         }
         
-        if let entries: [Entry] = Archive.retrieveData() {
+        if let entries: [Entry] = self.archive.retrieveData() {
             self.entries = entries
             self._hasFetchedEntries = true
         }
         
-        if let accountIDs: [Int] = Archive.retrieveData() {
+        if let accountIDs: [Int] = self.archive.retrieveData() {
             self._accountIDs = accountIDs
         } else {
             self.staleAccountIDs = true
@@ -653,7 +671,7 @@ public class Store {
     
     private func archive<T>(data: T) where T : Codable {
         guard self.hasInitialized else { return }
-        _ = Archive.record(data)
+        _ = self.archive.record(data)
     }
     
     // MARK: - Remote Syncing
@@ -711,18 +729,18 @@ public class Store {
     }
     
     private func getEntriesSync() -> Date? {
-        return UserDefaults.standard.object(forKey: StoreKeys.entriesSyncTimestamp.rawValue) as? Date
+        return self.userDefaults.object(forKey: StoreKeys.entriesSyncTimestamp.rawValue) as? Date
     }
     
     private func recordEntriesSync() {
-        UserDefaults.standard.set(Date(), forKey: StoreKeys.entriesSyncTimestamp.rawValue)
+        self.userDefaults.set(Date(), forKey: StoreKeys.entriesSyncTimestamp.rawValue)
     }
     
     private func getCategoriesSync() -> Date? {
-        return UserDefaults.standard.object(forKey: StoreKeys.categoriesSyncTimestamp.rawValue) as? Date
+        return self.userDefaults.object(forKey: StoreKeys.categoriesSyncTimestamp.rawValue) as? Date
     }
     
     private func recordCategoriesSync() {
-        UserDefaults.standard.set(Date(), forKey: StoreKeys.categoriesSyncTimestamp.rawValue)
+        self.userDefaults.set(Date(), forKey: StoreKeys.categoriesSyncTimestamp.rawValue)
     }
 }

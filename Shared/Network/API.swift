@@ -15,15 +15,31 @@ class API: APIQueueDelegate {
     static private let defaultURLOverrideKey = "time-api-configuration-server-url-override"
     
     // Shared Interface
-    private static var _shared: API? = nil
+    /**
+        The system-wide API singleton.
+
+        This property will return the existing singleton or initialize and return a new one.
+        If you wish to configure the singleton properties (server url) it is best to first configure
+        the singleton using API.configureShared(...) prior to fetching this value.
+    */
     static var shared: API {
         if API._shared == nil {
-            API._shared = API(enableURLCachingBehavior: true)
+            API._shared = API(config: TimeConfig(), enableURLCachingBehavior: true)
         }
         return API._shared!
     }
-        
+    private static var _shared: API? = nil
+    static func configureShared(_ config: TimeConfig) {
+        API._shared = API(config: config, enableURLCachingBehavior: true)
+    }
+
     // Internal URL Interface and Configuration
+    private var userDefaultsSuite: String?
+    private var userDefaults: UserDefaults {
+        return self.userDefaultsSuite != nil
+            ? UserDefaults(suiteName: self.userDefaultsSuite!)!
+            : UserDefaults()
+    }
     private var _activeURLStorage: String
     private var enableURLCachingBehavior: Bool
     private var urlOverrideKey: String
@@ -33,7 +49,7 @@ class API: APIQueueDelegate {
         }
         set {
             if self.enableURLCachingBehavior {
-                UserDefaults.standard.set(newValue, forKey: self.urlOverrideKey)
+                self.userDefaults.set(newValue, forKey: self.urlOverrideKey)
             }
             
             self._activeURLStorage = API.generateSafe(url: newValue)
@@ -44,7 +60,7 @@ class API: APIQueueDelegate {
     var baseURL: String { self.activeURL }
     func set(url newURL: String) -> Bool {
         let urlDifferent = self.enableURLCachingBehavior
-            ? newURL != UserDefaults.standard.string(forKey: self.urlOverrideKey)
+            ? newURL != self.userDefaults.string(forKey: self.urlOverrideKey)
             : newURL != self.activeURL
         guard urlDifferent else { return false }
         
@@ -67,25 +83,48 @@ class API: APIQueueDelegate {
            Initialize with cached (on-disk) url and write any url changes to disk.
            Will use baseURL over cached URL if set.
            Defaults to false
-         
+         - userDefaultsSuite:
+           Allows the user defaults store used by the API to be changed. The store
+           will hold the consumed/selected url as part of the url caching mechanism.
+         - urlOverrideKey:
+           Allows the key in the user defaults store to be changed. Primarily useful for testing.
      */
-    init(baseURL: String? = nil, enableURLCachingBehavior: Bool = false, urlOverrideKey: String? = nil) {
+    init(
+        baseURL: String? = nil,
+        enableURLCachingBehavior: Bool = false,
+        userDefaultsSuite: String? = nil,
+        urlOverrideKey: String? = nil
+    ) {
+        self.userDefaultsSuite = userDefaultsSuite
         self.enableURLCachingBehavior = enableURLCachingBehavior
         self.urlOverrideKey = urlOverrideKey ?? API.defaultURLOverrideKey
         
-        let storedURL = UserDefaults.standard.string(forKey: self.urlOverrideKey)
-        let startingURL = baseURL != nil ? baseURL : (self.enableURLCachingBehavior ? storedURL : nil)
+        // Cannot use computed userDefaults before all initialized
+        let userDefaults = userDefaultsSuite != nil
+            ? UserDefaults(suiteName: userDefaultsSuite!)!
+            : UserDefaults()
+        
+        let storedURL = userDefaults.string(forKey: self.urlOverrideKey)
+        let startingURL = baseURL != nil ? baseURL! : (self.enableURLCachingBehavior ? storedURL : nil)
         
         // Similar to activeURL setter. Required because self has not completed initialzation
         // Only store when urls match to avoid erasing "" and causing additional deauth
         let trueURL = API.generateSafe(url: startingURL)
         if self.enableURLCachingBehavior && trueURL == startingURL {
-            UserDefaults.standard.set(trueURL, forKey: self.urlOverrideKey)
+            userDefaults.set(trueURL, forKey: self.urlOverrideKey)
         }
         self._activeURLStorage = trueURL
         
         self.queue = APIQueue(maximumFailures: 2)
         self.queue.delegate = self
+    }
+    convenience init(config: TimeConfig, enableURLCachingBehavior: Bool = false, urlOverrideKey: String? = nil) {
+        self.init(
+            baseURL: config.serverURL,
+            enableURLCachingBehavior: enableURLCachingBehavior,
+            userDefaultsSuite: config.userDefaultsSuite,
+            urlOverrideKey: urlOverrideKey
+        )
     }
     
     enum HttpMethod: String {

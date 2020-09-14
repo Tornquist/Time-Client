@@ -12,14 +12,18 @@ import XCTest
 @testable import TimeSDK
 
 class Test_Archive: XCTestCase {
+    
+    static let archive: Archive = Archive()
+    var archive: Archive { return Test_Archive.archive }
+    
     func test_00_setup() {
-        _ = Archive.removeAllData()
+        _ = self.archive.removeAllData()
     }
     
     func test_01_startsWithNoData() {
-        let entries: [Entry]? = Archive.retrieveData()
-        let categories: [TimeSDK.Category]? = Archive.retrieveData()
-        let accountIDs: [Int]? = Archive.retrieveData()
+        let entries: [Entry]? = self.archive.retrieveData()
+        let categories: [TimeSDK.Category]? = self.archive.retrieveData()
+        let accountIDs: [Int]? = self.archive.retrieveData()
         
         XCTAssertNil(entries)
         XCTAssertNil(categories)
@@ -36,13 +40,13 @@ class Test_Archive: XCTestCase {
         )]
         
         // Store data
-        let success = Archive.record(entries)
+        let success = self.archive.record(entries)
         XCTAssertTrue(success)
         
         // Retrieve for various types
-        let freshEntries: [Entry]? = Archive.retrieveData()
-        let categories: [TimeSDK.Category]? = Archive.retrieveData()
-        let accountIDs: [Int]? = Archive.retrieveData()
+        let freshEntries: [Entry]? = self.archive.retrieveData()
+        let categories: [TimeSDK.Category]? = self.archive.retrieveData()
+        let accountIDs: [Int]? = self.archive.retrieveData()
         
         XCTAssertNotNil(freshEntries)
         XCTAssertNil(categories)
@@ -81,13 +85,13 @@ class Test_Archive: XCTestCase {
         ]
         
         // Store data
-        let success = Archive.record(entries)
+        let success = self.archive.record(entries)
         XCTAssertTrue(success)
         
         // Retrieve for various types
-        let freshEntries: [Entry]? = Archive.retrieveData()
-        let categories: [TimeSDK.Category]? = Archive.retrieveData()
-        let accountIDs: [Int]? = Archive.retrieveData()
+        let freshEntries: [Entry]? = self.archive.retrieveData()
+        let categories: [TimeSDK.Category]? = self.archive.retrieveData()
+        let accountIDs: [Int]? = self.archive.retrieveData()
         
         XCTAssertNotNil(freshEntries)
         XCTAssertNil(categories)
@@ -105,22 +109,22 @@ class Test_Archive: XCTestCase {
         // Set Data
         // Entries depend on test 3
         let accountIDs = [1, 2, 3]
-        let success = Archive.record(accountIDs)
+        let success = self.archive.record(accountIDs)
         XCTAssertTrue(success)
         
         // Verify
-        let startingEntries: [Entry]? = Archive.retrieveData()
-        let startingAccountIDs: [Int]? = Archive.retrieveData()
+        let startingEntries: [Entry]? = self.archive.retrieveData()
+        let startingAccountIDs: [Int]? = self.archive.retrieveData()
         XCTAssertNotNil(startingEntries)
         XCTAssertNotNil(startingAccountIDs)
         
         // Purge
-        let removed = Archive.removeData(for: .entries)
+        let removed = self.archive.removeData(for: .entries)
         XCTAssertTrue(removed)
         
         // Verify
-        let endingEntries: [Entry]? = Archive.retrieveData()
-        let endingAccountIDs: [Int]? = Archive.retrieveData()
+        let endingEntries: [Entry]? = self.archive.retrieveData()
+        let endingAccountIDs: [Int]? = self.archive.retrieveData()
         XCTAssertNil(endingEntries)
         XCTAssertNotNil(endingAccountIDs)
     }
@@ -128,12 +132,12 @@ class Test_Archive: XCTestCase {
     func test_05_ignoresOtherTypes() {
         let randomData = [true, false, true]
         
-        let success = Archive.record(randomData)
+        let success = self.archive.record(randomData)
         XCTAssertFalse(success)
     }
     
     func test_06_canRemoveAll() {
-        let removedAll = Archive.removeAllData()
+        let removedAll = self.archive.removeAllData()
         XCTAssertTrue(removedAll)
     }
 }

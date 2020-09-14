@@ -11,12 +11,14 @@ import XCTest
 
 class Test_Store: XCTestCase {
     static var api: API!
+    static var archive: Archive!
     static var email = "\(UUID().uuidString)@time.com"
     static var password = "defaultPassword"
     
     static var sharedEntry: Entry? = nil
     
     var api: API! { return Test_Store.api }
+    var archive: Archive! { return Test_Store.archive }
     
     var email: String { return Test_Store.email }
     var password: String { return Test_Store.password }
@@ -28,7 +30,8 @@ class Test_Store: XCTestCase {
     }
     
     override class func setUp() {
-        Test_Store.api = API()
+        self.api = API()
+        self.archive = Archive()
     }
     
     override func setUp() {
@@ -49,7 +52,7 @@ class Test_Store: XCTestCase {
         // Archive has no knowledge of user changes, simply reflects
         // and caches actions from above. Store is the same. The
         // public Time interface manages the reset lifecycle
-        _ = Archive.removeAllData()
+        _ = self.archive.removeAllData()
         self.store = Store(api: self.api)
         
         XCTAssertEqual(self.store.categories.count, 0)

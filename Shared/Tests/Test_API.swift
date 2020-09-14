@@ -11,25 +11,20 @@ import XCTest
 
 class Test_API: XCTestCase {
     
-    static var tokenTag = "test-api-tests"
     static var api: API!
-    static var time: Time!
     static var email = "\(UUID().uuidString)@time.com"
     static var password = "defaultPassword"
     
     static var accounts: [Account] = []
     static var categories: [TimeSDK.Category] = []
     
-    var tokenTag: String { return Test_API.tokenTag }
     var api: API! { return Test_API.api }
-    var time: Time! { return Test_API.time }
     
     var email: String { return Test_API.email }
     var password: String { return Test_API.password }
     
     override class func setUp() {
-        Test_API.api = API()
-        Test_API.time = Time(withAPI: Test_API.api, andTokenIdentifier: self.tokenTag)
+        self.api = API()
     }
     
     override func setUp() {
@@ -281,6 +276,24 @@ class Test_API: XCTestCase {
         _ = api.set(url: "http://localhost:8000")
     }
     
+    func test_sharedAPISupportsFullTimeConfigConfiguration() {
+        let keyName = "time-api-configuration-server-url-override"
+
+        // Force reset
+        API.configureShared(TimeConfig(serverURL: "https://default.domain.com"))
+        
+        // Test
+        let newURL = "https://otherSubdomain.newDomain.com"
+        API.configureShared(TimeConfig(serverURL: newURL))
+        
+        let storedValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(storedValue, newURL)
+        XCTAssertEqual(API.shared.baseURL, newURL)
+        
+        // Return to safe (for any tests using API.shared)
+        _ = api.set(url: "http://localhost:8000")
+    }
+    
     func test_cachingBehaviorIsDisabledByDefaultForNewAPIObjects() {
         let keyName = "time-api-configuration-server-url-override"
 
@@ -366,7 +379,7 @@ class Test_API: XCTestCase {
         XCTAssertEqual(finalURL, newerStoredValue)
         
         // Create another api using the same key
-        let newerAPI = API(enableURLCachingBehavior: true, urlOverrideKey: keyName)
+        let newerAPI = API(config: TimeConfig(), enableURLCachingBehavior: true, urlOverrideKey: keyName)
         XCTAssertEqual(newerAPI.baseURL, finalURL)
     }
 }

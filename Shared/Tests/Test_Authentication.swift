@@ -11,22 +11,23 @@ import XCTest
 
 class Test_Authentication: XCTestCase {
     
-    static var tokenTag = "test-authentication-tests"
+    static let config = TimeConfig(tokenIdentifier: "test-authentication-tests")
     static var api: API!
     static var time: Time!
     
-    var tokenTag: String { return Test_Authentication.tokenTag }
+    var config: TimeConfig { return Test_Authentication.config }
     var api: API! { return Test_Authentication.api }
     var time: Time! { return Test_Authentication.time }
     
     override class func setUp() {
-        Test_Authentication.api = API()
-        Test_Authentication.time = Time(withAPI: Test_Authentication.api, andTokenIdentifier: self.tokenTag)
+        self.api = API(config: self.config)
+        self.time = Time(config: self.config, withAPI: self.api)
     }
     
     func test_0_clearAnyExistingToken() {
         // Note: This allows individual tests to be re-run without a global clear at start
-        _ = TokenStore.deleteToken(withTag: self.tokenTag)
+        let tokenStore = TokenStore(config: self.config)
+        _ = tokenStore.deleteToken()
     }
     
     func test_1_initializeWithNoTokenReturnsTokenNotFound() {
@@ -105,7 +106,8 @@ class Test_Authentication: XCTestCase {
     }
     
     func test_6_initializeWithAnExpiredTokenDoesNothing() {
-        guard let startingToken = TokenStore.getToken(withTag: self.tokenTag) else {
+        let tokenStore = TokenStore(config: self.config)
+        guard let startingToken = tokenStore.getToken() else {
             XCTAssertTrue(false, "Test conditions not met")
             return
         }
@@ -116,7 +118,7 @@ class Test_Authentication: XCTestCase {
             token: startingToken.token,
             refresh: startingToken.refresh
         )
-        let storedExpiredToken = TokenStore.storeToken(newToken, withTag: self.tokenTag)
+        let storedExpiredToken = tokenStore.storeToken(newToken)
         guard storedExpiredToken else {
             XCTFail("Token could not be stored")
             return
@@ -172,9 +174,11 @@ class Test_Authentication: XCTestCase {
     }
     
     func test_9_externalInterfaceSupportsURLOverride() {
-        let api = API()
         let tokenIdentifier = UUID().uuidString
-        let time = Time(withAPI: api, andTokenIdentifier: tokenIdentifier)
+        let startingConfig = TimeConfig(tokenIdentifier: tokenIdentifier)
+        
+        let api = API(config: startingConfig)
+        let time = Time(config: startingConfig, withAPI: api)
         
         let email = "test@test.com"
         let password = "defaultPassword"
@@ -188,14 +192,20 @@ class Test_Authentication: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
         XCTAssertNotNil(time.api.token)
         
-        // Change url and force deauthentication
+        // Creating a new client with a different url forces deauthentication
         let initializeExpectation = self.expectation(description: "initialization")
-        time.initialize(for: "http://localhost:8001") { (error) in
+        
+        let newConfig = TimeConfig(
+            serverURL: "http://localhost:8001",
+            tokenIdentifier: tokenIdentifier
+        )
+        let newTime = Time(config: newConfig, withAPI: self.api)
+        newTime.initialize() { (error) in
             XCTAssertNotNil(error)
             XCTAssertEqual(error as! TimeError, TimeError.tokenNotFound)
             initializeExpectation.fulfill()
         }
         waitForExpectations(timeout: 5, handler: nil)
-        XCTAssertNil(time.api.token)
+        XCTAssertNil(newTime.api.token)
     }
 }

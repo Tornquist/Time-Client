@@ -9,6 +9,15 @@
 import Foundation
 
 class Archive {
+    
+    var containerURL: String?
+    
+    init(containerURL: String? = nil) {
+        self.containerURL = containerURL
+    }
+    convenience init(config: TimeConfig) {
+        self.init(containerURL: config.containerURL)
+    }
 
     enum ArchiveType {
         case accountIDs
@@ -42,21 +51,25 @@ class Archive {
             return [.accountIDs, .categories, .entries]
         }
     }
-    
-    private static var applicationSupportFolderURL: URL? {
-        return try? FileManager.default.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        )
+        
+    private var url: URL? {
+        guard let containerUrl = self.containerURL else {
+            return try? FileManager.default.url(
+                for: .applicationSupportDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            )
+        }
+
+        return FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: containerUrl)
     }
     
-    static func record<T>(_ data: T) -> Bool where T : Codable {
+    func record<T>(_ data: T) -> Bool where T : Codable {
         guard
             let type = ArchiveType.identifyType(for: T.self),
             let encodedData = try? JSONEncoder().encode(data),
-            let url = Archive.applicationSupportFolderURL else {
+            let url = self.url else {
                 return false
         }
         
@@ -69,10 +82,10 @@ class Archive {
         }
     }
     
-    static func retrieveData<T>() -> T? where T : Codable {
+    func retrieveData<T>() -> T? where T : Codable {
         guard
             let type = ArchiveType.identifyType(for: T.self),
-            let url = Archive.applicationSupportFolderURL,
+            let url = self.url,
             let data = try? Data.init(contentsOf:
                 url.appendingPathComponent(type.filename)
             ),
@@ -83,8 +96,8 @@ class Archive {
         return decodedData
     }
     
-    static func removeData(for type: ArchiveType) -> Bool {
-        guard let url = Archive.applicationSupportFolderURL else {
+    func removeData(for type: ArchiveType) -> Bool {
+        guard let url = self.url else {
             return false
         }
         
@@ -100,9 +113,9 @@ class Archive {
         }
     }
     
-    static func removeAllData() -> Bool {
+    func removeAllData() -> Bool {
         return ArchiveType.all()
-            .map({ Archive.removeData(for: $0) })
+            .map({ self.removeData(for: $0) })
             .reduce(true, { $0 && $1 })
     }
 }
