@@ -15,11 +15,6 @@ public struct TimeConfig {
     public var keychainGroup: String? = nil
     public var tokenIdentifier: String? = nil
     
-    public var userDefaults: UserDefaults {
-        // Will resolve safely as long as the provided suiteName is within the app's allowed access
-        return UserDefaults(suiteName: self.userDefaultsSuite)!
-    }
-    
     public init(
         serverURL: String? = nil,
         containerURL: String? = nil,

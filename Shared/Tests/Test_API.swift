@@ -276,6 +276,24 @@ class Test_API: XCTestCase {
         _ = api.set(url: "http://localhost:8000")
     }
     
+    func test_sharedAPISupportsFullTimeConfigConfiguration() {
+        let keyName = "time-api-configuration-server-url-override"
+
+        // Force reset
+        API.configureShared(TimeConfig(serverURL: "https://default.domain.com"))
+        
+        // Test
+        let newURL = "https://otherSubdomain.newDomain.com"
+        API.configureShared(TimeConfig(serverURL: newURL))
+        
+        let storedValue = UserDefaults.standard.string(forKey: keyName)
+        XCTAssertEqual(storedValue, newURL)
+        XCTAssertEqual(API.shared.baseURL, newURL)
+        
+        // Return to safe (for any tests using API.shared)
+        _ = api.set(url: "http://localhost:8000")
+    }
+    
     func test_cachingBehaviorIsDisabledByDefaultForNewAPIObjects() {
         let keyName = "time-api-configuration-server-url-override"
 
