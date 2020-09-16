@@ -124,18 +124,20 @@ extension EntriesViewController: UIPickerViewDelegate, UIPickerViewDataSource {
         let changeEndTitle = NSLocalizedString("Change end time", comment: "")
         
         let title = entry.type == .event ? changeEventTitle : (startTime ? changeStartTitle : changeEndTitle)
-        let message = "\n\n\n\n\n\n\n" // Replace with custom view
+        let message = "\n\n" // Replace with custom view
         
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
 
-        let picker = UIDatePicker(frame: CGRect(x: 5, y: 30, width: 250, height: 160))
+        let picker = UIDatePicker(frame: CGRect(x: 25, y: 50, width: 350, height: 35))
         picker.timeZone = (
             startTime
                 ? (entry.startedAtTimezone != nil ? TimeZone(identifier: entry.startedAtTimezone!) : nil)
                 : (entry.endedAtTimezone != nil ? TimeZone(identifier: entry.endedAtTimezone!) : nil)
             ) ?? TimeZone.autoupdatingCurrent
         picker.date = startTime ? entry.startedAt : entry.endedAt ?? Date()
+        picker.preferredDatePickerStyle = .compact
         alert.view.addSubview(picker)
+        
         if !startTime { picker.minimumDate = entry.startedAt }
         if startTime && entry.endedAt != nil { picker.maximumDate = entry.endedAt }
         
