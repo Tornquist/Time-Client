@@ -248,7 +248,7 @@ class API: APIQueueDelegate {
                      NSURLErrorCannotFindHost:
                     returnError = TimeError.unableToReachServer
                 default:
-                    let message = error as? String ?? ""
+                    let message = error?.localizedDescription ?? ""
                     returnError = TimeError.requestFailed(message)
                 }
                 

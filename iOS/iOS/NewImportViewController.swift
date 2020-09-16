@@ -8,6 +8,7 @@
 
 import UIKit
 import TimeSDK
+import UniformTypeIdentifiers
 
 protocol NewImportViewControllerDelegate: class {
     func didCreateNewImportRequest()
@@ -218,7 +219,8 @@ class NewImportViewController: UIViewController, UIDocumentPickerDelegate, UIPic
     // MARK: Step 1
     
     @IBAction func step1ButtonPressed(_ sender: Any) {
-        let filePickerVC = UIDocumentPickerViewController(documentTypes: ["public.plain-text"], in: .import)
+        let types: [UTType] = [.plainText]
+        let filePickerVC = UIDocumentPickerViewController(forOpeningContentTypes: types, asCopy: true)
         filePickerVC.allowsMultipleSelection = false
         filePickerVC.delegate = self
         self.present(filePickerVC, animated: true, completion: nil)
