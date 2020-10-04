@@ -201,8 +201,14 @@ struct TimeTimeline: TimelineProvider {
     // Real information
     public func getTimeline(in context: Context, completion: @escaping (Timeline<TimeEntry>) -> Void) {
         let currentDate = Date()
-        let earlyDate = Calendar.current.date(byAdding: .hour, value: 5, to: currentDate)!
-        let farDate = Calendar.current.date(byAdding: .hour, value: 10, to: currentDate)!
+        
+        let earlyRefresh = Calendar.current.date(byAdding: .hour, value: 3, to: currentDate)!
+        let farRefresh = Calendar.current.date(byAdding: .hour, value: 6, to: currentDate)!
+        
+        // Identify refresh point slightly into tomorrow (to avoid issues with preload at the 0 point)
+        let startOfToday = Calendar.current.startOfDay(for: currentDate)
+        let startOfTomorrow = Calendar.current.date(byAdding: .day, value: 1, to: startOfToday)!
+        let tomorrowRefresh = Calendar.current.date(byAdding: .minute, value: 2, to: startOfTomorrow)!
         
         TimeLoader.fetch(for: currentDate) { (result) in
             let baseEntry: TimeEntry
@@ -263,7 +269,14 @@ struct TimeTimeline: TimelineProvider {
                 seedRefreshPoints(true, 10, 0)
             }
             
-            let timeline = Timeline(entries: entries, policy: .after(baseEntry.active ? earlyDate : farDate))
+            let refreshDate = [
+                // Anticipated refresh point
+                baseEntry.active ? earlyRefresh : farRefresh,
+                // Required refresh point (for correct today display)
+                tomorrowRefresh
+            ].min()!
+            
+            let timeline = Timeline(entries: entries, policy: .after(refreshDate))
             completion(timeline)
         }
     }
