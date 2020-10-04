@@ -44,16 +44,14 @@ struct SummaryWidget: Widget {
 }
 
 struct TimeLoader {
-    static func fetch(completion: @escaping (Result<TimeStatus, Error>) -> Void) {
+    static func fetch(for reference: Date, completion: @escaping (Result<TimeEntry, Error>) -> Void) {
         var dayQuantity: TimeQuantity? = nil
         var weekQuantity: TimeQuantity? = nil
         var isActive = false
         
-        let now = Date()
         let calendar = Calendar.current
-        
-        let dayComps = calendar.dateComponents([.day, .month, .year], from: now)
-        let weekComps = calendar.dateComponents([.weekOfYear, .yearForWeekOfYear], from: now)
+        let dayComps = calendar.dateComponents([.day, .month, .year], from: reference)
+        let weekComps = calendar.dateComponents([.weekOfYear, .yearForWeekOfYear], from: reference)
         
         let startOfDay = calendar.date(from: dayComps)!
         let startOfWeek = calendar.date(from: weekComps)!
@@ -61,8 +59,8 @@ struct TimeLoader {
         let doneWithRange = {
             guard dayQuantity != nil && weekQuantity != nil else { return }
             
-            let status = TimeStatus(today: dayQuantity!, week: weekQuantity!, active: isActive)
-            completion(.success(status))
+            let entry = TimeEntry(date: reference, today: dayQuantity!, week: weekQuantity!, active: isActive)
+            completion(.success(entry))
         }
         
         let sharedUserDefaults = UserDefaults(suiteName: Constants.userDefaultsSuite)
@@ -83,14 +81,14 @@ struct TimeLoader {
             }
             
             // Check day total
-            self.getFrom(date: startOfDay) { (day, active) in
+            self.getFrom(date: startOfDay, to: reference) { (day, active) in
                 dayQuantity = day
                 isActive = isActive || active
 
                 doneWithRange()
             }
             // Check week total
-            self.getFrom(date: startOfWeek) { (week, active) in
+            self.getFrom(date: startOfWeek, to: reference) { (week, active) in
                 weekQuantity = week
                 isActive = isActive || active
 
@@ -99,8 +97,7 @@ struct TimeLoader {
         }
     }
     
-    static internal func getFrom(date: Date, completion: @escaping (TimeQuantity?, Bool) -> ()) {
-        let now = Date()
+    static internal func getFrom(date: Date, to reference: Date, completion: @escaping (TimeQuantity?, Bool) -> ()) {
         Time.shared.store.getEntries(after: date) { (entries: [Entry]?, error: Error?) -> () in
             guard entries != nil && error == nil else {
                 completion(TimeQuantity.unknown, false)
@@ -113,13 +110,13 @@ struct TimeLoader {
                 
                 guard entry.endedAt != nil else {
                     isActive = true
-                    return now.timeIntervalSince(entry.startedAt)
+                    return reference.timeIntervalSince(entry.startedAt)
                 }
                 
                 return entry.endedAt!.timeIntervalSince(entry.startedAt)
             }).reduce(0) { $0 + $1 }
             
-            completion(TimeQuantity.from(totalTime, at: now), isActive)
+            completion(TimeQuantity.from(totalTime), isActive)
         }
     }
 }
@@ -128,7 +125,6 @@ struct TimeQuantity {
     let hours: Int
     let minutes: Int
     let seconds: Int
-    let at: Date
     
     var frozenDisplayValue: String {
         guard !self.isUnknown else { return "XX:XX:XX" }
@@ -140,9 +136,9 @@ struct TimeQuantity {
         return timeString
     }
     
-    var activeRelativeDate: Date {
+    func relativeDate(to reference: Date) -> Date {
         let components = DateComponents(hour: -self.hours, minute: -self.minutes, second: -self.seconds)
-        let pastDate = Calendar.current.date(byAdding: components, to: at)!
+        let pastDate = Calendar.current.date(byAdding: components, to: reference)!
         return pastDate
     }
     
@@ -163,49 +159,43 @@ struct TimeQuantity {
     }
     
     static var unknown: TimeQuantity {
-        return TimeQuantity(hours: -1, minutes: -1, seconds: -1, at: Date())
+        return TimeQuantity(hours: -1, minutes: -1, seconds: -1)
     }
     
-    static func from(_ timeInterval: TimeInterval, at date: Date) -> TimeQuantity {
+    static func from(_ timeInterval: TimeInterval) -> TimeQuantity {
         let time = Int(timeInterval)
         
         let seconds = (time % 60)
         let minutes = (time / 60) % 60
         let hours = (time / 3600)
         
-        return TimeQuantity(hours: hours, minutes: minutes, seconds: seconds, at: date)
+        return TimeQuantity(hours: hours, minutes: minutes, seconds: seconds)
     }
-}
-
-struct TimeStatus {
-    let today: TimeQuantity
-    let week: TimeQuantity
-    let active: Bool
 }
 
 struct TimeEntry: TimelineEntry {
     public let date: Date
-    public let status: TimeStatus
+    public let today: TimeQuantity
+    public let week: TimeQuantity
+    public let active: Bool
 }
 
 struct TimeTimeline: TimelineProvider {
     typealias Entry = TimeEntry
     
     public func placeholder(in context: Context) -> TimeEntry {
-        let today = TimeQuantity(hours: 1, minutes: 38, seconds: 04, at: Date())
-        let week = TimeQuantity(hours: 53, minutes: 43, seconds: 59, at: Date())
-        let fakeStatus = TimeStatus(today: today, week: week, active: true)
-        let entry = TimeEntry(date: Date(), status: fakeStatus)
-        return entry
+        let today = TimeQuantity(hours: 1, minutes: 38, seconds: 04)
+        let week = TimeQuantity(hours: 53, minutes: 43, seconds: 59)
+        let fakeEntry = TimeEntry(date: Date(), today: today, week: week, active: true)
+        return fakeEntry
     }
     
     // Fake information for previews
     public func getSnapshot(in context: Context, completion: @escaping (TimeEntry) -> Void) {
-        let today = TimeQuantity(hours: 1, minutes: 38, seconds: 04, at: Date())
-        let week = TimeQuantity(hours: 53, minutes: 43, seconds: 59, at: Date())
-        let fakeStatus = TimeStatus(today: today, week: week, active: true)
-        let entry = TimeEntry(date: Date(), status: fakeStatus)
-        completion(entry)
+        let today = TimeQuantity(hours: 1, minutes: 38, seconds: 04)
+        let week = TimeQuantity(hours: 53, minutes: 43, seconds: 59)
+        let fakeEntry = TimeEntry(date: Date(), today: today, week: week, active: true)
+        completion(fakeEntry)
     }
     
     // Real information
@@ -214,24 +204,21 @@ struct TimeTimeline: TimelineProvider {
         let earlyDate = Calendar.current.date(byAdding: .hour, value: 5, to: currentDate)!
         let farDate = Calendar.current.date(byAdding: .hour, value: 10, to: currentDate)!
         
-        TimeLoader.fetch { (result) in
-            let status: TimeStatus
-            if case .success(let fetchedStatus) = result {
-                status = fetchedStatus
+        TimeLoader.fetch(for: currentDate) { (result) in
+            let baseEntry: TimeEntry
+            if case .success(let fetchedEntry) = result {
+                baseEntry = fetchedEntry
             } else {
-                let zeroDay = TimeQuantity(hours: 0, minutes: 0, seconds: 0, at: Date())
-                status = TimeStatus(today: zeroDay, week: zeroDay, active: false)
+                let zeroDay = TimeQuantity(hours: 0, minutes: 0, seconds: 0)
+                baseEntry = TimeEntry(date: currentDate, today: zeroDay, week: zeroDay, active: false)
             }
-            
-            // Zero point at present time
-            let baseEntry = TimeEntry(date: currentDate, status: status)
-            
+
             var entries: [TimeEntry] = [baseEntry]
-            if (baseEntry.status.active) {
+            if (baseEntry.active) {
                 // Optionally refresh at points offset transitions
 
-                let startToday = baseEntry.status.today.activeRelativeDate
-                let startWeek = baseEntry.status.week.activeRelativeDate
+                let startToday = baseEntry.today.relativeDate(to: currentDate)
+                let startWeek = baseEntry.week.relativeDate(to: currentDate)
                 
                 let seedRefreshPoints = { (forToday: Bool, hours: Int, minutes: Int) -> () in
                     let minInterval: TimeInterval = 60 /* seconds/min */ * Double(minutes) /* min */
@@ -243,7 +230,7 @@ struct TimeTimeline: TimelineProvider {
                     let weekWithInterval = startWeek.addingTimeInterval(totalInterval)
                     let targetWithInterval = forToday ? todayWithInterval : weekWithInterval
                     
-                    let goalEntry = TimeQuantity(hours: hours, minutes: minutes, seconds: 0, at: targetWithInterval)
+                    let goalEntry = TimeQuantity(hours: hours, minutes: minutes, seconds: 0)
                     
                     // If target in future, schedule update
                     if targetWithInterval > currentDate {
@@ -252,13 +239,13 @@ struct TimeTimeline: TimelineProvider {
                         let peerBase = forToday ? startWeek : startToday
                         let newPeer = peerBase.addingTimeInterval(-additionalSeconds) // Roll back in time to use now as a delta mark
                         let totalPeerInterval = currentDate.timeIntervalSinceReferenceDate - newPeer.timeIntervalSinceReferenceDate
-                        let peerEntry = TimeQuantity.from(totalPeerInterval, at: goalEntry.at)
+                        let peerEntry = TimeQuantity.from(totalPeerInterval)
                     
                         let date = forToday ? todayWithInterval : weekWithInterval
                         let todayQuantity = forToday ? goalEntry : peerEntry
                         let weekQuantity = forToday ? peerEntry : goalEntry
                         
-                        let entry = TimeEntry(date: date, status: TimeStatus(today: todayQuantity, week: weekQuantity, active: status.active))
+                        let entry = TimeEntry(date: date, today: todayQuantity, week: weekQuantity, active: baseEntry.active)
                         entries.append(entry)
                     }
                 }
@@ -266,15 +253,17 @@ struct TimeTimeline: TimelineProvider {
                 // 10 min mark ('00:0' -> '00:')
                 seedRefreshPoints(false, 0, 10)
                 seedRefreshPoints(true, 0, 10)
+
                 // 1 hour mark ('00:' -> '0')
                 seedRefreshPoints(false, 1, 0)
                 seedRefreshPoints(true, 1, 0)
+
                 // 10 hour mark ('0' -> '')
                 seedRefreshPoints(false, 10, 0)
                 seedRefreshPoints(true, 10, 0)
             }
             
-            let timeline = Timeline(entries: entries, policy: .after(status.active ? earlyDate : farDate))
+            let timeline = Timeline(entries: entries, policy: .after(baseEntry.active ? earlyDate : farDate))
             completion(timeline)
         }
     }
@@ -284,24 +273,27 @@ struct TimeWidgetView : View {
     let entry: TimeEntry
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            getBlock("Today", value: entry.status.today, active: entry.status.active)
+            getBlock(forToday: true, andEntry: entry)
             Spacer()
-            getBlock("This Week", value: entry.status.week, active: entry.status.active)
+            getBlock(forToday: false, andEntry: entry)
         }
         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .leading)
         .padding()
         .background(Theme.background)
     }
     
-    func getBlock(_ title: String, value: TimeQuantity, active: Bool) -> some View {
+    func getBlock(forToday: Bool, andEntry value: TimeEntry) -> some View {
+        let title = forToday ? "Today" : "This Week"
+        let data = forToday ? value.today : value.week
+        
         return VStack(alignment: .leading, spacing: 4, content: {
             (
-                active
-                    ? (Text(value.activePrefix) + Text(value.activeRelativeDate, style: .timer))
-                    : Text(value.frozenDisplayValue)
+                value.active
+                    ? (Text(data.activePrefix) + Text(data.relativeDate(to: value.date), style: .timer))
+                    : Text(data.frozenDisplayValue)
             )
                 .font(Font.system(size: 24.0, weight: .regular, design: .default).monospacedDigit())
-                .foregroundColor(active ? Theme.active : Theme.label)
+                .foregroundColor(value.active ? Theme.active : Theme.label)
             Text(title)
                 .font(Font.system(size: 10.0, weight: .regular, design: .default))
                 .foregroundColor(Theme.label)
@@ -313,11 +305,9 @@ struct TimeWidgetView_Previews: PreviewProvider {
     static var previews: some View {
         TimeWidgetView(entry: TimeEntry(
             date: Date(),
-            status: TimeStatus(
-                today: TimeQuantity(hours: 0, minutes: 6, seconds: 36, at: Date()),
-                week: TimeQuantity(hours: 11, minutes: 22, seconds: 33, at: Date()),
-                active: true
-            )
+            today: TimeQuantity(hours: 0, minutes: 6, seconds: 36),
+            week: TimeQuantity(hours: 11, minutes: 22, seconds: 33),
+            active: true
         )).previewContext(WidgetPreviewContext(family: .systemSmall))
     }
 }
