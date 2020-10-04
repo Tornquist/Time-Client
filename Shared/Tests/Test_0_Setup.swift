@@ -28,7 +28,7 @@ class Test_0_Setup: XCTestCase {
             userExists = token != nil
             loginUserExpectation.fulfill()
         }
-        waitForExpectations(timeout: 5, handler: nil)
+        waitForExpectations(timeout: 15, handler: nil)
         
         guard !userExists else { return }
 
@@ -37,7 +37,7 @@ class Test_0_Setup: XCTestCase {
         API.shared.createUser(withEmail: email, andPassword: password) { (user, error) in
             createUserExpectation.fulfill()
         }
-        waitForExpectations(timeout: 5, handler: nil)
+        waitForExpectations(timeout: 15, handler: nil)
     }
     
     func test_1_configureSharedTime() {
