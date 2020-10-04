@@ -100,6 +100,7 @@ struct TimeLoader {
     }
     
     static internal func getFrom(date: Date, completion: @escaping (TimeQuantity?, Bool) -> ()) {
+        let now = Date()
         Time.shared.store.getEntries(after: date) { (entries: [Entry]?, error: Error?) -> () in
             guard entries != nil && error == nil else {
                 completion(TimeQuantity.unknown, false)
@@ -112,21 +113,13 @@ struct TimeLoader {
                 
                 guard entry.endedAt != nil else {
                     isActive = true
-                    return Date().timeIntervalSince(entry.startedAt)
+                    return now.timeIntervalSince(entry.startedAt)
                 }
                 
                 return entry.endedAt!.timeIntervalSince(entry.startedAt)
             }).reduce(0) { $0 + $1 }
             
-            let getTimeQuantity = { (time: Int) -> TimeQuantity in
-                let seconds = (time % 60)
-                let minutes = (time / 60) % 60
-                let hours = (time / 3600)
-                
-                return TimeQuantity(hours: hours, minutes: minutes, seconds: seconds)
-            }
-            
-            completion(getTimeQuantity(Int(totalTime)), isActive)
+            completion(TimeQuantity.from(totalTime, at: now), isActive)
         }
     }
 }
@@ -135,6 +128,7 @@ struct TimeQuantity {
     let hours: Int
     let minutes: Int
     let seconds: Int
+    let at: Date
     
     var frozenDisplayValue: String {
         guard !self.isUnknown else { return "XX:XX:XX" }
@@ -148,7 +142,7 @@ struct TimeQuantity {
     
     var activeRelativeDate: Date {
         let components = DateComponents(hour: -self.hours, minute: -self.minutes, second: -self.seconds)
-        let pastDate = Calendar.current.date(byAdding: components, to: Date())!
+        let pastDate = Calendar.current.date(byAdding: components, to: at)!
         return pastDate
     }
     
@@ -169,7 +163,17 @@ struct TimeQuantity {
     }
     
     static var unknown: TimeQuantity {
-        return TimeQuantity(hours: -1, minutes: -1, seconds: -1)
+        return TimeQuantity(hours: -1, minutes: -1, seconds: -1, at: Date())
+    }
+    
+    static func from(_ timeInterval: TimeInterval, at date: Date) -> TimeQuantity {
+        let time = Int(timeInterval)
+        
+        let seconds = (time % 60)
+        let minutes = (time / 60) % 60
+        let hours = (time / 3600)
+        
+        return TimeQuantity(hours: hours, minutes: minutes, seconds: seconds, at: date)
     }
 }
 
@@ -188,8 +192,8 @@ struct TimeTimeline: TimelineProvider {
     typealias Entry = TimeEntry
     
     public func placeholder(in context: Context) -> TimeEntry {
-        let today = TimeQuantity(hours: 1, minutes: 38, seconds: 04)
-        let week = TimeQuantity(hours: 53, minutes: 43, seconds: 59)
+        let today = TimeQuantity(hours: 1, minutes: 38, seconds: 04, at: Date())
+        let week = TimeQuantity(hours: 53, minutes: 43, seconds: 59, at: Date())
         let fakeStatus = TimeStatus(today: today, week: week, active: true)
         let entry = TimeEntry(date: Date(), status: fakeStatus)
         return entry
@@ -197,8 +201,8 @@ struct TimeTimeline: TimelineProvider {
     
     // Fake information for previews
     public func getSnapshot(in context: Context, completion: @escaping (TimeEntry) -> Void) {
-        let today = TimeQuantity(hours: 1, minutes: 38, seconds: 04)
-        let week = TimeQuantity(hours: 53, minutes: 43, seconds: 59)
+        let today = TimeQuantity(hours: 1, minutes: 38, seconds: 04, at: Date())
+        let week = TimeQuantity(hours: 53, minutes: 43, seconds: 59, at: Date())
         let fakeStatus = TimeStatus(today: today, week: week, active: true)
         let entry = TimeEntry(date: Date(), status: fakeStatus)
         completion(entry)
@@ -207,19 +211,70 @@ struct TimeTimeline: TimelineProvider {
     // Real information
     public func getTimeline(in context: Context, completion: @escaping (Timeline<TimeEntry>) -> Void) {
         let currentDate = Date()
-        let earlyDate = Calendar.current.date(byAdding: .minute, value: 5, to: currentDate)!
-        let farDate = Calendar.current.date(byAdding: .minute, value: 120, to: currentDate)!
+        let earlyDate = Calendar.current.date(byAdding: .hour, value: 5, to: currentDate)!
+        let farDate = Calendar.current.date(byAdding: .hour, value: 10, to: currentDate)!
         
         TimeLoader.fetch { (result) in
             let status: TimeStatus
             if case .success(let fetchedStatus) = result {
                 status = fetchedStatus
             } else {
-                let zeroDay = TimeQuantity(hours: 0, minutes: 0, seconds: 0)
+                let zeroDay = TimeQuantity(hours: 0, minutes: 0, seconds: 0, at: Date())
                 status = TimeStatus(today: zeroDay, week: zeroDay, active: false)
             }
-            let entry = TimeEntry(date: currentDate, status: status)
-            let timeline = Timeline(entries: [entry], policy: .after(status.active ? earlyDate : farDate))
+            
+            // Zero point at present time
+            let baseEntry = TimeEntry(date: currentDate, status: status)
+            
+            var entries: [TimeEntry] = [baseEntry]
+            if (baseEntry.status.active) {
+                // Optionally refresh at points offset transitions
+
+                let startToday = baseEntry.status.today.activeRelativeDate
+                let startWeek = baseEntry.status.week.activeRelativeDate
+                
+                let seedRefreshPoints = { (forToday: Bool, hours: Int, minutes: Int) -> () in
+                    let minInterval: TimeInterval = 60 /* seconds/min */ * Double(minutes) /* min */
+                    let hourInterval: TimeInterval = 60 /* seconds/min */ * 60 /* min/hour */ * Double(hours) /* hour */
+                    let totalInterval = minInterval + hourInterval
+                    
+                    // Start today and start week are entries in the past whose delta to now gives the total value
+                    let todayWithInterval = startToday.addingTimeInterval(totalInterval)
+                    let weekWithInterval = startWeek.addingTimeInterval(totalInterval)
+                    let targetWithInterval = forToday ? todayWithInterval : weekWithInterval
+                    
+                    let goalEntry = TimeQuantity(hours: hours, minutes: minutes, seconds: 0, at: targetWithInterval)
+                    
+                    // If target in future, schedule update
+                    if targetWithInterval > currentDate {
+                        let additionalSeconds = targetWithInterval.timeIntervalSinceReferenceDate - currentDate.timeIntervalSinceReferenceDate
+                        
+                        let peerBase = forToday ? startWeek : startToday
+                        let newPeer = peerBase.addingTimeInterval(-additionalSeconds) // Roll back in time to use now as a delta mark
+                        let totalPeerInterval = currentDate.timeIntervalSinceReferenceDate - newPeer.timeIntervalSinceReferenceDate
+                        let peerEntry = TimeQuantity.from(totalPeerInterval, at: goalEntry.at)
+                    
+                        let date = forToday ? todayWithInterval : weekWithInterval
+                        let todayQuantity = forToday ? goalEntry : peerEntry
+                        let weekQuantity = forToday ? peerEntry : goalEntry
+                        
+                        let entry = TimeEntry(date: date, status: TimeStatus(today: todayQuantity, week: weekQuantity, active: status.active))
+                        entries.append(entry)
+                    }
+                }
+                
+                // 10 min mark ('00:0' -> '00:')
+                seedRefreshPoints(false, 0, 10)
+                seedRefreshPoints(true, 0, 10)
+                // 1 hour mark ('00:' -> '0')
+                seedRefreshPoints(false, 1, 0)
+                seedRefreshPoints(true, 1, 0)
+                // 10 hour mark ('0' -> '')
+                seedRefreshPoints(false, 10, 0)
+                seedRefreshPoints(true, 10, 0)
+            }
+            
+            let timeline = Timeline(entries: entries, policy: .after(status.active ? earlyDate : farDate))
             completion(timeline)
         }
     }
@@ -259,8 +314,8 @@ struct TimeWidgetView_Previews: PreviewProvider {
         TimeWidgetView(entry: TimeEntry(
             date: Date(),
             status: TimeStatus(
-                today: TimeQuantity(hours: 0, minutes: 6, seconds: 36),
-                week: TimeQuantity(hours: 11, minutes: 22, seconds: 33),
+                today: TimeQuantity(hours: 0, minutes: 6, seconds: 36, at: Date()),
+                week: TimeQuantity(hours: 11, minutes: 22, seconds: 33, at: Date()),
                 active: true
             )
         )).previewContext(WidgetPreviewContext(family: .systemSmall))
