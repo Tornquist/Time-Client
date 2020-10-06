@@ -34,13 +34,13 @@ class Test_API: XCTestCase {
         api.createUser(withEmail: email, andPassword: password) { (user, error) in
             createExpectation.fulfill()
         }
-        waitForExpectations(timeout: 5, handler: nil)
+        waitForExpectations(timeout: 15, handler: nil)
         
         let loginExpectation = self.expectation(description: "loginUser")
         api.getToken(withEmail: email, andPassword: password) { (user, error) in
             loginExpectation.fulfill()
         }
-        waitForExpectations(timeout: 5, handler: nil)
+        waitForExpectations(timeout: 15, handler: nil)
     }
     
     func test_rejectsAllRequestsWithBadBaseURL() {
