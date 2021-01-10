@@ -33,7 +33,7 @@ class DateHelper {
         return _isoMillisecondsFormatter!
     }
     
-    // MARK: - Helper Methods
+    // MARK: - Base Helper Methods
     
     static func isoStringFrom(date: Date, includeMilliseconds: Bool = true) -> String {
         if includeMilliseconds {
@@ -51,5 +51,48 @@ class DateHelper {
         }
         
         return nil
+    }
+    
+    static func getSafeTimezone(identifier: String?) -> TimeZone {
+        let defaultTimezone = TimeZone.autoupdatingCurrent
+        let safeIdentifier = identifier ?? defaultTimezone.identifier
+        let timezone = TimeZone(identifier: safeIdentifier) ?? defaultTimezone
+        return timezone
+    }
+
+    // MARK: - Date Ranges
+    
+    static func getStartOf(_ timeRange: TimeRange, for calendar: Calendar) -> Date {
+        let startToday = calendar.startOfDay(for: Date())
+        
+        let thisYearComponents = calendar.dateComponents([.year], from: startToday)
+        let thisMonthComponent = calendar.dateComponents([.year, .month], from: startToday)
+        let thisWeekComponents = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: startToday)
+        
+        let rollingOneMonthComponent = DateComponents(month: -1)
+        let rollingOneWeekComponent = DateComponents(day: -7) // Perhaps -6 to have 7 days (6 past + today)
+        let rollingOneYearComponent = DateComponents(year: -1)
+        
+        let yearToDate = calendar.date(from: thisYearComponents)
+        let monthToDate = calendar.date(from: thisMonthComponent) // No day --> Day = 1
+        let weekToDate = calendar.date(from: thisWeekComponents)
+        
+        let oneYear = calendar.date(byAdding: rollingOneYearComponent, to: startToday)
+        let oneMonth = calendar.date(byAdding: rollingOneMonthComponent, to: startToday)
+        let oneWeek = calendar.date(byAdding: rollingOneWeekComponent, to: startToday)
+        
+        let searchDate = { () -> Date? in
+            switch timeRange.period {
+            case .day:
+                return startToday
+            case .week:
+                return timeRange.isCurrent ? weekToDate : oneWeek
+            case .month:
+                return timeRange.isCurrent ? monthToDate : oneMonth
+            case .year:
+                return timeRange.isCurrent ? yearToDate : oneYear
+            }
+        }()
+        return searchDate!
     }
 }

@@ -60,6 +60,10 @@
 		D87F5AA52263DBCF00DD5DEA /* Test_Registration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5AA32263DBCF00DD5DEA /* Test_Registration.swift */; };
 		D87F5AA92264AC9300DD5DEA /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5AA82264AC9300DD5DEA /* Store.swift */; };
 		D87F5AAD22674BFE00DD5DEA /* CategoryTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5AAC22674BFE00DD5DEA /* CategoryTree.swift */; };
+		D88EB0F325A9FB810041CDC0 /* Analyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88EB0F225A9FB810041CDC0 /* Analyzer.swift */; };
+		D88EB0F925AA06AB0041CDC0 /* DataProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88EB0F825AA06AB0041CDC0 /* DataProcessor.swift */; };
+		D88EB10325AA08FD0041CDC0 /* Split.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88EB10225AA08FD0041CDC0 /* Split.swift */; };
+		D88EB12D25AA6E0A0041CDC0 /* TimePeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88EB12C25AA6E0A0041CDC0 /* TimePeriod.swift */; };
 		D89C7C4922087A8700B09D73 /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89C7C4822087A8700B09D73 /* Category.swift */; };
 		D89C7C4B22087B9300B09D73 /* Test_API_Categories.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89C7C4A22087B9300B09D73 /* Test_API_Categories.swift */; };
 		D8DD2A412331066000F26665 /* TimeNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DD2A402331066000F26665 /* TimeNotification.swift */; };
@@ -156,6 +160,10 @@
 		D87F5AA32263DBCF00DD5DEA /* Test_Registration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_Registration.swift; sourceTree = "<group>"; };
 		D87F5AA82264AC9300DD5DEA /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 		D87F5AAC22674BFE00DD5DEA /* CategoryTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryTree.swift; sourceTree = "<group>"; };
+		D88EB0F225A9FB810041CDC0 /* Analyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analyzer.swift; sourceTree = "<group>"; };
+		D88EB0F825AA06AB0041CDC0 /* DataProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataProcessor.swift; sourceTree = "<group>"; };
+		D88EB10225AA08FD0041CDC0 /* Split.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Split.swift; sourceTree = "<group>"; };
+		D88EB12C25AA6E0A0041CDC0 /* TimePeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimePeriod.swift; sourceTree = "<group>"; };
 		D89C7C4822087A8700B09D73 /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
 		D89C7C4A22087B9300B09D73 /* Test_API_Categories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_API_Categories.swift; sourceTree = "<group>"; };
 		D8DD2A402331066000F26665 /* TimeNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeNotification.swift; sourceTree = "<group>"; };
@@ -231,6 +239,7 @@
 				D87F5A9A22636C1700DD5DEA /* Time+Validation.swift */,
 				D87F5AA82264AC9300DD5DEA /* Store.swift */,
 				D8DD2A442334739400F26665 /* Archive.swift */,
+				D88EB0F225A9FB810041CDC0 /* Analyzer.swift */,
 			);
 			path = Interface;
 			sourceTree = "<group>";
@@ -252,6 +261,7 @@
 				D855818121BDEB6400DCB577 /* Config */,
 				D837025A21CA845D0095B19F /* Interface */,
 				D85581AA21BEAB8800DCB577 /* Models */,
+				D88EB0F125A9FB370041CDC0 /* Analytics */,
 				D8437C5C21F4C6AD00974B03 /* Helpers */,
 				D837025521CA802B0095B19F /* Network */,
 				D85581D421C14D6700DCB577 /* Tests */,
@@ -334,6 +344,16 @@
 				D8DD2A462334798E00F26665 /* Test_Archive.swift */,
 			);
 			name = Interface;
+			sourceTree = "<group>";
+		};
+		D88EB0F125A9FB370041CDC0 /* Analytics */ = {
+			isa = PBXGroup;
+			children = (
+				D88EB10225AA08FD0041CDC0 /* Split.swift */,
+				D88EB12C25AA6E0A0041CDC0 /* TimePeriod.swift */,
+				D88EB0F825AA06AB0041CDC0 /* DataProcessor.swift */,
+			);
+			path = Analytics;
 			sourceTree = "<group>";
 		};
 		D8EA80F62225764D002686D4 /* Network */ = {
@@ -579,8 +599,11 @@
 				D8DD2A452334739400F26665 /* Archive.swift in Sources */,
 				D822E55C221308B70011C09F /* API+Routes.swift in Sources */,
 				D85581AD21BEABC300DCB577 /* EntryType.swift in Sources */,
+				D88EB0F325A9FB810041CDC0 /* Analyzer.swift in Sources */,
+				D88EB10325AA08FD0041CDC0 /* Split.swift in Sources */,
 				D837025C21CA846A0095B19F /* Time.swift in Sources */,
 				D8DD2A412331066000F26665 /* TimeNotification.swift in Sources */,
+				D88EB0F925AA06AB0041CDC0 /* DataProcessor.swift in Sources */,
 				D8437C6221F9EB5D00974B03 /* TimeError.swift in Sources */,
 				D822E55A2211AED70011C09F /* APIQueue.swift in Sources */,
 				D87F5A9B22636C1700DD5DEA /* Time+Validation.swift in Sources */,
@@ -588,6 +611,7 @@
 				D837025721CA82E20095B19F /* API.swift in Sources */,
 				D8EA80EC222253D5002686D4 /* EntryAction.swift in Sources */,
 				D837025421CA7EAB0095B19F /* Token.swift in Sources */,
+				D88EB12D25AA6E0A0041CDC0 /* TimePeriod.swift in Sources */,
 				D811B17D21EA4269009F6C8E /* Account.swift in Sources */,
 				D89C7C4922087A8700B09D73 /* Category.swift in Sources */,
 				D8FB5B0F23785D2F00EED615 /* FileImporter.swift in Sources */,
