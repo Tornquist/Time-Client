@@ -16,14 +16,13 @@ public class Analyzer {
     var closedRanges: [Entry] = []
     var openRanges: [Entry] = []
     
-    var closedAnalysis: [EntryAnalysis] = []
-    var closedAnalysisSplitsByDay: [String: [Split]] = [:]
+    var closedAnalysis: AnalysisCache? = nil
     
     // External Types
     
     public enum Operation {
-        case calculateOverallTotal
-        case calculateCategoryTotals
+        case calculateTotal
+        case calculatePerCategory
     }
     
     public struct Result {
@@ -40,20 +39,12 @@ public class Analyzer {
         }
         
         fileprivate init(overallTotal duration: TimeInterval, open: Bool) {
-            self.init(operation: .calculateOverallTotal, categoryID: nil, duration: duration, open: open)
+            self.init(operation: .calculateTotal, categoryID: nil, duration: duration, open: open)
         }
         
         fileprivate init(categoryTotal duration: TimeInterval, forID categoryID: Int, open: Bool) {
-            self.init(operation: .calculateCategoryTotals, categoryID: categoryID, duration: duration, open: open)
+            self.init(operation: .calculatePerCategory, categoryID: categoryID, duration: duration, open: open)
         }
-    }
-    
-    // Internal Types
-    
-    /// Results paired with the entry used to generate them
-    struct EntryAnalysis {
-        var source: Entry
-        var splits: [Split]
     }
     
     // MARK: - Init
@@ -86,31 +77,23 @@ public class Analyzer {
         let to: Date? = nil // now
         
         // 2. Evaluate open results
-        let openAnalysis = self.openRanges.map(self.analyze)
-        let openAnalysisSplitsByDay = self.groupSplitsByDay(openAnalysis)
+        let openPerEntryAnalysis = self.openRanges.map(EntryAnalysis.generate(for:))
+        let openAnalysis = AnalysisCache(from: openPerEntryAnalysis)
         
         // 3. Grab relevant records
-        let closedAnalysisDays = self.closedAnalysisSplitsByDay.keys
-        let openAnalysisDays = openAnalysisSplitsByDay.keys
-
-        let closedKeyGroups = self.identifyKeyGroupsFor(
-            stringDates: closedAnalysisDays,
+        let closedData = self.closedAnalysis?.getGroupedSplits(
             searchingFrom: from,
             to: to,
             groupingBy: groupBy,
             with: calendar
-        )
+        ) ?? [:]
         
-        let openKeyGroups = self.identifyKeyGroupsFor(
-            stringDates: openAnalysisDays,
+        let openData = openAnalysis.getGroupedSplits(
             searchingFrom: from,
             to: to,
             groupingBy: groupBy,
             with: calendar
         )
-
-        let closedData = self.getQueryData(for: closedKeyGroups, in: self.closedAnalysisSplitsByDay)
-        let openData = self.getQueryData(for: openKeyGroups, in: openAnalysisSplitsByDay)
 
         // 4. Evaluate
         
@@ -135,129 +118,33 @@ public class Analyzer {
         }
         
         // 1. Split open and closed ranges
-        let splitRanges = DataProcessor.filterAndSplitRanges(entries: store.entries)
-        self.closedRanges = splitRanges.closed
-        self.openRanges = splitRanges.open
+        var closedRanges: [Entry] = []
+        var openRanges: [Entry] = []
+        store.entries.forEach { (entry) in
+            guard entry.type == .range else { return }
+            
+            if entry.endedAt == nil {
+                openRanges.append(entry)
+            } else {
+                closedRanges.append(entry)
+            }
+        }
+        
+        self.closedRanges = closedRanges
+        self.openRanges = openRanges
         
         // 2. Analyze all closed entries
-        self.closedAnalysis = self.closedRanges.map(self.analyze)
+        let closedAnalysis = self.closedRanges.map(EntryAnalysis.generate(for:))
         
         // 3. Format and cache closed entries for date-based lookup
-        self.closedAnalysisSplitsByDay = self.groupSplitsByDay(self.closedAnalysis)
+        self.closedAnalysis = AnalysisCache(from: closedAnalysis)
     }
     
     private func clearCache() {
         self.closedRanges = []
         self.openRanges = []
         
-        self.closedAnalysis = []
-        self.closedAnalysisSplitsByDay = [:]
-    }
-    
-    // MARK: - Data Transformation
-    
-    /// Apply all analysis actions to a provided entry
-    private func analyze(entry: Entry) -> EntryAnalysis {
-        let splits = DataProcessor.identifySplits(entry: entry)
-        return EntryAnalysis(source: entry, splits: splits)
-    }
-    
-    /// Reformat analysis to date-based lists that can be quickly queried.
-    private func groupSplitsByDay(_ values: [EntryAnalysis]) -> [String: [Split]] {
-        var dayAnalysis: [String: [Split]] = [:]
-        values.forEach { (entryAnalysis) in
-            // Can have multiple entries of a given category per-day
-            entryAnalysis.splits.forEach({ (split) in
-                dayAnalysis[split.key] = dayAnalysis[split.key] ?? []
-                dayAnalysis[split.key]!.append(split)
-            }
-        )}
-        
-        return dayAnalysis
-    }
-    
-    /**
-      This method is used to identify and group dictionary keys that are relevant to a given request.
-     
-     The keys must be provided in yyyy-MM-dd format and the grouped results will be
-     organized based on the start of a given time period. It is easiest to just to provide
-     the keys generated by `groupSplitsByDay`. If a key is not in the proper format
-     the results are undefined. Filters are applied using sorted string comparison.
-     
-     When grouping by day, the results will be 1-1, with a day having a single value in
-     the resulting array (itself).
-     
-     When grouping by week, the results will have all relevant keys for the appropriate
-     week in the resulting array.
-
-     - Parameters:
-        - stringDates: The date keys to analyze in yyyy-MM-dd format
-        - searchingFrom: The earliest date to include (Time is ignored)
-        - to: The date to stop including data. When nil, searches to present.
-        - groupBy: The period to group by
-        - calendar: The calendar to use when calculating dates
-     
-     */
-    private func identifyKeyGroupsFor(stringDates: Dictionary<String, [Split]>.Keys, searchingFrom from: Date, to: Date?, groupingBy groupBy: TimePeriod, with calendar: Calendar) -> [String: [String]] {
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.calendar = calendar
-
-        // Identify values in range
-        let startKey = formatter.string(from: from)
-        let endKey = to != nil ? formatter.string(from: to!) : nil
-
-        let filteredKeys = stringDates
-            .filter({ $0 >= startKey })
-            .filter({ endKey != nil ? $0 < endKey! : true })
-        
-        // Identify the start date of every key based on the groupBy type
-        let dateComponentMap: [TimePeriod: Set<Calendar.Component>] = [
-            .day: [.year, .month, .day], // will not be used because of guard
-            .week: [.yearForWeekOfYear, .weekOfYear],
-            .month: [.year, .month],
-            .year: [.year]
-        ]
-
-        let keyStartDates = filteredKeys.map { (key) -> String? in
-            guard groupBy != .day else { return key }
-
-            guard let date = formatter.date(from: key) else {
-                return nil // Invalid date format. Will be ignored
-            }
-            let dateComponents = calendar.dateComponents(dateComponentMap[groupBy]!, from: date)
-            let parentDate = calendar.date(from: dateComponents)
-            let parentKey = formatter.string(from: parentDate!)
-            
-            return parentKey
-        }
-        
-        // Build groups with start date as the key, and the related stringDates as the values
-        let keyGroups: [String: [String]] = zip(filteredKeys, keyStartDates).reduce(into: [:]) { (acc, next) in
-            let key = next.0
-            guard let value = next.1 else { return }
-            
-            acc[key] = acc[key] ?? []
-            acc[key]!.append(value)
-        }
-        
-        return keyGroups
-    }
-    
-    /// Apply the result of identifyKeyGroupsFor to the provided data to convert the keys to actual values
-    private func getQueryData(for keyGroups: [String : [String]], in data: [String : [Split]]) -> [String: [Split]] {
-        var transformedGroups: [String: [Split]] = [:]
-        let groupNames = keyGroups.keys.sorted()
-        
-        groupNames.forEach { (groupName) in
-            guard let groupKeys = keyGroups[groupName], groupKeys.count > 0 else { return }
-            
-            let allValuesInGroup = groupKeys.flatMap({ data[$0] ?? [] })
-            transformedGroups[groupName] = allValuesInGroup
-        }
-        
-        return transformedGroups
+        self.closedAnalysis = nil
     }
     
     // MARK: - Evaluation
@@ -265,14 +152,14 @@ public class Analyzer {
     private func evaluate(data: [String : [Split]], operations: [Operation]) -> [String : [Result]] {
         return data.mapValues { (data) -> [Result] in
             var results: [Result] = []
-            if operations.contains(.calculateOverallTotal) {
+            if operations.contains(.calculateTotal) {
                 let totalDuration = data.reduce(0, { $0 + $1.duration })
                 let totalOpen = data.reduce(false, { $0 || $1.open })
 
                 results.append(Result(overallTotal: totalDuration, open: totalOpen))
             }
             
-            if operations.contains(.calculateCategoryTotals) {
+            if operations.contains(.calculatePerCategory) {
                 let durationByCategory: [Int: TimeInterval] = data.reduce(into: [:]) { (object, record) in
                     object[record.categoryID] = (object[record.categoryID] ?? 0) + record.duration
                 }
@@ -295,17 +182,17 @@ public class Analyzer {
         return setA.merging(setB) { (collideA, collideB) -> [Result] in
             var merged: [Result] = []
 
-            let totalA = collideA.first(where: { $0.operation == .calculateOverallTotal })
-            let totalB = collideB.first(where: { $0.operation == .calculateOverallTotal })
+            let totalA = collideA.first(where: { $0.operation == .calculateTotal })
+            let totalB = collideB.first(where: { $0.operation == .calculateTotal })
             
             if let newTotal: TimeInterval = totalA == nil && totalB == nil ? nil : (totalA?.duration ?? 0) + (totalB?.duration ?? 0) {
                 let totalOpen: Bool = (totalA?.open ?? false) || (totalB?.open ?? false)
                 merged.append(Result(overallTotal: newTotal, open: totalOpen))
             }
             
-            var byCategory = collideA.filter({ $0.operation == .calculateOverallTotal })
-            byCategory.append(contentsOf: collideB.filter({ $0.operation == .calculateOverallTotal }))
-                    
+            var byCategory = collideA.filter({ $0.operation == .calculatePerCategory })
+            byCategory.append(contentsOf: collideB.filter({ $0.operation == .calculatePerCategory }))
+
             var categoryTotals: [Int: TimeInterval] = [:]
             var categoriesOpen: [Int: Bool] = [:]
             byCategory.forEach { (record) in
