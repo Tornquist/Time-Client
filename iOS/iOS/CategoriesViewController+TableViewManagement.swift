@@ -117,7 +117,7 @@ extension CategoriesViewController {
             .sorted(by: { (a, b) -> Bool in
                 return a.startedAt > b.startedAt
             }).first
-        let isOpen = self.openEntries?.filter({ $0.categoryID == categoryID }).count ?? 0 > 0
+        let isOpen = self.openCategoryIDs.contains(categoryID)
 
         let isRange = isOpen || matchingEntry?.type == .range
         

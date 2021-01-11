@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum TimePeriod {
+public enum TimePeriod: String {
     case year
     case month
     case week
@@ -22,12 +22,12 @@ public struct TimeRange {
         return !self.isRolling
     }
     
-    init(rolling period: TimePeriod) {
+    public init(rolling period: TimePeriod) {
         self.period = period
         self.isRolling = true
     }
     
-    init(current period: TimePeriod) {
+    public init(current period: TimePeriod) {
         self.period = period
         self.isRolling = false
     }

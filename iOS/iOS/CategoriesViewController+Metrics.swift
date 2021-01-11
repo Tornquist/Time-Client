@@ -18,30 +18,16 @@ extension CategoriesViewController {
     }
     
     func getFormattedMetricData(forDay isDay: Bool, showSeconds: Bool) -> (String, [String : (String, Bool)])? {
-        // TODO: Move metric calculation into TimeSDK
-        let hasData = isDay ? self.closedDayTimes != nil : self.closedWeekTimes != nil
-        guard hasData else {
-            return nil
-        }
+        let totalData = isDay ? self.dayTotal : self.weekTotal
+        let categoryData = isDay ? self.dayCategories : self.weekCategories
         
-        var totalByCategory: [Int: Double] = [:]
-        
-        (self.openEntries ?? []).forEach { (entry) in
-            let duration = Date().timeIntervalSince(entry.startedAt)
-            totalByCategory[entry.categoryID] = (totalByCategory[entry.categoryID] ?? 0) + duration
-        }
+        guard totalData != nil else { return nil }
 
-        (isDay ? self.closedDayTimes! : self.closedWeekTimes!).forEach { (record) in
-            totalByCategory[record.key] = (totalByCategory[record.key] ?? 0) + record.value
-        }
-                            
         // Will group all into "unknown" if no category keys exist
         var displayGroups: [String: (Double, Bool)] = [:]
-        let activeCategories = Set((self.openEntries ?? []).map({ $0.categoryID }))
-        
-        totalByCategory.forEach { (record) in
-            let categoryID = record.key
-            let active = activeCategories.contains(categoryID)
+        categoryData.forEach { (record) in
+            let categoryID = record.categoryID
+            let active = record.open
             
             let category = Time.shared.store.categories.first(where: { $0.id == categoryID })
             let name = category?.name
@@ -49,7 +35,7 @@ extension CategoriesViewController {
             let unknownName = NSLocalizedString("Unknown", comment: "")
             let safeName = name ?? unknownName
             
-            let newValue = (displayGroups[safeName]?.0 ?? 0) + record.value
+            let newValue = (displayGroups[safeName]?.0 ?? 0) + record.duration
             let newActive = (displayGroups[safeName]?.1 ?? false) || active
             
             displayGroups[safeName] = (newValue, newActive)
@@ -72,8 +58,7 @@ extension CategoriesViewController {
             displaySplits[record.key] = (timeString, record.value.1)
         }
 
-        let totalTime = totalByCategory.values.reduce(0, +)
-        let ti = Int(totalTime)
+        let ti = Int(totalData?.duration ?? 0)
         let timeString = getTimeString(ti)
         
         return (timeString, displaySplits)

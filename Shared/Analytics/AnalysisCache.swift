@@ -114,14 +114,14 @@ class AnalysisCache {
             
             return parentKey
         }
-        
+
         // Build groups with start date as the key, and the related stringDates as the values
-        let keyGroups: [String: [String]] = zip(filteredKeys, keyStartDates).reduce(into: [:]) { (acc, next) in
-            let key = next.0
-            guard let value = next.1 else { return }
+        let keyGroups: [String: [String]] = zip(keyStartDates, filteredKeys).reduce(into: [:]) { (acc, next) in
+            guard let start = next.0 else { return }
+            let value = next.1
             
-            acc[key] = acc[key] ?? []
-            acc[key]!.append(value)
+            acc[start] = acc[start] ?? []
+            acc[start]!.append(value)
         }
         
         return keyGroups

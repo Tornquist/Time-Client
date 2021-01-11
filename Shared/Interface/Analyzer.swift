@@ -16,7 +16,12 @@ public class Analyzer {
     var closedRanges: [Entry] = []
     var openRanges: [Entry] = []
     
-    var closedAnalysis: AnalysisCache? = nil
+    var closedAnalysis: AnalysisCache? = nil {
+        didSet {
+            self.closedQueryCache = [:]
+        }
+    }
+    var closedQueryCache: [String: [String : [Analyzer.Result]]] = [:]
     
     // External Types
     
@@ -26,10 +31,10 @@ public class Analyzer {
     }
     
     public struct Result {
-        var operation: Operation
-        var categoryID: Int?
-        var duration: TimeInterval
-        var open: Bool
+        public var operation: Operation
+        public var categoryID: Int?
+        public var duration: TimeInterval
+        public var open: Bool
         
         private init(operation: Operation, categoryID: Int?, duration: TimeInterval, open: Bool) {
             self.operation = operation
@@ -76,28 +81,42 @@ public class Analyzer {
         let from: Date = DateHelper.getStartOf(timeRange, for: calendar)
         let to: Date? = nil // now
         
-        // 2. Evaluate open results
+        // 2. Get closed results (from cache if possible)
+        
+        let closedCacheKey = [
+            from.description.replacingOccurrences(of: " ", with: "_"),
+            (to?.description ?? "now").replacingOccurrences(of: " ", with: "_"),
+            groupBy.rawValue
+        ].joined(separator: "-")
+
+        let closedResults: [String : [Result]] = {
+            if let cachedClosedResults = self.closedQueryCache[closedCacheKey] {
+                return cachedClosedResults
+            }
+            
+            let closedData = self.closedAnalysis?.getGroupedSplits(
+                searchingFrom: from,
+                to: to,
+                groupingBy: groupBy,
+                with: calendar
+            ) ?? [:]
+            
+            let freshClosedResults = self.evaluate(data: closedData, operations: operations)
+            
+            self.closedQueryCache[closedCacheKey] = freshClosedResults
+            
+            return freshClosedResults
+        }()
+        
+        // 3. Evaluate open results
         let openPerEntryAnalysis = self.openRanges.map(EntryAnalysis.generate(for:))
         let openAnalysis = AnalysisCache(from: openPerEntryAnalysis)
-        
-        // 3. Grab relevant records
-        let closedData = self.closedAnalysis?.getGroupedSplits(
-            searchingFrom: from,
-            to: to,
-            groupingBy: groupBy,
-            with: calendar
-        ) ?? [:]
-        
         let openData = openAnalysis.getGroupedSplits(
             searchingFrom: from,
             to: to,
             groupingBy: groupBy,
             with: calendar
         )
-
-        // 4. Evaluate
-        
-        let closedResults = self.evaluate(data: closedData, operations: operations)
         let openResults = self.evaluate(data: openData, operations: operations)
 
         // 4. Merge
