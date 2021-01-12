@@ -45,23 +45,9 @@ struct SummaryWidget: Widget {
 
 struct TimeLoader {
     static func fetch(for reference: Date, completion: @escaping (Result<TimeEntry, Error>) -> Void) {
-        var dayQuantity: TimeQuantity? = nil
-        var weekQuantity: TimeQuantity? = nil
-        var isActive = false
-        
         let calendar = Calendar.current
-        let dayComps = calendar.dateComponents([.day, .month, .year], from: reference)
         let weekComps = calendar.dateComponents([.weekOfYear, .yearForWeekOfYear], from: reference)
-        
-        let startOfDay = calendar.date(from: dayComps)!
         let startOfWeek = calendar.date(from: weekComps)!
-        
-        let doneWithRange = {
-            guard dayQuantity != nil && weekQuantity != nil else { return }
-            
-            let entry = TimeEntry(date: reference, today: dayQuantity!, week: weekQuantity!, active: isActive)
-            completion(.success(entry))
-        }
         
         let sharedUserDefaults = UserDefaults(suiteName: Constants.userDefaultsSuite)
         let serverURLOverride = sharedUserDefaults?.string(forKey: Constants.urlOverrideKey)
@@ -80,44 +66,38 @@ struct TimeLoader {
                 return
             }
             
-            // Check day total
-            self.getFrom(date: startOfDay, to: reference) { (day, active) in
-                dayQuantity = day
-                isActive = isActive || active
+            Time.shared.store.getEntries(after: startOfWeek) { (entries: [Entry]?, error: Error?) -> () in
+                guard error == nil else {
+                    completion(.failure(error!))
+                    return
+                }
+                
+                let dayData = self.get(current: .day)
+                let weekData = self.get(current: .week)
 
-                doneWithRange()
-            }
-            // Check week total
-            self.getFrom(date: startOfWeek, to: reference) { (week, active) in
-                weekQuantity = week
-                isActive = isActive || active
-
-                doneWithRange()
+                let entry = TimeEntry(
+                    date: reference,
+                    today: dayData.quantity,
+                    week: weekData.quantity,
+                    active: dayData.active || weekData.active
+                )
+                completion(.success(entry))
             }
         }
     }
     
-    static internal func getFrom(date: Date, to reference: Date, completion: @escaping (TimeQuantity?, Bool) -> ()) {
-        Time.shared.store.getEntries(after: date) { (entries: [Entry]?, error: Error?) -> () in
-            guard entries != nil && error == nil else {
-                completion(TimeQuantity.unknown, false)
-                return
-            }
-            
-            var isActive = false
-            let totalTime = entries!.compactMap({ (entry) -> TimeInterval? in
-                guard entry.type == .range else { return nil }
-                
-                guard entry.endedAt != nil else {
-                    isActive = true
-                    return reference.timeIntervalSince(entry.startedAt)
-                }
-                
-                return entry.endedAt!.timeIntervalSince(entry.startedAt)
-            }).reduce(0) { $0 + $1 }
-            
-            completion(TimeQuantity.from(totalTime), isActive)
-        }
+    static internal func get(current timePeriod: TimePeriod) -> (quantity: TimeQuantity, active: Bool) {
+        let analysisResult = Time.shared.analyzer.evaluate(
+            TimeRange(current: timePeriod),
+            groupBy: timePeriod,
+            perform: [.calculateTotal]
+        )
+        let result = analysisResult.values.first?.first(where: { $0.operation == .calculateTotal })
+        
+        let quantity = result != nil ? TimeQuantity.from(result!.duration) : TimeQuantity.unknown
+        let active = result?.open ?? false
+        
+        return (quantity: quantity, active: active)
     }
 }
 
