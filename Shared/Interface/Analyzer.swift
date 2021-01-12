@@ -26,6 +26,7 @@ public class Analyzer {
     // External Types
     
     public enum Operation {
+        case none
         case calculateTotal
         case calculatePerCategory
     }
@@ -36,11 +37,28 @@ public class Analyzer {
         public var duration: TimeInterval
         public var open: Bool
         
+        public func displayDuration(withSeconds showSeconds: Bool) -> String {
+            let time = Int(duration)
+            
+            let seconds = (time % 60)
+            let minutes = (time / 60) % 60
+            let hours = (time / 3600)
+            
+            let timeString = showSeconds
+                ? String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+                : String(format: "%02d:%02d", hours, minutes)
+            return timeString
+        }
+        
         private init(operation: Operation, categoryID: Int?, duration: TimeInterval, open: Bool) {
             self.operation = operation
             self.categoryID = categoryID
             self.duration = duration
             self.open = open
+        }
+        
+        public init() {
+            self.init(operation: .none, categoryID: nil, duration: 0, open: false)
         }
         
         fileprivate init(overallTotal duration: TimeInterval, open: Bool) {
