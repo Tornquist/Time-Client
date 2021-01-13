@@ -94,7 +94,7 @@ struct TimeLoader {
         )
         let result = analysisResult.values.first?.first(where: { $0.operation == .calculateTotal })
         
-        let quantity = result != nil ? TimeQuantity.from(result!.duration) : TimeQuantity.unknown
+        let quantity = result != nil ? TimeQuantity.from(result!.duration) : TimeQuantity.from(0)
         let active = result?.open ?? false
         
         return (quantity: quantity, active: active)
