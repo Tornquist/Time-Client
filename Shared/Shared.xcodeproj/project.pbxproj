@@ -62,6 +62,10 @@
 		D87F5AAD22674BFE00DD5DEA /* CategoryTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87F5AAC22674BFE00DD5DEA /* CategoryTree.swift */; };
 		D88CFA5925BDC9050028B6FE /* Test_TimeRangeAndPeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88CFA5825BDC9050028B6FE /* Test_TimeRangeAndPeriod.swift */; };
 		D88CFA5A25BDC9050028B6FE /* Test_TimeRangeAndPeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88CFA5825BDC9050028B6FE /* Test_TimeRangeAndPeriod.swift */; };
+		D88CFA6025BE354B0028B6FE /* Test_AnalysisCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88CFA5F25BE354B0028B6FE /* Test_AnalysisCache.swift */; };
+		D88CFA6125BE354B0028B6FE /* Test_AnalysisCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88CFA5F25BE354B0028B6FE /* Test_AnalysisCache.swift */; };
+		D88CFA6725BE36C10028B6FE /* test-analytics.json in Resources */ = {isa = PBXBuildFile; fileRef = D88CFA6625BE36C10028B6FE /* test-analytics.json */; };
+		D88CFA6825BE36C10028B6FE /* test-analytics.json in Resources */ = {isa = PBXBuildFile; fileRef = D88CFA6625BE36C10028B6FE /* test-analytics.json */; };
 		D88EB0F325A9FB810041CDC0 /* Analyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88EB0F225A9FB810041CDC0 /* Analyzer.swift */; };
 		D88EB10325AA08FD0041CDC0 /* Split.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88EB10225AA08FD0041CDC0 /* Split.swift */; };
 		D88EB12D25AA6E0A0041CDC0 /* TimePeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88EB12C25AA6E0A0041CDC0 /* TimePeriod.swift */; };
@@ -166,6 +170,8 @@
 		D87F5AA82264AC9300DD5DEA /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 		D87F5AAC22674BFE00DD5DEA /* CategoryTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryTree.swift; sourceTree = "<group>"; };
 		D88CFA5825BDC9050028B6FE /* Test_TimeRangeAndPeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_TimeRangeAndPeriod.swift; sourceTree = "<group>"; };
+		D88CFA5F25BE354B0028B6FE /* Test_AnalysisCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test_AnalysisCache.swift; sourceTree = "<group>"; };
+		D88CFA6625BE36C10028B6FE /* test-analytics.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-analytics.json"; sourceTree = "<group>"; };
 		D88EB0F225A9FB810041CDC0 /* Analyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analyzer.swift; sourceTree = "<group>"; };
 		D88EB10225AA08FD0041CDC0 /* Split.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Split.swift; sourceTree = "<group>"; };
 		D88EB12C25AA6E0A0041CDC0 /* TimePeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimePeriod.swift; sourceTree = "<group>"; };
@@ -371,6 +377,7 @@
 			children = (
 				D88EB17325B399AB0041CDC0 /* Test_Split.swift */,
 				D88CFA5825BDC9050028B6FE /* Test_TimeRangeAndPeriod.swift */,
+				D88CFA5F25BE354B0028B6FE /* Test_AnalysisCache.swift */,
 			);
 			name = Analytics;
 			sourceTree = "<group>";
@@ -418,6 +425,7 @@
 				D8FB5B1D23857B3C00EED615 /* tiny-example.csv */,
 				D8FB5B1A23857AF000EED615 /* not-a-csv.png */,
 				D8FB5B1523785E3B00EED615 /* import-example.csv */,
+				D88CFA6625BE36C10028B6FE /* test-analytics.json */,
 			);
 			name = "Support Files";
 			sourceTree = "<group>";
@@ -574,6 +582,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D88CFA6725BE36C10028B6FE /* test-analytics.json in Resources */,
 				D8FB5B222389BD3900EED615 /* mismatched-example.csv in Resources */,
 				D8FB5B1B23857AF000EED615 /* not-a-csv.png in Resources */,
 				D8FB5B1623785E3B00EED615 /* import-example.csv in Resources */,
@@ -595,6 +604,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D88CFA6825BE36C10028B6FE /* test-analytics.json in Resources */,
 				D8FB5B232389BD3900EED615 /* mismatched-example.csv in Resources */,
 				D8FB5B1C23857AF000EED615 /* not-a-csv.png in Resources */,
 				D8FB5B1723785E3B00EED615 /* import-example.csv in Resources */,
@@ -652,6 +662,7 @@
 				D811B17921E62B81009F6C8E /* Test_API_Tokens.swift in Sources */,
 				D8FB5B1323785D8100EED615 /* Test_FileImporter.swift in Sources */,
 				D8DD2A49233479BE00F26665 /* Test_Archive.swift in Sources */,
+				D88CFA6025BE354B0028B6FE /* Test_AnalysisCache.swift in Sources */,
 				D88EB18225B399DA0041CDC0 /* Test_Split.swift in Sources */,
 				D8EA80F42224E873002686D4 /* Test_DateHelper.swift in Sources */,
 				D822E55F22144D790011C09F /* Test_APIQueue.swift in Sources */,
@@ -691,6 +702,7 @@
 				D85B0A722246F2ED00835E55 /* Test_API_Tokens.swift in Sources */,
 				D8FB5B1223785D8100EED615 /* Test_FileImporter.swift in Sources */,
 				D8DD2A48233479BD00F26665 /* Test_Archive.swift in Sources */,
+				D88CFA6125BE354B0028B6FE /* Test_AnalysisCache.swift in Sources */,
 				D88EB17D25B399DA0041CDC0 /* Test_Split.swift in Sources */,
 				D85B0A732246F2ED00835E55 /* Test_DateHelper.swift in Sources */,
 				D85B0A742246F2ED00835E55 /* Test_APIQueue.swift in Sources */,
