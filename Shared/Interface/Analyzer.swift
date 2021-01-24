@@ -96,7 +96,7 @@ public class Analyzer {
     public func evaluate(_ timeRange: TimeRange, groupBy: TimePeriod, perform operations: [Operation]) -> [String: [Result]] {
         // 1. Identify query range
         let calendar = Calendar.current
-        let from: Date = DateHelper.getStartOf(timeRange, for: calendar)
+        let from: Date = DateHelper.getStartOf(timeRange, with: Date(), for: calendar)
         let to: Date? = nil // now
         
         // 2. Get closed results (from cache if possible)

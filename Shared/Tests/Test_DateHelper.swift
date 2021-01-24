@@ -11,6 +11,8 @@ import XCTest
 
 class Test_DateHelper: XCTestCase {
     
+    // MARK: - Iso In/Out
+    
     func test_stringFromDateWithMilliseconds() {
         var calendar = Calendar.current
         calendar.timeZone = TimeZone(identifier: "UTC")!
@@ -95,5 +97,110 @@ class Test_DateHelper: XCTestCase {
         let dateString = "March 3rd, 2019"
         let date = DateHelper.dateFrom(isoString: dateString)
         XCTAssertNil(date)
+    }
+    
+    // MARK: - Timezones
+    
+    func test_safeTimezoneRealTimezone() {
+        let realTimezoneIdentifier = "Europe/Zurich"
+        let safeTimezone = DateHelper.getSafeTimezone(identifier: realTimezoneIdentifier)
+        
+        XCTAssertEqual(safeTimezone.identifier, realTimezoneIdentifier)
+    }
+    
+    func test_safeTimezoneFakeTimezone() {
+        let realTimezoneIdentifier = "America/Zurich"
+        let safeTimezone = DateHelper.getSafeTimezone(identifier: realTimezoneIdentifier)
+        
+        let currentTimezone = TimeZone.autoupdatingCurrent
+        
+        XCTAssertEqual(safeTimezone.identifier, currentTimezone.identifier)
+    }
+    
+    // MARK: - Date Ranges
+
+    static func getStartOf(range: TimeRange, with incomingDateString: String) -> Date? {
+        // Shared defaults of gregorian calendar in Chicago for all date range tests
+        let calendarIdentifier: Calendar.Identifier = .gregorian
+        let outputTimezone = "America/Chicago"
+        
+        var calendar = Calendar(identifier: calendarIdentifier)
+        calendar.timeZone = DateHelper.getSafeTimezone(identifier: outputTimezone)
+
+        guard
+            let incomingDate = DateHelper.dateFrom(isoString: incomingDateString) else {
+            return nil
+        }
+        
+        let startOfRange = DateHelper.getStartOf(range, with: incomingDate, for: calendar)
+        return startOfRange
+    }
+    
+    static func evalute(incoming: String, against expected: String, with range: TimeRange) {
+        guard
+            let startOfRange = Test_DateHelper.getStartOf(range: range, with: incoming),
+            let expectedResult = DateHelper.dateFrom(isoString: expected)
+        else {
+            XCTFail("Could not build test dates")
+            return
+        }
+
+        XCTAssertEqual(startOfRange.timeIntervalSince1970, expectedResult.timeIntervalSince1970, accuracy: 1.0)
+    }
+  
+    func test_getStartOfDay() {
+        let incomingDateString = "2021-01-15T12:35:00-06:00"
+        let expectedResultString = "2021-01-15T06:00:00+00:00"
+        
+        Test_DateHelper.evalute(incoming: incomingDateString, against: expectedResultString, with: TimeRange(current: .day))
+        Test_DateHelper.evalute(incoming: incomingDateString, against: expectedResultString, with: TimeRange(rolling: .day))
+    }
+    
+    func test_startOfCurrentWeek() {
+        let incomingDateString = "2021-01-15T12:35:00-06:00"
+        let expectedResultString = "2021-01-10T06:00:00+00:00"
+        let timeRange = TimeRange(current: .week)
+        
+        Test_DateHelper.evalute(incoming: incomingDateString, against: expectedResultString, with: timeRange)
+    }
+    
+    func test_startOfRollingWeek() {
+        let incomingDateString = "2021-01-15T12:35:00-06:00"
+        let expectedResultString = "2021-01-08T06:00:00+00:00"
+        let timeRange = TimeRange(rolling: .week)
+        
+        Test_DateHelper.evalute(incoming: incomingDateString, against: expectedResultString, with: timeRange)
+    }
+    
+    func test_startOfCurrentMonth() {
+        let incomingDateString = "2021-01-15T12:35:00-06:00"
+        let expectedResultString = "2021-01-01T06:00:00+00:00"
+        let timeRange = TimeRange(current: .month)
+        
+        Test_DateHelper.evalute(incoming: incomingDateString, against: expectedResultString, with: timeRange)
+    }
+    
+    func test_startOfRollingMonth() {
+        let incomingDateString = "2021-01-15T12:35:00-06:00"
+        let expectedResultString = "2020-12-15T06:00:00+00:00"
+        let timeRange = TimeRange(rolling: .month)
+        
+        Test_DateHelper.evalute(incoming: incomingDateString, against: expectedResultString, with: timeRange)
+    }
+    
+    func test_startOfCurrentYear() {
+        let incomingDateString = "2021-01-15T12:35:00-06:00"
+        let expectedResultString = "2021-01-01T06:00:00+00:00"
+        let timeRange = TimeRange(current: .year)
+        
+        Test_DateHelper.evalute(incoming: incomingDateString, against: expectedResultString, with: timeRange)
+    }
+    
+    func test_startOfRollingYear() {
+        let incomingDateString = "2021-01-15T12:35:00-06:00"
+        let expectedResultString = "2020-01-15T06:00:00+00:00"
+        let timeRange = TimeRange(rolling: .year)
+        
+        Test_DateHelper.evalute(incoming: incomingDateString, against: expectedResultString, with: timeRange)
     }
 }

@@ -10,7 +10,7 @@ import Foundation
 
 class DateHelper {
     
-    // MARK: - Formatters
+    // MARK: - Iso In/Out
     
     private static var _isoFormatter: ISO8601DateFormatter? = nil
     private static var isoFormatter: ISO8601DateFormatter {
@@ -33,8 +33,6 @@ class DateHelper {
         return _isoMillisecondsFormatter!
     }
     
-    // MARK: - Base Helper Methods
-    
     static func isoStringFrom(date: Date, includeMilliseconds: Bool = true) -> String {
         if includeMilliseconds {
             return DateHelper.isoMillisecondsFormatter.string(from: date)
@@ -53,6 +51,8 @@ class DateHelper {
         return nil
     }
     
+    // MARK: - Timezones
+    
     static func getSafeTimezone(identifier: String?) -> TimeZone {
         let defaultTimezone = TimeZone.autoupdatingCurrent
         let safeIdentifier = identifier ?? defaultTimezone.identifier
@@ -62,8 +62,8 @@ class DateHelper {
 
     // MARK: - Date Ranges
     
-    static func getStartOf(_ timeRange: TimeRange, for calendar: Calendar) -> Date {
-        let startToday = calendar.startOfDay(for: Date())
+    static func getStartOf(_ timeRange: TimeRange, with date: Date, for calendar: Calendar) -> Date {
+        let startToday = calendar.startOfDay(for: date)
         
         let thisYearComponents = calendar.dateComponents([.year], from: startToday)
         let thisMonthComponent = calendar.dateComponents([.year, .month], from: startToday)
