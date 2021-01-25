@@ -10,22 +10,22 @@ import Foundation
 
 public class Analyzer {
     
-    weak var store: Store?
+    private weak var store: Store?
     
     // Internal Cache
-    var closedRanges: [Entry] = []
-    var openRanges: [Entry] = []
+    private var closedRanges: [Entry] = []
+    private var openRanges: [Entry] = []
     
-    var closedAnalysis: AnalysisCache? = nil {
+    private var closedAnalysis: AnalysisCache? = nil {
         didSet {
             self.closedQueryCache = [:]
         }
     }
-    var closedQueryCache: [String: [String : [Analyzer.Result]]] = [:]
+    private var closedQueryCache: [String: [String : [Analyzer.Result]]] = [:]
     
     // External Types
     
-    public enum Operation {
+    public enum Operation: String {
         case none
         case calculateTotal
         case calculatePerCategory
@@ -93,18 +93,35 @@ public class Analyzer {
     
     // MARK: - Query
     
-    public func evaluate(_ timeRange: TimeRange, groupBy: TimePeriod, perform operations: [Operation]) -> [String: [Result]] {
+    public func evaluate(
+        _ timeRange: TimeRange,
+        groupBy: TimePeriod,
+        perform operations: [Operation]
+    ) -> [String: [Result]] {
         // 1. Identify query range
+
         let calendar = Calendar.current
         let from: Date = DateHelper.getStartOf(timeRange, with: Date(), for: calendar)
         let to: Date? = nil // now
+
+        // 2. Perform query
+        return self.evaluate(from: from, to: to, in: calendar, groupBy: groupBy, perform: operations)
+    }
         
-        // 2. Get closed results (from cache if possible)
-        
+    public func evaluate(
+        from startDate: Date,
+        to endDate: Date?,
+        in calendar: Calendar,
+        groupBy: TimePeriod,
+        perform operations: [Operation]
+    ) -> [String: [Result]] {
+        // 1. Get closed results (from cache if possible)
+
         let closedCacheKey = [
-            from.description.replacingOccurrences(of: " ", with: "_"),
-            (to?.description ?? "now").replacingOccurrences(of: " ", with: "_"),
-            groupBy.rawValue
+            startDate.description.replacingOccurrences(of: " ", with: "_"),
+            (endDate?.description ?? "now").replacingOccurrences(of: " ", with: "_"),
+            groupBy.rawValue,
+            operations.map({ $0.rawValue }).joined(separator: "|")
         ].joined(separator: "-")
 
         let closedResults: [String : [Result]] = {
@@ -113,8 +130,8 @@ public class Analyzer {
             }
             
             let closedData = self.closedAnalysis?.getGroupedSplits(
-                searchingFrom: from,
-                to: to,
+                searchingFrom: startDate,
+                to: endDate,
                 groupingBy: groupBy,
                 with: calendar
             ) ?? [:]
@@ -126,22 +143,23 @@ public class Analyzer {
             return freshClosedResults
         }()
         
-        // 3. Evaluate open results
+        // 2. Evaluate open results
+
         let openPerEntryAnalysis = self.openRanges.map(EntryAnalysis.generate(for:))
         let openAnalysis = AnalysisCache(from: openPerEntryAnalysis)
         let openData = openAnalysis.getGroupedSplits(
-            searchingFrom: from,
-            to: to,
+            searchingFrom: startDate,
+            to: endDate,
             groupingBy: groupBy,
             with: calendar
         )
         let openResults = self.evaluate(data: openData, operations: operations)
 
-        // 4. Merge
+        // 3. Merge
         
         let results = self.mergeResults(closedResults, and: openResults)
 
-        // 5. Complete
+        // 4. Complete
 
         return results
     }
