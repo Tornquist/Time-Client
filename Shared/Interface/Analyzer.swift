@@ -95,17 +95,17 @@ public class Analyzer {
     
     public func evaluate(
         _ timeRange: TimeRange,
+        in calendar: Calendar? = nil,
         groupBy: TimePeriod,
         perform operations: [Operation]
     ) -> [String: [Result]] {
         // 1. Identify query range
-
-        let calendar = Calendar.current
-        let from: Date = DateHelper.getStartOf(timeRange, with: Date(), for: calendar)
+        let selectedCalendar = calendar ?? Calendar.current
+        let from: Date = DateHelper.getStartOf(timeRange, with: Date(), for: selectedCalendar)
         let to: Date? = nil // now
 
         // 2. Perform query
-        return self.evaluate(from: from, to: to, in: calendar, groupBy: groupBy, perform: operations)
+        return self.evaluate(from: from, to: to, in: selectedCalendar, groupBy: groupBy, perform: operations)
     }
         
     public func evaluate(

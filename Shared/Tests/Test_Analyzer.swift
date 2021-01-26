@@ -248,4 +248,111 @@ class Test_Analyzer: XCTestCase {
             }
         }
     }
+    
+    func test_openAnalysis() {
+        let tz = "America/Chicago"
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = DateHelper.getSafeTimezone(identifier: tz)
+        
+        let now = Date()
+        
+        let startOfToday = calendar.startOfDay(for: now)
+        
+        guard
+            let base = calendar.date(byAdding: DateComponents(hour: -12), to: startOfToday),
+            
+            let presentStart = calendar.date(byAdding: DateComponents(hour: -2), to: startOfToday),
+            
+            // 2 hr, 13 min (7980)
+            let todayStart = calendar.date(byAdding: DateComponents(day: 1, hour: -1), to: base),
+            let todayEnd = calendar.date(byAdding: DateComponents(day: 1, hour: 1, minute: 13), to: base),
+            
+            // 3 hr, 25 min (12300s)
+            let yesterdayStart = calendar.date(byAdding: DateComponents(hour: -2, minute: -15), to: base),
+            let yesterdayEnd = calendar.date(byAdding: DateComponents(hour: 1, minute: 10), to: base),
+            
+            // 2 hr, 5 min (7500s)
+            let twoDaysAgoStart = calendar.date(byAdding: DateComponents(day: -1, minute: 10), to: base),
+            let twoDaysAgoEnd = calendar.date(byAdding: DateComponents(day: -1, hour: 2, minute: 15), to: base),
+            
+            // 5 hr, 31 min (19860s)
+            let threeDaysAgoStart = calendar.date(byAdding: DateComponents(day: -2, hour: -2, minute: -15), to: base),
+            let threeDaysAgoEnd = calendar.date(byAdding: DateComponents(day: -2, hour: 3, minute: 16), to: base),
+            
+            // 1 min (60s)
+            let fourDaysAgoStart = calendar.date(byAdding: DateComponents(day: -3), to: base),
+            let fourDaysAgoEnd = calendar.date(byAdding: DateComponents(day: -3, minute: 1), to: base),
+            
+            // 6 hr (21600s)
+            let tenDaysAgoStart = calendar.date(byAdding: DateComponents(day: -9, hour: -5), to: base),
+            let tenDaysAgoEnd = calendar.date(byAdding: DateComponents(day: -9, hour: 1), to: base)
+        else {
+            XCTFail("Could not build entry seed dates")
+            return
+        }
+        
+        let entries: [Entry] = [
+            //Today open
+            Entry(id: 100000, type: .range, categoryID: 1, startedAt: presentStart, startedAtTimezone: tz, endedAt: nil),
+            // Today closed
+            Entry(id: 100001, type: .range, categoryID: 1, startedAt: todayStart, startedAtTimezone: tz, endedAt: todayEnd, endedAtTimezone: tz),
+            // Past closed
+            Entry(id: 100002, type: .range, categoryID: 1, startedAt: yesterdayStart, startedAtTimezone: tz, endedAt: yesterdayEnd, endedAtTimezone: tz),
+            Entry(id: 100003, type: .range, categoryID: 1, startedAt: twoDaysAgoStart, startedAtTimezone: tz, endedAt: twoDaysAgoEnd, endedAtTimezone: tz),
+            Entry(id: 100004, type: .range, categoryID: 1, startedAt: threeDaysAgoStart, startedAtTimezone: tz, endedAt: threeDaysAgoEnd, endedAtTimezone: tz),
+            Entry(id: 100005, type: .range, categoryID: 1, startedAt: fourDaysAgoStart, startedAtTimezone: tz, endedAt: fourDaysAgoEnd, endedAtTimezone: tz),
+            Entry(id: 100006, type: .range, categoryID: 1, startedAt: tenDaysAgoStart, startedAtTimezone: tz, endedAt: tenDaysAgoEnd, endedAtTimezone: tz) // will be ignored
+        ]
+        
+        // Build store
+        let api = API()
+        let store = Store(api: api)
+        store.entries = entries
+                
+        // Build analyzer
+        let analyzer = Analyzer(store: store)
+        
+        // Test
+        let results = analyzer.evaluate(
+            TimeRange(rolling: .week),
+            in: calendar,
+            groupBy: .day,
+            perform: [.calculateTotal]
+        )
+        
+        XCTAssertEqual(results.keys.count, 5)
+        
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.dateFormat = "yyyy-MM-dd"
+        
+        let day1 = formatter.string(from: startOfToday)
+        let day2 = formatter.string(from: entries[2].startedAt)
+        let day3 = formatter.string(from: entries[3].startedAt)
+        let day4 = formatter.string(from: entries[4].startedAt)
+        let day5 = formatter.string(from: entries[5].startedAt)
+        
+        XCTAssertEqual(Set([day1, day2, day3, day4, day5]), Set(results.keys))
+        
+        let day1Duration = now.timeIntervalSinceReferenceDate - startOfToday.timeIntervalSinceReferenceDate + 7980
+        let day2Duration: TimeInterval = 12300 /* day 2 */ + 7200 /* early morning day 1 */
+        let day3Duration: TimeInterval = 7500
+        let day4Duration: TimeInterval = 19860
+        let day5Duration: TimeInterval = 60
+        
+        XCTAssertEqual(results[day1]?.first?.duration ?? 0, day1Duration, accuracy: 1.0)
+        XCTAssertEqual(results[day1]?.first?.open ?? false, true)
+        
+        XCTAssertEqual(results[day2]?.first?.duration ?? 0, day2Duration)
+        XCTAssertEqual(results[day2]?.first?.open ?? true, false)
+        
+        XCTAssertEqual(results[day3]?.first?.duration ?? 0, day3Duration)
+        XCTAssertEqual(results[day3]?.first?.open ?? true, false)
+        
+        XCTAssertEqual(results[day4]?.first?.duration ?? 0, day4Duration)
+        XCTAssertEqual(results[day4]?.first?.open ?? true, false)
+        
+        XCTAssertEqual(results[day5]?.first?.duration ?? 0, day5Duration)
+        XCTAssertEqual(results[day5]?.first?.open ?? true, false)
+    }
 }
