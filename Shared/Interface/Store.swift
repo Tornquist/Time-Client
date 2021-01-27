@@ -178,6 +178,7 @@ public class Store {
                     let endingEntries = startingEntries.filter({ currentCategoryIDs.contains($0.categoryID) })
                     self.entries = endingEntries
                 }
+                NotificationCenter.default.post(name: .TimeCategoriesRefresh, object: self)
             }
             completion?(categories, nil)
         }
@@ -366,6 +367,8 @@ public class Store {
                 } else {
                     self.entries = entries!
                 }
+                
+                NotificationCenter.default.post(name: .TimeEntriesRefresh, object: self)
             }
             
             completion?(self.entries, nil)

@@ -84,10 +84,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         super.viewWillAppear(animated)
         
         self.refreshNavigation()
-        self.loadData()
-        
-        self.calculateRecents()
-        self.calculateMetrics(refreshTable: true)
+        self.loadData() // Will trigger reset of recents and metrics
         
         self.secondUpdateTimer = Timer(timeInterval: 1.0, target: self, selector: #selector(timerTick), userInfo: nil, repeats: true)
         RunLoop.main.add(self.secondUpdateTimer!, forMode: .common)
@@ -163,10 +160,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                         self.refreshControl.endRefreshing()
                     }
                 }
-                
-                // TODO: Show errors as-needed
-                self.tableView.reloadData()
             }
+            self.refreshAllCalculations()
         }
         
         let networkMode: Store.NetworkMode = refresh ? .refreshAll : .asNeeded
@@ -394,6 +389,10 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     @objc func handleEntryNotification(_ notification:Notification) {
+        self.refreshAllCalculations()
+    }
+    
+    func refreshAllCalculations() {
         self.calculateRecents()
         self.calculateMetrics(refreshTable: true)
         
@@ -832,6 +831,8 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     @objc func safeReload() {
+        self.calculateMetrics()
+        
         if Thread.isMainThread {
             self.tableView.reloadData()
         } else {

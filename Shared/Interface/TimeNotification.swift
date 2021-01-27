@@ -20,6 +20,8 @@ extension Notification.Name {
     public static let TimeImportRequestCreated = Notification.Name("TimeImportRequestCreated")
     public static let TimeImportRequestCompleted = Notification.Name("TimeImportRequestCompleted")
     
+    public static let TimeCategoriesRefresh = Notification.Name("TimeCategoriesRefresh")
+    public static let TimeEntriesRefresh = Notification.Name("TimeEntriesRefresh")
     public static let TimeBackgroundStoreUpdate = Notification.Name("TimeBackgroundStoreUpdate")
     
     public static let TimeEntryStarted = Notification.Name("TimeEntryStarted")
@@ -36,7 +38,12 @@ enum TimeNotificationGroup {
         switch self {
         case .entryDataChanged:
             return [
-                .TimeImportRequestCompleted,
+                /* Full dataset fetch */
+                .TimeCategoriesRefresh,
+                .TimeEntriesRefresh,
+                .TimeBackgroundStoreUpdate,
+
+                /* Specific changes */
                 .TimeEntryStarted,
                 .TimeEntryStopped,
                 .TimeEntryRecorded,
