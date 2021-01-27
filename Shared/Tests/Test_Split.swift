@@ -436,4 +436,42 @@ class Test_Split: XCTestCase {
         XCTAssertEqual(secondDay.entryID, 4)
         XCTAssertEqual(secondDay.open, true)
     }
+    
+    func test_closeToUTCDayChange() {
+        let edgeCase = """
+        {
+            "id": 3126,
+            "type": "range",
+            "category_id": 38,
+            "started_at": "2020-11-30T00:26:00.000Z",
+            "started_at_timezone": "America/Chicago",
+            "ended_at": "2020-11-30T00:59:00.000Z",
+            "ended_at_timezone": "America/Chicago"
+        }
+        """
+            
+        guard
+            let data = edgeCase.data(using: .utf8),
+            let entry = try? JSONDecoder().decode(Entry.self, from: data)
+        else {
+            XCTFail("Could not generate seed dates")
+            return
+        }
+        
+        let splits = Split.identify(for: entry)
+        XCTAssertEqual(splits.count, 1)
+        
+        guard let split = splits.first else {
+            XCTFail("Unable to get single split")
+            return
+        }
+        
+        XCTAssertEqual(split.year, 2020)
+        XCTAssertEqual(split.month, 11)
+        XCTAssertEqual(split.day, 29)
+        XCTAssertEqual(split.duration, 1980, accuracy: 1.0) // within 1s
+        XCTAssertEqual(split.categoryID, 38)
+        XCTAssertEqual(split.entryID, 3126)
+        XCTAssertEqual(split.open, false)
+    }
 }

@@ -105,9 +105,25 @@ class AnalysisCache {
         let keyStartDates = filteredKeys.map { (key) -> String? in
             guard groupBy != .day else { return key }
 
-            guard let date = formatter.date(from: key) else {
+            let keyComponents = key.components(separatedBy: "-")
+            guard
+                keyComponents.count == 3,
+                // The base date must be built in the context of the calendar
+                // used to run the query to have stable date lookups. Otherwise
+                // the time will be zero (instead of the appropriate start of day
+                // time relative to GMT and the final results can shift days.
+                let yearValue = Int(keyComponents[0]),
+                let monthValue = Int(keyComponents[1]),
+                let dayValue = Int(keyComponents[2]),
+                let date = calendar.date(from: DateComponents(
+                    year: yearValue,
+                    month: monthValue,
+                    day: dayValue
+                ))
+            else {
                 return nil // Invalid date format. Will be ignored
             }
+
             let dateComponents = calendar.dateComponents(dateComponentMap[groupBy]!, from: date)
             let parentDate = calendar.date(from: dateComponents)
             let parentKey = formatter.string(from: parentDate!)

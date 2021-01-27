@@ -131,6 +131,25 @@ class Test_AnalysisCache: XCTestCase {
         let expectedKeys = ["2020-11-01", "2020-11-08", "2020-11-15", "2020-11-22", "2020-11-29"]
         
         XCTAssertEqual(Set(dataByWeek.keys), Set(expectedKeys))
+        
+        // An entry exists at 0:26 GMT on the 30th that was previously rolling
+        // to the week of the 22nd. This boarder (and association) must be verified.
+        
+        // This was resolved by parsing the cache keys in the same calendar
+        // they are used in. Otherwise start time (00:00) can cause day shifts.
+        
+        guard let finalWeek = dataByWeek["2020-11-29"] else {
+            XCTFail("Could not get final week data")
+            return
+        }
+        
+        XCTAssertEqual(finalWeek.count, 3)
+        
+        let expectedIDs = [3126, 3127, 3128]
+        XCTAssertEqual(Set(finalWeek.map({ $0.entryID })), Set(expectedIDs))
+        
+        let expectedDurations: [TimeInterval] = [1980.0, 18022.0, 35129.0]
+        XCTAssertEqual(Set(finalWeek.map({ $0.duration })), Set(expectedDurations))
     }
     
     func test_wholeRangeByMonth() {
