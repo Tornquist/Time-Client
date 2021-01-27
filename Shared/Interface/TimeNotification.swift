@@ -28,3 +28,21 @@ extension Notification.Name {
     public static let TimeEntryModified = Notification.Name("TimeEntryModified")
     public static let TimeEntryDeleted = Notification.Name("TimeEntryDeleted")
 }
+
+enum TimeNotificationGroup {
+    case entryDataChanged
+    
+    var notifications: [Notification.Name] {
+        switch self {
+        case .entryDataChanged:
+            return [
+                .TimeImportRequestCompleted,
+                .TimeEntryStarted,
+                .TimeEntryStopped,
+                .TimeEntryRecorded,
+                .TimeEntryModified,
+                .TimeEntryDeleted
+            ]
+        }
+    }
+}

@@ -57,9 +57,12 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     
     var recentCategories: [CategoryTree] = []
     
-    var closedWeekTimes: [Int: Double]? = nil
-    var closedDayTimes: [Int: Double]? = nil
-    var openEntries: [Entry]? = nil
+    var dayTotal: Analyzer.Result? = nil
+    var dayCategories: [Analyzer.Result] = []
+    var openCategoryIDs: [Int] = []
+    
+    var weekTotal: Analyzer.Result? = nil
+    var weekCategories: [Analyzer.Result] = []
 
     var secondUpdateTimer: Timer? = nil
     
@@ -84,7 +87,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         self.loadData()
         
         self.calculateRecents()
-        self.calculateMetrics()
+        self.calculateMetrics(refreshTable: true)
         
         self.secondUpdateTimer = Timer(timeInterval: 1.0, target: self, selector: #selector(timerTick), userInfo: nil, repeats: true)
         RunLoop.main.add(self.secondUpdateTimer!, forMode: .common)
@@ -392,7 +395,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     
     @objc func handleEntryNotification(_ notification:Notification) {
         self.calculateRecents()
-        self.calculateMetrics()
+        self.calculateMetrics(refreshTable: true)
         
         if #available(iOS 14.0, *) {
             WidgetCenter.shared.reloadAllTimelines()
@@ -471,65 +474,50 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         }
     }
     
-    func calculateMetrics() {
-        let now = Date()
-        let calendar = Calendar.current
+    func calculateMetrics(refreshTable: Bool = false) {
+        let dayAnalysisResult = Time.shared.analyzer.evaluate(
+            TimeRange(current: .day),
+            groupBy: .day,
+            perform: [.calculateTotal, .calculatePerCategory]
+        )
         
-        let dayComps = calendar.dateComponents([.day, .month, .year], from: now)
-        let weekComps = calendar.dateComponents([.weekOfYear, .yearForWeekOfYear], from: now)
-        
-        let startOfDay = calendar.date(from: dayComps)!
-        let startOfWeek = calendar.date(from: weekComps)!
-        
-        let handleEntries = { (day: Bool) -> (([Entry]?, Error?) -> ()) in
-            return { (entries: [Entry]?, error: Error?) in
-                guard error == nil && entries != nil else {
-                    if day {
-                        self.closedDayTimes = nil
-                    } else {
-                        self.closedWeekTimes = nil
-                    }
-                    
-                    DispatchQueue.main.async {
-                        self.tableView.reloadData()
-                    }
-                    return
-                }
-                
-                var closedRanges: [Entry] = []
-                var openRanges: [Entry] = []
-                
-                entries!.forEach { (entry) in
-                    guard entry.type == .range else { return }
-                    
-                    if entry.endedAt == nil {
-                        openRanges.append(entry)
-                    } else {
-                        closedRanges.append(entry)
-                    }
-                }
-                
-                var closedTimes: [Int: Double] = [:]
-                closedRanges.forEach { (entry) in
-                    let duration = entry.endedAt!.timeIntervalSince(entry.startedAt)
-                    closedTimes[entry.categoryID] = (closedTimes[entry.categoryID] ?? 0) + duration
-                }
-                
-                if day {
-                    self.closedDayTimes = closedTimes
-                    self.openEntries = openRanges
-                } else {
-                    self.closedWeekTimes = closedTimes
-                }
-                
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
-            }
+        if dayAnalysisResult.keys.count == 1,
+           let dayAnalysis = dayAnalysisResult.values.first,
+           let dayTotal = dayAnalysis.first(where: { $0.operation == .calculateTotal }) {
+            let dayCategories = dayAnalysis.filter({ $0.operation == .calculatePerCategory })
+            
+            self.dayTotal = dayTotal
+            self.dayCategories = dayCategories
+            self.openCategoryIDs = self.dayCategories.filter({ $0.open == true }).compactMap({ $0.categoryID })
+        } else {
+            self.dayTotal = nil
+            self.dayCategories = []
+            self.openCategoryIDs = []
         }
         
-        Time.shared.store.getEntries(after: startOfDay, completion: handleEntries(true))
-        Time.shared.store.getEntries(after: startOfWeek, completion: handleEntries(false))
+        let weekAnalysisResult = Time.shared.analyzer.evaluate(
+            TimeRange(current: .week),
+            groupBy: .week,
+            perform: [.calculateTotal, .calculatePerCategory]
+        )
+        
+        if weekAnalysisResult.keys.count == 1,
+           let weekAnalysis = weekAnalysisResult.values.first,
+           let weekTotal = weekAnalysis.first(where: { $0.operation == .calculateTotal }) {
+            let weekCategories = weekAnalysis.filter({ $0.operation == .calculatePerCategory })
+            
+            self.weekTotal = weekTotal
+            self.weekCategories = weekCategories
+        } else {
+            self.weekTotal = nil
+            self.weekCategories = []
+        }
+        
+        guard refreshTable else { return }
+        
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
     }
             
     // MARK: - Events
@@ -626,7 +614,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                         cell.backgroundColor = defaultBackgroundColor
 
                         let title = self.getMetricTitle(forDay: isDay)
-
+                        
                         guard let data = self.getFormattedMetricData(forDay: isDay, showSeconds: showSeconds) else {
                             let blank = showSeconds ? "XX:XX:XX" : "XX:XX"
                             cell.configure(forRange: title, withTime: blank, andSplits: nil)
@@ -687,7 +675,7 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
                 let depth = categoryTree.depth - 1 // Will not show account cell
                 let isExpanded = categoryTree.expanded || self.moving
                 let hasChildren = categoryTree.children.count > 0
-                let isActive = self.openEntries?.contains(where: { $0.categoryID == categoryTree.node.id }) ?? false
+                let isActive = self.openCategoryIDs.contains(categoryTree.node.id)
                 cell.configure(with: category.name, depth: depth, isExpanded: isExpanded, hasChildren: hasChildren, isActive: isActive)
                 cell.backgroundColor = backgroundColor
                 return cell
@@ -855,11 +843,12 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
     
     func refreshMetrics() {
         guard
-            self.openEntries != nil &&
-            self.openEntries!.count > 0,
+            self.openCategoryIDs.count > 0,
             let section = self.headerControls.firstIndex(of: .metric),
             let numRows = self.controlRows[.metric]
             else { return }
+        
+        self.calculateMetrics()
         
         let indexPaths = (0..<numRows).map { IndexPath(row: $0, section: section) }
         self.tableView.reloadRows(at: indexPaths, with: .none)

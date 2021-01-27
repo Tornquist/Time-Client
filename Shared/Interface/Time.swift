@@ -55,6 +55,7 @@ public class Time {
     let config: TimeConfig
     let tokenStore: TokenStore
     public var store: Store
+    public var analyzer: Analyzer
     
     // Control Flow
     var reauthenticating: Bool = false
@@ -64,6 +65,7 @@ public class Time {
         self.config = config
         self.tokenStore = TokenStore(config: config)
         self.store = Store(config: config, api: self.api)
+        self.analyzer = Analyzer(store: store)
         
         if let url = config.serverURL {
             let updatedURL = self.api.set(url: url)
@@ -124,6 +126,7 @@ public class Time {
                 if differentUser {
                     self.store.resetDisk()
                     self.store = Store(config: self.config, api: self.api)
+                    self.analyzer = Analyzer(store: self.store)
                 }
                 self.reauthenticating = false
             }
@@ -156,6 +159,7 @@ public class Time {
         _ = self.tokenStore.deleteToken()
         self.store.resetDisk()
         self.store = Store(config: self.config, api: self.api)
+        self.analyzer = Analyzer(store: self.store)
         self.api.token = nil
     }
     

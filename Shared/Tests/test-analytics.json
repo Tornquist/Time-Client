@@ -1,0 +1,560 @@
+[
+  {
+    "id": 3065,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-02T13:58:26.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-02T19:33:32.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3066,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-02T20:02:36.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-02T23:53:36.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3067,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-03T14:30:30.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-03T18:36:21.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3068,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-03T19:03:00.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-03T21:17:04.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3069,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-03T21:32:14.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-03T23:05:34.000Z",
+    "ended_at_timezone": null
+  },
+  {
+    "id": 3070,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-04T01:40:04.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-04T01:55:56.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3071,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-04T14:02:00.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-04T18:31:29.000Z",
+    "ended_at_timezone": null
+  },
+  {
+    "id": 3072,
+    "type": "range",
+    "category_id": 5,
+    "started_at": "2020-11-04T18:58:33.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-04T19:35:08.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3073,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-04T19:46:42.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-05T00:11:45.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3074,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-05T14:17:40.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-05T16:51:08.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3075,
+    "type": "range",
+    "category_id": 37,
+    "started_at": "2020-11-05T16:53:37.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-05T17:10:38.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3076,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-05T17:12:02.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-05T17:50:13.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3077,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-05T18:22:27.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-05T18:37:11.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3078,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-05T19:19:22.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-05T23:57:47.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3079,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-06T14:28:45.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-06T16:25:03.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3080,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-06T17:14:53.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-06T18:17:13.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3081,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-06T19:08:00.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-06T19:46:17.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3082,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-06T20:01:35.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-06T23:54:22.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3083,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-09T14:31:06.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-09T23:51:56.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3084,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-10T14:08:00.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-10T18:02:15.000Z",
+    "ended_at_timezone": null
+  },
+  {
+    "id": 3085,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-10T18:14:30.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-10T18:39:42.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3086,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-10T19:11:51.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-10T23:36:01.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3087,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-11T14:10:48.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-11T18:45:20.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3088,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-11T19:24:59.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-11T23:39:09.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3089,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-12T14:04:42.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-12T18:46:00.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3090,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-12T19:04:36.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-13T01:38:16.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3091,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-13T14:20:28.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-13T18:50:09.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3092,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-13T19:11:18.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-14T00:05:00.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3093,
+    "type": "range",
+    "category_id": 14,
+    "started_at": "2020-11-14T23:27:59.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-14T23:37:52.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3094,
+    "type": "range",
+    "category_id": 28,
+    "started_at": "2020-11-14T23:37:55.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-15T00:23:52.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3095,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-16T14:27:56.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-16T18:42:27.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3096,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-16T19:14:31.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-17T00:00:26.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3097,
+    "type": "range",
+    "category_id": 37,
+    "started_at": "2020-11-17T02:02:48.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-17T02:28:05.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3098,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-17T12:35:00.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-17T13:40:09.000Z",
+    "ended_at_timezone": null
+  },
+  {
+    "id": 3099,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-17T14:20:35.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-17T17:58:58.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3100,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-17T19:04:15.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-17T23:18:45.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3101,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-18T14:24:33.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-18T19:06:43.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3102,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-18T19:28:48.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-19T00:51:11.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3103,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-19T01:25:08.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-19T02:19:09.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3104,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-19T14:31:00.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-19T18:10:41.000Z",
+    "ended_at_timezone": null
+  },
+  {
+    "id": 3105,
+    "type": "range",
+    "category_id": 37,
+    "started_at": "2020-11-19T18:21:53.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-19T18:42:27.000Z",
+    "ended_at_timezone": null
+  },
+  {
+    "id": 3106,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-19T19:15:48.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-19T23:29:36.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3107,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-20T13:56:28.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-20T18:29:21.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3108,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-20T19:24:17.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-21T01:07:34.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3109,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-21T14:34:33.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-21T14:54:24.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3110,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-23T13:08:00.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-23T14:07:19.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3111,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-23T14:15:15.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-23T18:31:21.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3112,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-23T19:13:43.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-23T23:50:53.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3113,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-24T13:30:18.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-24T18:49:13.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3115,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-24T19:16:38.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-24T23:47:02.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3116,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-25T12:25:10.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-25T13:38:34.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3117,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-25T14:25:23.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-25T18:45:30.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3119,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-25T19:07:22.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-26T01:04:23.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3120,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-26T14:22:32.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-26T15:00:03.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3121,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-26T15:51:52.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-26T16:16:28.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3122,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-26T16:31:51.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-26T16:36:49.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3123,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-26T17:05:00.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-26T17:14:31.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3124,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-27T13:58:00.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-27T14:09:38.000Z",
+    "ended_at_timezone": null
+  },
+  {
+    "id": 3125,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-27T14:46:43.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-27T14:55:05.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3126,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-30T00:26:00.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-30T00:59:00.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3127,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-30T13:28:31.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-11-30T18:28:53.000Z",
+    "ended_at_timezone": "America/Chicago"
+  },
+  {
+    "id": 3128,
+    "type": "range",
+    "category_id": 38,
+    "started_at": "2020-11-30T19:07:58.000Z",
+    "started_at_timezone": "America/Chicago",
+    "ended_at": "2020-12-01T04:53:27.000Z",
+    "ended_at_timezone": "America/Chicago"
+  }
+]
