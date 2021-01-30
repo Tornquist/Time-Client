@@ -145,6 +145,12 @@ public class CategoryTree: Equatable {
         return list
     }
     
+    public func listCategoryTrees() -> [CategoryTree] {
+        var list = [self]
+        self.children.forEach({ list.append(contentsOf: $0.listCategoryTrees()) })
+        return list
+    }
+    
     func sortChildren() {
         // Default (and only) sorting method is alphabetically (ignoring case)
         self.children.sort { (treeA, treeB) -> Bool in
