@@ -31,6 +31,9 @@
 		D855812D21BDE9A400DCB577 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D855812C21BDE9A400DCB577 /* Assets.xcassets */; };
 		D855813021BDE9A400DCB577 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D855812E21BDE9A400DCB577 /* LaunchScreen.storyboard */; };
 		D856108925C3A52B00A325B3 /* EntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856108825C3A52B00A325B3 /* EntryView.swift */; };
+		D856108C25CB928B00A325B3 /* RecentCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856108B25CB928B00A325B3 /* RecentCategory.swift */; };
+		D856108E25CB9BDC00A325B3 /* QuantityMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856108D25CB9BDC00A325B3 /* QuantityMetric.swift */; };
+		D856109025CBA44600A325B3 /* ListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856108F25CBA44600A325B3 /* ListItem.swift */; };
 		D856E83824D6EFD0001E564A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856E83724D6EFD0001E564A /* Constants.swift */; };
 		D856E83924D6EFD0001E564A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856E83724D6EFD0001E564A /* Constants.swift */; };
 		D856E83D24D70629001E564A /* TimeSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8FB6ABE220B18CD002C0456 /* TimeSDK.framework */; };
@@ -129,6 +132,9 @@
 		D855812F21BDE9A400DCB577 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D855813121BDE9A400DCB577 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D856108825C3A52B00A325B3 /* EntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryView.swift; sourceTree = "<group>"; };
+		D856108B25CB928B00A325B3 /* RecentCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentCategory.swift; sourceTree = "<group>"; };
+		D856108D25CB9BDC00A325B3 /* QuantityMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuantityMetric.swift; sourceTree = "<group>"; };
+		D856108F25CBA44600A325B3 /* ListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListItem.swift; sourceTree = "<group>"; };
 		D856E83524D6EA4C001E564A /* WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WidgetExtension.entitlements; sourceTree = "<group>"; };
 		D856E83724D6EFD0001E564A /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		D85B0A492246DD1A00835E55 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
@@ -251,6 +257,17 @@
 			path = iOS;
 			sourceTree = "<group>";
 		};
+		D856108A25CB926B00A325B3 /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				D856108825C3A52B00A325B3 /* EntryView.swift */,
+				D856108B25CB928B00A325B3 /* RecentCategory.swift */,
+				D856108D25CB9BDC00A325B3 /* QuantityMetric.swift */,
+				D856108F25CBA44600A325B3 /* ListItem.swift */,
+			);
+			name = SwiftUI;
+			sourceTree = "<group>";
+		};
 		D856E83624D6EFBF001E564A /* Shared */ = {
 			isa = PBXGroup;
 			children = (
@@ -276,7 +293,7 @@
 				D8F549B023A9005D009E8512 /* ImportListViewController.swift */,
 				D8F549B223A90429009E8512 /* NewImportViewController.swift */,
 				D851080B24561D22001752B1 /* Cells */,
-				D856108825C3A52B00A325B3 /* EntryView.swift */,
+				D856108A25CB926B00A325B3 /* SwiftUI */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -422,10 +439,13 @@
 				D8C3726724829C75002E9C85 /* MetricTotalTableViewCell.swift in Sources */,
 				D8216FEB24A0125A000C72FD /* CategoriesViewController+TableViewManagement.swift in Sources */,
 				D855812B21BDE9A200DCB577 /* Time_iOS.xcdatamodeld in Sources */,
+				D856108C25CB928B00A325B3 /* RecentCategory.swift in Sources */,
 				D851081024561DEC001752B1 /* DisclosureIndicatorButtonTableViewCell.swift in Sources */,
 				D8F549B123A9005D009E8512 /* ImportListViewController.swift in Sources */,
 				D85CFB012462ED07005E1AE2 /* CategoryTableViewCell.swift in Sources */,
+				D856109025CBA44600A325B3 /* ListItem.swift in Sources */,
 				D8500CB3228AF16D009052DC /* EntriesViewController.swift in Sources */,
+				D856108E25CB9BDC00A325B3 /* QuantityMetric.swift in Sources */,
 				D852538124CD1D4100F724EC /* Widget.intentdefinition in Sources */,
 				D855812321BDE9A200DCB577 /* AppDelegate.swift in Sources */,
 				D856108925C3A52B00A325B3 /* EntryView.swift in Sources */,
