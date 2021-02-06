@@ -13,6 +13,49 @@ struct Home: View {
     @State var isMoving = false
     @State var showMore = false
     
+    func accountMenu() -> some View {
+        Menu {
+            Button(action: {  }, label: {
+                Label("Rename", systemImage: "text.cursor")
+            })
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(Font.system(size: 12.0, weight: .semibold))
+                .foregroundColor(Color(Colors.button))
+        }
+    }
+    
+    func categoryMenu() -> some View {
+        Menu {
+            Menu {
+                Button(action: {  }, label: {
+                    Label("Add Child", systemImage: "plus")
+                })
+                Button(action: {  }, label: {
+                    Label("Move", systemImage: "arrow.up.and.down")
+                })
+                Button(action: {  }, label: {
+                    Label("Rename", systemImage: "text.cursor")
+                })
+                Button(action: {  }, label: {
+                    Label("Delete", systemImage: "trash")
+                })
+            } label: {
+                Label("Modify", systemImage: "gear")
+            }
+            Button(action: {  }, label: {
+                Label("Start", systemImage: "play.circle")
+            })
+            Button(action: {  }, label: {
+                Label("Record", systemImage: "smallcircle.fill.circle")
+            })
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(Font.system(size: 12.0, weight: .semibold))
+                .foregroundColor(Color(Colors.button))
+        }
+    }
+    
     var body: some View {
         NavigationView {
             List {
@@ -66,21 +109,32 @@ struct Home: View {
                 }
                     
                 Section(header: isMoving ? nil : Text("Accounts").titleStyle()) {
-                    ListItem(text: "ACCOUNT 1")
-                    ListItem(text: "Side Projects", level: 0, open: true)
-                    ListItem(text: "Time", level: 1, open: true)
-                    ListItem(text: "Fixes", level: 2, open: false)
-                    ListItem(text: "Work", level: 0, open: false)
+                    ListItem(text: "ACCOUNT 1") {
+                        accountMenu()
+                    }
+                    ListItem(text: "Side Projects", level: 0, open: true) {
+                        categoryMenu()
+                    }
+                    ListItem(text: "Time", level: 1, open: true) {
+                        categoryMenu()
+                    }
+                    ListItem(text: "Fixes", level: 2, open: false) {
+                        categoryMenu()
+                    }
+                    ListItem(text: "Work", level: 0, open: false) {
+                        categoryMenu()
+                    }
                 }
                 .listRowInsets(EdgeInsets())
-                
+
                 if !isMoving {
                     Section {
-                        ListItem(text: "More", level: 0, open: self.showMore) {
-                            withAnimation {
-                                self.showMore = !self.showMore
+                        ListItem(text: "More", level: 0, open: self.showMore)
+                            .onTapGesture {
+                                withAnimation {
+                                    self.showMore = !self.showMore
+                                }
                             }
-                        }
                         if showMore {
                             ListItem(text: "Add Account", level: 0, open: true, showIcon: false)
                             ListItem(text: "Import Records", level: 0, open: false, showIcon: false)
@@ -100,6 +154,6 @@ struct Home: View {
 struct Home_Previews: PreviewProvider {
     static var previews: some View {
         Home()
-            .environment(\.colorScheme, .dark)
+//            .environment(\.colorScheme, .dark)
     }
 }

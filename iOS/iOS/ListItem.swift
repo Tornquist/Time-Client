@@ -8,29 +8,20 @@
 
 import SwiftUI
 
-struct ListItem: View {
+struct ListItem<Content : View>: View {
     
-    var text: String
-    var level: Int
-    var open: Bool
-    var showIcon: Bool
+    let text: String
+    let level: Int
+    let open: Bool
+    let showIcon: Bool
+    
+    let trailingView: () -> Content
     
     let borderWidth: CGFloat = 16.0
     let baseOffset: CGFloat = 12.0
     let imageSize: CGFloat = 16.0
     let imageIconSpace: CGFloat = 12.0
-    
-    var tapped: (() -> ())? = nil
-    var actions: [Action] = []
-    
-    struct Action {
-        var title: String
-        var icon: String? = nil
-        var destructive: Bool = false
-        var action: (() -> ())? = nil
-        var children: [Action] = []
-    }
-    
+        
     var animation: Animation {
         Animation.easeOut
     }
@@ -45,13 +36,36 @@ struct ListItem: View {
         return baseOffset + (imageSize + imageIconSpace) * adjustedLevel
     }
     
-    init(text: String, level: Int = -1, open: Bool = false, showIcon: Bool = true, tapped: (() -> ())? = nil, actions: [Action] = []) {
+    init(
+        text: String,
+        level: Int = -1,
+        open: Bool = false,
+        showIcon: Bool = true,
+        tapped: (() -> ())? = nil,
+        @ViewBuilder trailingView: @escaping () -> Content
+    ) {
         self.text = text
         self.level = level
         self.open = open
         self.showIcon = showIcon
-        self.tapped = tapped
-        self.actions = actions
+        self.trailingView = trailingView
+    }
+    
+    // Alternative init to allow trailingView to be dropped completely
+    init(
+        text: String,
+        level: Int = -1,
+        open: Bool = false,
+        showIcon: Bool = true,
+        tapped: (() -> ())? = nil
+    ) where Content == EmptyView {
+        self.init(
+            text: text,
+            level: level,
+            open: open,
+            showIcon: showIcon,
+            tapped: tapped,
+            trailingView: { })
     }
     
     var body: some View {
@@ -71,60 +85,83 @@ struct ListItem: View {
                 .layoutPriority(2)
             Spacer()
                 .layoutPriority(1)
-            if actions.count > 0 {
-                Menu {
-                    ForEach(actions, id: \.title) { (action) in
-                        if action.children.count == 0 {
-                            Button(action: { action.action?() }, label: {
-                                Label(action.title, systemImage: action.icon ?? "")
-                            })
-                        } else {
-                            Menu {
-                                ForEach(action.children, id: \.title) { (child) in
-                                    Button(action: { child.action?() }, label: {
-                                        Label(child.title, systemImage: child.icon ?? "")
-                                    })
-                                }
-                            } label: {
-                                Label(action.title, systemImage: action.icon ?? "")
-                                
-                            }
-                        }
-                    }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(Font.system(size: 12.0, weight: .semibold))
-                        .foregroundColor(Color(Colors.button))
-                }
-            }
+            trailingView()
         }
         .padding([.leading], 0)
         .padding([.trailing, .top, .bottom], borderWidth)
         .contentShape(Rectangle())
-        .onTapGesture {
-            self.tapped?()
-        }
     }
 }
 
 #if DEBUG
 struct ListItem_Previews: PreviewProvider {
+    static func accountMenu() -> some View {
+        Menu {
+            Button(action: {  }, label: {
+                Label("Rename", systemImage: "text.cursor")
+            })
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(Font.system(size: 12.0, weight: .semibold))
+                .foregroundColor(Color(Colors.button))
+        }
+    }
+    
+    static func categoryMenu() -> some View {
+        Menu {
+            Menu {
+                Button(action: {  }, label: {
+                    Label("Add Child", systemImage: "plus")
+                })
+                Button(action: {  }, label: {
+                    Label("Move", systemImage: "arrow.up.and.down")
+                })
+                Button(action: {  }, label: {
+                    Label("Rename", systemImage: "text.cursor")
+                })
+                Button(action: {  }, label: {
+                    Label("Delete", systemImage: "trash")
+                })
+            } label: {
+                Label("Modify", systemImage: "gear")
+            }
+            Button(action: {  }, label: {
+                Label("Start", systemImage: "play.circle")
+            })
+            Button(action: {  }, label: {
+                Label("Record", systemImage: "smallcircle.fill.circle")
+            })
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(Font.system(size: 12.0, weight: .semibold))
+                .foregroundColor(Color(Colors.button))
+        }
+    }
+    
     static var previews: some View {
         Group {
             VStack(spacing: 0) {
                 ListItem(text: "Account 1")
-                ListItem(text: "Side Projects", level: 0, open: true, actions: [
-                    ListItem.Action(title: "Modify", icon: "gear", children: [
-                        ListItem.Action(title: "Add Child", icon: "plus"),
-                        ListItem.Action(title: "Move", icon: "arrow.up.and.down", destructive: true),
-                        ListItem.Action(title: "Rename", icon: "text.cursor"),
-                        ListItem.Action(title: "Delete", icon: "trash")
-                    ]),
-                    ListItem.Action(title: "Record", icon: "smallcircle.fill.circle"),
-                    ListItem.Action(title: "Start", icon: "play.circle")
-                ])
-                ListItem(text: "Time", level: 1, open: true)
-                ListItem(text: "Fixes", level: 2, open: false)
+                ListItem(text: "Account 1") { }
+                ListItem(text: "Account 1", trailingView: { })
+            }
+                .background(Color(.secondarySystemGroupedBackground))
+                .previewLayout(.fixed(width: 375, height: 150))
+                .previewDisplayName("Empty Init Options")
+            
+            VStack(spacing: 0) {
+                ListItem(text: "Account 1") {
+                    accountMenu()
+                }
+                ListItem(text: "Side Projects", level: 0, open: true) {
+                    categoryMenu()
+                }
+                ListItem(text: "Time", level: 1, open: true) {
+                    categoryMenu()
+                }
+                ListItem(text: "Fixes", level: 2, open: false) {
+                    categoryMenu()
+                }
             }
                 .background(Color(.secondarySystemGroupedBackground))
                 .previewLayout(.fixed(width: 375, height: 200))

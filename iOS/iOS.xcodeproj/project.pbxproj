@@ -52,6 +52,7 @@
 		D8C3726924829C82002E9C85 /* MetricTotalTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D8C3726824829C82002E9C85 /* MetricTotalTableViewCell.xib */; };
 		D8CB930F25CEE79F00C250E9 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB930E25CEE79F00C250E9 /* Home.swift */; };
 		D8CB931225CEE95C00C250E9 /* Text+.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB931125CEE95C00C250E9 /* Text+.swift */; };
+		D8CB931425CF460700C250E9 /* Unwrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB931325CF460700C250E9 /* Unwrap.swift */; };
 		D8D3BA9623C4C024002B0082 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D8D3BA9523C4C024002B0082 /* Settings.bundle */; };
 		D8DD2A432331083600F26665 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DD2A422331083500F26665 /* HomeViewController.swift */; };
 		D8E85C34229D682C00204D14 /* EntriesViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E85C33229D682C00204D14 /* EntriesViewController+Alerts.swift */; };
@@ -152,6 +153,7 @@
 		D8C3726824829C82002E9C85 /* MetricTotalTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MetricTotalTableViewCell.xib; sourceTree = "<group>"; };
 		D8CB930E25CEE79F00C250E9 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		D8CB931125CEE95C00C250E9 /* Text+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Text+.swift"; sourceTree = "<group>"; };
+		D8CB931325CF460700C250E9 /* Unwrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Unwrap.swift; sourceTree = "<group>"; };
 		D8D3BA9423C42BA7002B0082 /* Time-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Time-iOS.entitlements"; sourceTree = "<group>"; };
 		D8D3BA9523C4C024002B0082 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		D8DD2A422331083500F26665 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -324,6 +326,7 @@
 			isa = PBXGroup;
 			children = (
 				D8CB931125CEE95C00C250E9 /* Text+.swift */,
+				D8CB931325CF460700C250E9 /* Unwrap.swift */,
 			);
 			name = Modifiers;
 			sourceTree = "<group>";
@@ -466,6 +469,7 @@
 				D86AB87124982E3E00F71BE1 /* EntryTableViewCell.swift in Sources */,
 				D85B0A4A2246DD1A00835E55 /* LoginViewController.swift in Sources */,
 				D855812521BDE9A200DCB577 /* LandingViewController.swift in Sources */,
+				D8CB931425CF460700C250E9 /* Unwrap.swift in Sources */,
 				D8E85C34229D682C00204D14 /* EntriesViewController+Alerts.swift in Sources */,
 				D8DD2A432331083600F26665 /* HomeViewController.swift in Sources */,
 				D8C3726724829C75002E9C85 /* MetricTotalTableViewCell.swift in Sources */,
