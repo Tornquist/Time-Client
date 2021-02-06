@@ -50,6 +50,8 @@
 		D8A1B50524CD226900580DCA /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89CEA102482CB07002913AA /* Colors.swift */; };
 		D8C3726724829C75002E9C85 /* MetricTotalTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C3726624829C75002E9C85 /* MetricTotalTableViewCell.swift */; };
 		D8C3726924829C82002E9C85 /* MetricTotalTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D8C3726824829C82002E9C85 /* MetricTotalTableViewCell.xib */; };
+		D8CB930F25CEE79F00C250E9 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB930E25CEE79F00C250E9 /* Home.swift */; };
+		D8CB931225CEE95C00C250E9 /* Text+.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB931125CEE95C00C250E9 /* Text+.swift */; };
 		D8D3BA9623C4C024002B0082 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D8D3BA9523C4C024002B0082 /* Settings.bundle */; };
 		D8DD2A432331083600F26665 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DD2A422331083500F26665 /* HomeViewController.swift */; };
 		D8E85C34229D682C00204D14 /* EntriesViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E85C33229D682C00204D14 /* EntriesViewController+Alerts.swift */; };
@@ -148,6 +150,8 @@
 		D89CEA102482CB07002913AA /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		D8C3726624829C75002E9C85 /* MetricTotalTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTotalTableViewCell.swift; sourceTree = "<group>"; };
 		D8C3726824829C82002E9C85 /* MetricTotalTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MetricTotalTableViewCell.xib; sourceTree = "<group>"; };
+		D8CB930E25CEE79F00C250E9 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
+		D8CB931125CEE95C00C250E9 /* Text+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Text+.swift"; sourceTree = "<group>"; };
 		D8D3BA9423C42BA7002B0082 /* Time-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Time-iOS.entitlements"; sourceTree = "<group>"; };
 		D8D3BA9523C4C024002B0082 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		D8DD2A422331083500F26665 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -260,10 +264,9 @@
 		D856108A25CB926B00A325B3 /* SwiftUI */ = {
 			isa = PBXGroup;
 			children = (
-				D856108825C3A52B00A325B3 /* EntryView.swift */,
-				D856108B25CB928B00A325B3 /* RecentCategory.swift */,
-				D856108D25CB9BDC00A325B3 /* QuantityMetric.swift */,
-				D856108F25CBA44600A325B3 /* ListItem.swift */,
+				D8CB930D25CEE77A00C250E9 /* Views */,
+				D8CB930C25CEE77300C250E9 /* Cells */,
+				D8CB931025CEE90B00C250E9 /* Modifiers */,
 			);
 			name = SwiftUI;
 			sourceTree = "<group>";
@@ -296,6 +299,33 @@
 				D856108A25CB926B00A325B3 /* SwiftUI */,
 			);
 			name = Views;
+			sourceTree = "<group>";
+		};
+		D8CB930C25CEE77300C250E9 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				D856108B25CB928B00A325B3 /* RecentCategory.swift */,
+				D856108D25CB9BDC00A325B3 /* QuantityMetric.swift */,
+				D856108F25CBA44600A325B3 /* ListItem.swift */,
+			);
+			name = Cells;
+			sourceTree = "<group>";
+		};
+		D8CB930D25CEE77A00C250E9 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				D856108825C3A52B00A325B3 /* EntryView.swift */,
+				D8CB930E25CEE79F00C250E9 /* Home.swift */,
+			);
+			name = Views;
+			sourceTree = "<group>";
+		};
+		D8CB931025CEE90B00C250E9 /* Modifiers */ = {
+			isa = PBXGroup;
+			children = (
+				D8CB931125CEE95C00C250E9 /* Text+.swift */,
+			);
+			name = Modifiers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -422,12 +452,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D8CB931225CEE95C00C250E9 /* Text+.swift in Sources */,
 				D806B91222772507005DC715 /* CategoriesViewController+Alerts.swift in Sources */,
 				D8A1B50424CD223000580DCA /* Colors.swift in Sources */,
 				D85108142456262E001752B1 /* RecentEntryTableViewCell.swift in Sources */,
 				D8F549B323A90429009E8512 /* NewImportViewController.swift in Sources */,
 				D85B0A4C2246DD2100835E55 /* CategoriesViewController.swift in Sources */,
 				D8216FED24A0DB39000C72FD /* CategoriesViewController+Metrics.swift in Sources */,
+				D8CB930F25CEE79F00C250E9 /* Home.swift in Sources */,
 				D856E83824D6EFD0001E564A /* Constants.swift in Sources */,
 				D8216FE9249F96AF000C72FD /* AccountTableViewCell.swift in Sources */,
 				D89CEA0D2482BBE9002913AA /* MetricTotalSplitView.swift in Sources */,
