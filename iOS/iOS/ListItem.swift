@@ -15,6 +15,7 @@ struct ListItem<Content : View>: View {
     let open: Bool
     let showIcon: Bool
     
+    let tapped: (() -> ())?
     let trailingView: () -> Content
     
     let borderWidth: CGFloat = 16.0
@@ -48,6 +49,7 @@ struct ListItem<Content : View>: View {
         self.level = level
         self.open = open
         self.showIcon = showIcon
+        self.tapped = tapped
         self.trailingView = trailingView
     }
     
@@ -69,27 +71,33 @@ struct ListItem<Content : View>: View {
     }
     
     var body: some View {
-        HStack(spacing: 0) {
-            Spacer(minLength: self.leadingSpace)
-            if showIcon && level >= 0 {
-                Image(systemName: "chevron.right")
-                    .font(Font.system(size: 12.0, weight: .semibold))
-                    .foregroundColor(Color(Colors.button))
-                    .frame(width: imageSize, height: imageSize, alignment: .center)
-                    .rotationEffect(Angle.degrees(open ? 90 : 0))
-                    .animation(animation)
-                Spacer(minLength: imageIconSpace)
-            }
-            Text(text)
-                .font(Font.system(size: 15.0))
-                .layoutPriority(2)
-            Spacer()
-                .layoutPriority(1)
+        HStack(spacing: 16) {
+            HStack(spacing: 0) {
+                Spacer(minLength: self.leadingSpace)
+                if showIcon && level >= 0 {
+                    Image(systemName: "chevron.right")
+                        .font(Font.system(size: 12.0, weight: .semibold))
+                        .foregroundColor(Color(Colors.button))
+                        .frame(width: imageSize, height: imageSize, alignment: .center)
+                        .rotationEffect(Angle.degrees(open ? 90 : 0))
+                        .animation(animation)
+                    Spacer(minLength: imageIconSpace)
+                }
+                Text(text)
+                    .font(Font.system(size: 15.0))
+                    .layoutPriority(2)
+                Spacer()
+                    .layoutPriority(1)
+
+            }.padding(0)
+            .contentShape(Rectangle())
+            .onTapGesture(perform: {
+                self.tapped?()
+            })
             trailingView()
         }
         .padding([.leading], 0)
         .padding([.trailing, .top, .bottom], borderWidth)
-        .contentShape(Rectangle())
     }
 }
 
@@ -104,6 +112,7 @@ struct ListItem_Previews: PreviewProvider {
             Image(systemName: "ellipsis")
                 .font(Font.system(size: 12.0, weight: .semibold))
                 .foregroundColor(Color(Colors.button))
+                .frame(width: 16, height: 16, alignment: .center)
         }
     }
     
@@ -135,6 +144,7 @@ struct ListItem_Previews: PreviewProvider {
             Image(systemName: "ellipsis")
                 .font(Font.system(size: 12.0, weight: .semibold))
                 .foregroundColor(Color(Colors.button))
+                .frame(width: 16, height: 16, alignment: .center)
         }
     }
     

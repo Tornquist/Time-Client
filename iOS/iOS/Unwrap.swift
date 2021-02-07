@@ -1,5 +1,5 @@
 //
-//  SwiftUIView.swift
+//  Unwrap.swift
 //  iOS
 //
 //  Created by Nathan Tornquist on 2/6/21.
@@ -7,6 +7,8 @@
 //
 
 import SwiftUI
+
+// Source: https://www.swiftbysundell.com/tips/optional-swiftui-views/
 
 struct Unwrap<Value, Content: View>: View {
     private let value: Value?

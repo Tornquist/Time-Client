@@ -1,5 +1,5 @@
 //
-//  TitleStyle.swift
+//  Text+.swift
 //  iOS
 //
 //  Created by Nathan Tornquist on 2/6/21.
