@@ -9,6 +9,7 @@
 import UIKit
 import TimeSDK
 import WidgetKit
+import SwiftUI
 
 class CategoriesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, RecentEntryTableViewCellDelegate {
     
@@ -88,6 +89,15 @@ class CategoriesViewController: UIViewController, UITableViewDelegate, UITableVi
         
         self.secondUpdateTimer = Timer(timeInterval: 1.0, target: self, selector: #selector(timerTick), userInfo: nil, repeats: true)
         RunLoop.main.add(self.secondUpdateTimer!, forMode: .common)
+        
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "New UI", style: .plain, target: self, action: #selector(openNew))
+    }
+
+    @objc func openNew() {
+        let newView = Home().environmentObject(Warehouse.shared)
+        let newVC = UIHostingController(rootView: newView)
+        newVC.modalPresentationStyle = .fullScreen
+        self.present(newVC, animated: true, completion: nil)
     }
     
     override func viewWillDisappear(_ animated: Bool) {

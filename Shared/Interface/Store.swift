@@ -193,15 +193,12 @@ public class Store {
             }
 
             self.categories.append(category!)
-            
-            let newTree = CategoryTree(category!)
-            
+                        
             let accountID = parent.accountID
             if let accountTree = self.categoryTrees[accountID],
                 let parentTree = accountTree.findItem(withID: parent.id) {
                 
-                parentTree.children.append(newTree)
-                newTree.parent = parentTree
+                parentTree.insert(item: category!)
                 parentTree.sortChildren()
             } else {
                 self.staleTrees = true
@@ -266,8 +263,7 @@ public class Store {
                         return child.node.id != category.id
                     })
                 }
-                parentTree.children.append(categoryTree)
-                categoryTree.parent = parentTree
+                parentTree.insert(tree: categoryTree)
                 parentTree.sortChildren()
             }
             
@@ -317,9 +313,6 @@ public class Store {
                 if var safeChildren = categoryTree.parent?.children.filter({ $0.node.id != categoryTree.node.id }) {
                     safeChildren.append(contentsOf: elevateChildren)
                     categoryTree.parent?.children = safeChildren
-                    elevateChildren.forEach({ (child) in
-                        child.parent = categoryTree.parent
-                    })
                     categoryTree.parent?.sortChildren()
                 }
                 self.categories = filteredCategories

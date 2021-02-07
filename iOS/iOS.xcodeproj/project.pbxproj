@@ -53,6 +53,7 @@
 		D8CB930F25CEE79F00C250E9 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB930E25CEE79F00C250E9 /* Home.swift */; };
 		D8CB931225CEE95C00C250E9 /* Text+.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB931125CEE95C00C250E9 /* Text+.swift */; };
 		D8CB931425CF460700C250E9 /* Unwrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB931325CF460700C250E9 /* Unwrap.swift */; };
+		D8CB935125D03FA500C250E9 /* Warehouse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB935025D03FA500C250E9 /* Warehouse.swift */; };
 		D8D3BA9623C4C024002B0082 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D8D3BA9523C4C024002B0082 /* Settings.bundle */; };
 		D8DD2A432331083600F26665 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DD2A422331083500F26665 /* HomeViewController.swift */; };
 		D8E85C34229D682C00204D14 /* EntriesViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E85C33229D682C00204D14 /* EntriesViewController+Alerts.swift */; };
@@ -154,6 +155,7 @@
 		D8CB930E25CEE79F00C250E9 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		D8CB931125CEE95C00C250E9 /* Text+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Text+.swift"; sourceTree = "<group>"; };
 		D8CB931325CF460700C250E9 /* Unwrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Unwrap.swift; sourceTree = "<group>"; };
+		D8CB935025D03FA500C250E9 /* Warehouse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Warehouse.swift; sourceTree = "<group>"; };
 		D8D3BA9423C42BA7002B0082 /* Time-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Time-iOS.entitlements"; sourceTree = "<group>"; };
 		D8D3BA9523C4C024002B0082 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		D8DD2A422331083500F26665 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -269,6 +271,7 @@
 				D8CB930D25CEE77A00C250E9 /* Views */,
 				D8CB930C25CEE77300C250E9 /* Cells */,
 				D8CB931025CEE90B00C250E9 /* Modifiers */,
+				D8CB934F25D03F7E00C250E9 /* Models */,
 			);
 			name = SwiftUI;
 			sourceTree = "<group>";
@@ -316,8 +319,8 @@
 		D8CB930D25CEE77A00C250E9 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				D856108825C3A52B00A325B3 /* EntryView.swift */,
 				D8CB930E25CEE79F00C250E9 /* Home.swift */,
+				D856108825C3A52B00A325B3 /* EntryView.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -329,6 +332,14 @@
 				D8CB931325CF460700C250E9 /* Unwrap.swift */,
 			);
 			name = Modifiers;
+			sourceTree = "<group>";
+		};
+		D8CB934F25D03F7E00C250E9 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				D8CB935025D03FA500C250E9 /* Warehouse.swift */,
+			);
+			name = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -482,6 +493,7 @@
 				D856109025CBA44600A325B3 /* ListItem.swift in Sources */,
 				D8500CB3228AF16D009052DC /* EntriesViewController.swift in Sources */,
 				D856108E25CB9BDC00A325B3 /* QuantityMetric.swift in Sources */,
+				D8CB935125D03FA500C250E9 /* Warehouse.swift in Sources */,
 				D852538124CD1D4100F724EC /* Widget.intentdefinition in Sources */,
 				D855812321BDE9A200DCB577 /* AppDelegate.swift in Sources */,
 				D856108925C3A52B00A325B3 /* EntryView.swift in Sources */,

@@ -7,14 +7,15 @@
 //
 
 import Foundation
+import Combine
 
-public class Category: Codable, Equatable {
-    public var id: Int
-    public var parentID: Int?
-    public var accountID: Int
-    public var name: String
+public class Category: ObservableObject, Codable, Equatable, Identifiable {
+    @Published public var id: Int
+    @Published public var parentID: Int?
+    @Published public var accountID: Int
+    @Published public var name: String
     
-    private var _expanded: Bool = false
+    @Published private var _expanded: Bool = false
     internal var expanded: Bool {
         get { return self._expanded }
         set {
@@ -56,6 +57,17 @@ public class Category: Codable, Equatable {
             // Set directly to avoid setter on init
             self._expanded = try values.decode(Bool.self, forKey: ._expanded)
         }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(parentID, forKey: .parentID)
+        try container.encode(accountID, forKey: .accountID)
+        try container.encode(name, forKey: .name)
+        
+        // Add to internal state
+        try container.encode(_expanded, forKey: ._expanded)
     }
     
     public static func ==(lhs: Category, rhs: Category) -> Bool {
