@@ -16,26 +16,34 @@ class Warehouse: ObservableObject {
     static var shared: Warehouse {
         get {
             if _shared == nil {
-                let trees = Time.shared.store.categoryTrees.values.sorted { (a, b) -> Bool in
-                    return a.node.accountID < b.node.accountID
-                }
-                _shared = Warehouse(trees: trees)
+                _shared = Warehouse(for: Time.shared)
             }
             
             return _shared!
         }
     }
     
+    var time: Time? = nil
     @Published var trees: [CategoryTree] = []
     
     var cancellables = [AnyCancellable]()
-    
+        
     init(trees: [CategoryTree]) {
         self.trees = trees
         self.trees.forEach { (tree) in
             let c = tree.objectWillChange.sink { self.objectWillChange.send() }
             self.cancellables.append(c)
         }
+    }
+    
+    convenience init(for time: Time) {
+        let trees = Time.shared.store.categoryTrees.values.sorted { (a, b) -> Bool in
+            return a.node.accountID < b.node.accountID
+        }
+        
+        self.init(trees: trees)
+        
+        self.time = time
     }
    
     #if DEBUG

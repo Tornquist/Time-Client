@@ -37,6 +37,7 @@ struct CategoryList: View {
                     Label("Add Child", systemImage: "plus")
                 })
                 Button(action: {
+                    selectedCategoryID = category.id
                     showMoving?.wrappedValue = true
                 }, label: {
                     Label("Move", systemImage: "arrow.up.and.down")
@@ -63,18 +64,62 @@ struct CategoryList: View {
                 .frame(width: 16, height: 16, alignment: .center)
         }
     }
+
+    func textColor(for category: TimeSDK.Category, canMove: Bool) -> Color {
+        guard isMoving else {
+            // Show green if active
+            return Color(.label)
+        }
+        
+        if category.id == selectedCategoryID {
+            return Color(.systemRed)
+        }
+        
+        guard canMove else {
+            return Color(.secondaryLabel)
+        }
+        
+        return Color(.label)
+    }
+    
+    func backgroundColor(for category: TimeSDK.Category, canMove: Bool) -> Color {
+        guard isMoving else {
+            return Color.clear // Stay with default
+        }
+        
+        if category.id == selectedCategoryID {
+            return Color.clear
+        }
+        
+        guard canMove else {
+            return Color(.systemGroupedBackground)
+        }
+        
+        return Color.clear
+    }
+    
+    func canMove(_ target: TimeSDK.Category?, to category: TimeSDK.Category) -> Bool {
+        guard isMoving, let safeTarget = target else {
+            return false
+        
+        }
+        return self.warehouse.time?.store.canMove(safeTarget, to: category) ?? false
+    }
     
     func build(categories: [CategoryTree]) -> AnyView {
         if categories.count == 0 {
             return AnyView(EmptyView())
         }
         
+        let target = self.warehouse.time?.store.categories.first(where: { $0.id == selectedCategoryID })
+        
         return AnyView(ForEach(categories, id: \.id) { (category) in
             let isAccount = category.parent == nil
             let text = isAccount
                 ? "ACCOUNT \(category.node.accountID)"
                 : category.node.name
-
+            let viableChoice = canMove(target, to: category.node)
+            
             ListItem(
                 text: text,
                 level: isAccount ? -1 : (category.depth - 1),
@@ -93,6 +138,8 @@ struct CategoryList: View {
                     }
                 }
             }.transition(.slide)
+            .foregroundColor(textColor(for: category.node, canMove: viableChoice))
+            .background(backgroundColor(for: category.node, canMove: viableChoice))
             
             if category.expanded || self.isMoving {
                 build(categories: category.children)
