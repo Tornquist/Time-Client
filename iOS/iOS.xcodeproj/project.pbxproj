@@ -54,6 +54,8 @@
 		D8CB931225CEE95C00C250E9 /* Text+.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB931125CEE95C00C250E9 /* Text+.swift */; };
 		D8CB931425CF460700C250E9 /* Unwrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB931325CF460700C250E9 /* Unwrap.swift */; };
 		D8CB935125D03FA500C250E9 /* Warehouse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB935025D03FA500C250E9 /* Warehouse.swift */; };
+		D8CB935525D06F5D00C250E9 /* MoveCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB935425D06F5D00C250E9 /* MoveCategory.swift */; };
+		D8CB935725D06F9300C250E9 /* CategoryList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB935625D06F9300C250E9 /* CategoryList.swift */; };
 		D8D3BA9623C4C024002B0082 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D8D3BA9523C4C024002B0082 /* Settings.bundle */; };
 		D8DD2A432331083600F26665 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DD2A422331083500F26665 /* HomeViewController.swift */; };
 		D8E85C34229D682C00204D14 /* EntriesViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E85C33229D682C00204D14 /* EntriesViewController+Alerts.swift */; };
@@ -156,6 +158,8 @@
 		D8CB931125CEE95C00C250E9 /* Text+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Text+.swift"; sourceTree = "<group>"; };
 		D8CB931325CF460700C250E9 /* Unwrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Unwrap.swift; sourceTree = "<group>"; };
 		D8CB935025D03FA500C250E9 /* Warehouse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Warehouse.swift; sourceTree = "<group>"; };
+		D8CB935425D06F5D00C250E9 /* MoveCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveCategory.swift; sourceTree = "<group>"; };
+		D8CB935625D06F9300C250E9 /* CategoryList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryList.swift; sourceTree = "<group>"; };
 		D8D3BA9423C42BA7002B0082 /* Time-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Time-iOS.entitlements"; sourceTree = "<group>"; };
 		D8D3BA9523C4C024002B0082 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		D8DD2A422331083500F26665 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -312,6 +316,7 @@
 				D856108B25CB928B00A325B3 /* RecentCategory.swift */,
 				D856108D25CB9BDC00A325B3 /* QuantityMetric.swift */,
 				D856108F25CBA44600A325B3 /* ListItem.swift */,
+				D8CB935625D06F9300C250E9 /* CategoryList.swift */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -321,6 +326,7 @@
 			children = (
 				D8CB930E25CEE79F00C250E9 /* Home.swift */,
 				D856108825C3A52B00A325B3 /* EntryView.swift */,
+				D8CB935425D06F5D00C250E9 /* MoveCategory.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -473,6 +479,7 @@
 				D8F549B323A90429009E8512 /* NewImportViewController.swift in Sources */,
 				D85B0A4C2246DD2100835E55 /* CategoriesViewController.swift in Sources */,
 				D8216FED24A0DB39000C72FD /* CategoriesViewController+Metrics.swift in Sources */,
+				D8CB935525D06F5D00C250E9 /* MoveCategory.swift in Sources */,
 				D8CB930F25CEE79F00C250E9 /* Home.swift in Sources */,
 				D856E83824D6EFD0001E564A /* Constants.swift in Sources */,
 				D8216FE9249F96AF000C72FD /* AccountTableViewCell.swift in Sources */,
@@ -487,6 +494,7 @@
 				D8216FEB24A0125A000C72FD /* CategoriesViewController+TableViewManagement.swift in Sources */,
 				D855812B21BDE9A200DCB577 /* Time_iOS.xcdatamodeld in Sources */,
 				D856108C25CB928B00A325B3 /* RecentCategory.swift in Sources */,
+				D8CB935725D06F9300C250E9 /* CategoryList.swift in Sources */,
 				D851081024561DEC001752B1 /* DisclosureIndicatorButtonTableViewCell.swift in Sources */,
 				D8F549B123A9005D009E8512 /* ImportListViewController.swift in Sources */,
 				D85CFB012462ED07005E1AE2 /* CategoryTableViewCell.swift in Sources */,
