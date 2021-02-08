@@ -11,11 +11,16 @@ import Combine
 import TimeSDK
 
 struct Home: View {
-    
-    @State var showMoving = false
-    @State var actingCategoryID: Int = 0
-    
     @State var showMore = false
+    
+    enum HomeAction: Identifiable {
+        case move
+        
+        var id: Int { hashValue }
+    }
+    
+    @State var selectedAction: HomeAction? = nil
+    @State var selectedCategory: TimeSDK.Category? = nil
     
     @EnvironmentObject var warehouse: Warehouse
     
@@ -70,14 +75,10 @@ struct Home: View {
                 }
                     
                 Section(header: Text("Accounts").titleStyle()) {
-                    CategoryList(
-                        isMoving: false,
-                        selectedCategoryID: $actingCategoryID,
-                        showMoving: $showMoving
-                    )
+                    CategoryList(selectedAction: $selectedAction, selectedCategory: $selectedCategory)
                 }
                 .listRowInsets(EdgeInsets())
-
+                
                 Section {
                     ListItem(text: "More", level: 0, open: self.showMore, tapped: {
                         withAnimation {
@@ -92,12 +93,29 @@ struct Home: View {
                 }
                 .background(Color(.systemGroupedBackground))
                 .listRowInsets(EdgeInsets())
+                
             }
             .listStyle(InsetGroupedListStyle())
             .navigationTitle("Time")
-            .sheet(isPresented: $showMoving, content: {
-                MoveCategory(categoryID: $actingCategoryID, show: $showMoving)
-            })
+            .sheet(item: $selectedAction) { (option) -> AnyView in
+                switch (option) {
+                case .move:
+                    let binding = Binding<Bool>(
+                        get: { return selectedAction == .move },
+                        set: { (newVal) in
+                            if newVal {
+                                selectedAction = .move
+                            } else {
+                                selectedAction = nil
+                            }
+                        }
+                    )
+                    return AnyView(MoveCategory(
+                        movingCategory: $selectedCategory,
+                        show: binding
+                    ).environmentObject(self.warehouse))
+                }
+            }
         }
     }
 }

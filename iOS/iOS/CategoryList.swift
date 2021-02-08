@@ -10,10 +10,9 @@ import SwiftUI
 import TimeSDK
 
 struct CategoryList: View {
-    var isMoving: Bool
     
-    @Binding var selectedCategoryID: Int
-    var showMoving: Binding<Bool>? = nil
+    @Binding var selectedAction: Home.HomeAction?
+    @Binding var selectedCategory: TimeSDK.Category?
     
     @EnvironmentObject var warehouse: Warehouse
     
@@ -37,8 +36,8 @@ struct CategoryList: View {
                     Label("Add Child", systemImage: "plus")
                 })
                 Button(action: {
-                    selectedCategoryID = category.id
-                    showMoving?.wrappedValue = true
+                    selectedAction = .move
+                    selectedCategory = category
                 }, label: {
                     Label("Move", systemImage: "arrow.up.and.down")
                 })
@@ -64,84 +63,36 @@ struct CategoryList: View {
                 .frame(width: 16, height: 16, alignment: .center)
         }
     }
-
-    func textColor(for category: TimeSDK.Category, canMove: Bool) -> Color {
-        guard isMoving else {
-            // Show green if active
-            return Color(.label)
-        }
-        
-        if category.id == selectedCategoryID {
-            return Color(.systemRed)
-        }
-        
-        guard canMove else {
-            return Color(.secondaryLabel)
-        }
-        
-        return Color(.label)
-    }
-    
-    func backgroundColor(for category: TimeSDK.Category, canMove: Bool) -> Color {
-        guard isMoving else {
-            return Color.clear // Stay with default
-        }
-        
-        if category.id == selectedCategoryID {
-            return Color.clear
-        }
-        
-        guard canMove else {
-            return Color(.systemGroupedBackground)
-        }
-        
-        return Color.clear
-    }
-    
-    func canMove(_ target: TimeSDK.Category?, to category: TimeSDK.Category) -> Bool {
-        guard isMoving, let safeTarget = target else {
-            return false
-        
-        }
-        return self.warehouse.time?.store.canMove(safeTarget, to: category) ?? false
-    }
     
     func build(categories: [CategoryTree]) -> AnyView {
         if categories.count == 0 {
             return AnyView(EmptyView())
         }
         
-        let target = self.warehouse.time?.store.categories.first(where: { $0.id == selectedCategoryID })
-        
         return AnyView(ForEach(categories, id: \.id) { (category) in
             let isAccount = category.parent == nil
             let text = isAccount
                 ? "ACCOUNT \(category.node.accountID)"
                 : category.node.name
-            let viableChoice = canMove(target, to: category.node)
             
             ListItem(
                 text: text,
                 level: isAccount ? -1 : (category.depth - 1),
-                open: category.expanded || self.isMoving,
+                open: category.expanded,
                 showIcon: category.children.count > 0,
                 tapped: {
                     withAnimation {
                         category.toggleExpanded()
                     }
                 }) {
-                if !self.isMoving {
-                    if isAccount {
-                        accountMenu(for: category.node.accountID)
-                    } else {
-                        categoryMenu(for: category.node)
-                    }
+                if isAccount {
+                    accountMenu(for: category.node.accountID)
+                } else {
+                    categoryMenu(for: category.node)
                 }
-            }.transition(.slide)
-            .foregroundColor(textColor(for: category.node, canMove: viableChoice))
-            .background(backgroundColor(for: category.node, canMove: viableChoice))
+            }
             
-            if category.expanded || self.isMoving {
+            if category.expanded {
                 build(categories: category.children)
             }
         })
@@ -160,10 +111,13 @@ struct CategoryList_Previews: PreviewProvider {
         
         var warehouse = Warehouse.getPreviewWarehouse()
         
+        @State var selectedAction: Home.HomeAction?
+        @State var selectedCategory: TimeSDK.Category? = nil
+        
         var body: some View {
             NavigationView {
                 List {
-                    CategoryList(isMoving: true, selectedCategoryID: $categoryID)
+                    CategoryList(selectedAction: $selectedAction, selectedCategory: $selectedCategory)
                 }
             }
                 .environmentObject(warehouse)
