@@ -16,8 +16,14 @@ struct CategoryList: View {
     
     @EnvironmentObject var warehouse: Warehouse
     
-    func accountMenu(for accountID: Int) -> some View {
+    func accountMenu(for category: TimeSDK.Category) -> some View {
         Menu {
+            Button(action: {
+                selectedAction = .addChild
+                selectedCategory = category
+            }, label: {
+                Label("Add Child", systemImage: "plus")
+            })
             Button(action: {  }, label: {
                 Label("Rename", systemImage: "text.cursor")
             })
@@ -32,7 +38,10 @@ struct CategoryList: View {
     func categoryMenu(for category: TimeSDK.Category) -> some View {
         Menu {
             Menu {
-                Button(action: {  }, label: {
+                Button(action: {
+                    selectedAction = .addChild
+                    selectedCategory = category
+                }, label: {
                     Label("Add Child", systemImage: "plus")
                 })
                 Button(action: {
@@ -41,10 +50,16 @@ struct CategoryList: View {
                 }, label: {
                     Label("Move", systemImage: "arrow.up.and.down")
                 })
-                Button(action: {  }, label: {
+                Button(action: {
+                    selectedAction = .rename
+                    selectedCategory = category
+                }, label: {
                     Label("Rename", systemImage: "text.cursor")
                 })
-                Button(action: {  }, label: {
+                Button(action: {
+                    selectedAction = .delete
+                    selectedCategory = category
+                }, label: {
                     Label("Delete", systemImage: "trash")
                 })
             } label: {
@@ -86,7 +101,7 @@ struct CategoryList: View {
                     }
                 }) {
                 if isAccount {
-                    accountMenu(for: category.node.accountID)
+                    accountMenu(for: category.node)
                 } else {
                     categoryMenu(for: category.node)
                 }

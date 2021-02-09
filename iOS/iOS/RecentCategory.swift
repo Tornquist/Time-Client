@@ -48,7 +48,7 @@ struct RecentCategory: View {
             VStack {
                 Spacer()
                 Button(action: {
-                  print("button pressed")
+                    print("button pressed")
                 }) {
                     Image(systemName: self.action.icon)
                         .imageScale(.large)

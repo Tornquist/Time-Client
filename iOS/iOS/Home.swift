@@ -14,7 +14,10 @@ struct Home: View {
     @State var showMore = false
     
     enum HomeAction: Identifiable {
+        case addChild
         case move
+        case rename
+        case delete
         
         var id: Int { hashValue }
     }
@@ -23,6 +26,20 @@ struct Home: View {
     @State var selectedCategory: TimeSDK.Category? = nil
     
     @EnvironmentObject var warehouse: Warehouse
+    
+    func buildBinding(for action: HomeAction) -> Binding<Bool> {
+        let binding = Binding<Bool>(
+            get: { return selectedAction == action },
+            set: { (newVal) in
+                if newVal {
+                    selectedAction = action
+                } else {
+                    selectedAction = nil
+                }
+            }
+        )
+        return binding
+    }
     
     var body: some View {
         NavigationView {
@@ -99,21 +116,17 @@ struct Home: View {
             .navigationTitle("Time")
             .sheet(item: $selectedAction) { (option) -> AnyView in
                 switch (option) {
+                case .addChild:
+                    return AnyView(Text("Add Child").environmentObject(self.warehouse))
                 case .move:
-                    let binding = Binding<Bool>(
-                        get: { return selectedAction == .move },
-                        set: { (newVal) in
-                            if newVal {
-                                selectedAction = .move
-                            } else {
-                                selectedAction = nil
-                            }
-                        }
-                    )
                     return AnyView(MoveCategory(
                         movingCategory: $selectedCategory,
-                        show: binding
+                        show: buildBinding(for: .move)
                     ).environmentObject(self.warehouse))
+                case .rename:
+                    return AnyView(Text("Rename").environmentObject(self.warehouse))
+                case .delete:
+                    return AnyView(Text("Delete").environmentObject(self.warehouse))
                 }
             }
         }
