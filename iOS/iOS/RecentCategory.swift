@@ -13,6 +13,7 @@ struct RecentCategory: View {
     var parents: String
     var action: Action
     var active: Bool
+    var onTap: (() -> ())? = nil
     
     enum Action {
         case play
@@ -48,12 +49,13 @@ struct RecentCategory: View {
             VStack {
                 Spacer()
                 Button(action: {
-                    print("button pressed")
+                    onTap?()
                 }) {
                     Image(systemName: self.action.icon)
                         .imageScale(.large)
                         .foregroundColor(Color(Colors.button))
                 }
+                .buttonStyle(BorderlessButtonStyle())
                 Spacer()
             }
         }.padding(.all, 16)

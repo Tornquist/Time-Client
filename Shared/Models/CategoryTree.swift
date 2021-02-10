@@ -9,7 +9,7 @@
 import Foundation
 import Combine
 
-public class CategoryTree: ObservableObject, Equatable {
+public class CategoryTree: ObservableObject, Equatable, Identifiable {
     
     // MARK: - Tree Properties
     

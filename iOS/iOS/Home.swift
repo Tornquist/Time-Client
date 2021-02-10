@@ -13,6 +13,13 @@ import TimeSDK
 struct Home: View {
     @State var showMore = false
     
+    let showSeconds = true
+    var emptyDuration: String {
+        return showSeconds ? "00:00:00" : "00:00"
+    }
+    
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
     enum HomeAction: Identifiable {
         case addChild
         case move
@@ -40,46 +47,60 @@ struct Home: View {
         )
         return binding
     }
-    
+        
     var body: some View {
         NavigationView {
             List {
                 Section(header: Text("Metrics").titleStyle()) {
                     QuantityMetric(
-                        total: "00:00:00",
+                        total: self.warehouse.dayTotal?.displayDuration(withSeconds: showSeconds) ?? emptyDuration,
                         description: "Today",
-                        items: []
+                        items: self.warehouse.dayCategories.map({ (result) -> QuantityMetric.QuantityItem in
+                            QuantityMetric.QuantityItem(
+                                name: self.warehouse.getName(for: result.categoryID),
+                                total: result.displayDuration(withSeconds: showSeconds),
+                                active: result.open
+                            )
+                        })
                     )
                     QuantityMetric(
-                        total: "27:71:04",
+                        total: self.warehouse.weekTotal?.displayDuration(withSeconds: showSeconds) ?? emptyDuration,
                         description: "This Week",
-                        items: [
+                        items: self.warehouse.weekCategories.map({ (result) -> QuantityMetric.QuantityItem in
                             QuantityMetric.QuantityItem(
-                                name: "Project 1",
-                                total: "23:46:55",
-                                active: false
-                            ),
-                            QuantityMetric.QuantityItem(
-                                name: "Project 2",
-                                total: "00:19:27",
-                                active: false
-                            ),
-                            QuantityMetric.QuantityItem(
-                                name: "Project 3",
-                                total: "03:46:11",
-                                active: false
+                                name: self.warehouse.getName(for: result.categoryID),
+                                total: result.displayDuration(withSeconds: showSeconds),
+                                active: result.open
                             )
-                        ]
+                        })
                     )
                 }
                 .listRowInsets(EdgeInsets())
                 .padding(EdgeInsets())
                 
                 Section(header: Text("Recents").titleStyle()) {
-                    RecentCategory(name: "Time", parents: "Side Projects", action: .pause, active: true)
-                    RecentCategory(name: "Time", parents: "Side Projects", action: .play, active: false)
-                    RecentCategory(name: "Time", parents: "Side Projects", action: .play, active: false)
-                    RecentCategory(name: "Time", parents: "Side Projects", action: .record, active: false)
+                    ForEach(self.warehouse.recentCategories.indices) { (index) -> RecentCategory in
+                        let categoryTree = self.warehouse.recentCategories[index]
+                        let name = categoryTree.node.name
+                        let parentName = self.warehouse.getParentHierarchyName(categoryTree)
+                        let isActive = self.warehouse.openCategoryIDs.contains(categoryTree.id)
+                        let isRange = self.warehouse.recentCategoryIsRange[index]
+                        let action = isActive
+                            ? RecentCategory.Action.pause
+                            : (
+                                isRange
+                                    ? RecentCategory.Action.play
+                                    : RecentCategory.Action.record
+                            )
+                        
+                        RecentCategory(name: name, parents: parentName, action: action, active: isActive) {
+                            if action == RecentCategory.Action.record {
+                                self.warehouse.time?.store.recordEvent(for: categoryTree.node, completion: nil)
+                            } else {
+                                self.warehouse.time?.store.toggleRange(for: categoryTree.node, completion: nil)
+                            }
+                        }
+                    }
                 }
                 .listRowInsets(EdgeInsets())
                     
@@ -129,7 +150,9 @@ struct Home: View {
                     return AnyView(Text("Delete").environmentObject(self.warehouse))
                 }
             }
-        }
+        }.onReceive(timer, perform: { _ in
+            self.warehouse.refreshAsNeeded()
+        })
     }
 }
 

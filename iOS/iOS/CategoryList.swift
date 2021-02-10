@@ -99,13 +99,20 @@ struct CategoryList: View {
                     withAnimation {
                         category.toggleExpanded()
                     }
-                }) {
-                if isAccount {
-                    accountMenu(for: category.node)
-                } else {
-                    categoryMenu(for: category.node)
+                },
+                trailingView: {
+                    if isAccount {
+                        accountMenu(for: category.node)
+                    } else {
+                        categoryMenu(for: category.node)
+                    }
                 }
-            }
+            )
+            .foregroundColor(
+                self.warehouse.openCategoryIDs.contains(category.id)
+                    ? Color(.systemGreen)
+                    : Color(.label)
+            )
             
             if category.expanded {
                 build(categories: category.children)
