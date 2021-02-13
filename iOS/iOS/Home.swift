@@ -21,29 +21,44 @@ struct Home: View {
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
-    enum HomeAction: Identifiable {
+    enum HomeModal: Identifiable {
         case addChild
         case move
         case rename
         case delete
         
+        static func from(_ selection: CategoryMenu.Selection) -> HomeModal? {
+            switch selection {
+            case .addChild:
+                return HomeModal.addChild
+            case .move:
+                return HomeModal.move
+            case .rename:
+                return HomeModal.rename
+            case .delete:
+                return HomeModal.delete
+            default:
+                return nil
+            }
+        }
+        
         var id: Int { hashValue }
     }
     
-    @State var selectedAction: HomeAction? = nil
+    @State var showModal: HomeModal? = nil
     @State var primarySelectedCategory: TimeSDK.Category? = nil
     @State var secondarySelectedCategory: TimeSDK.Category? = nil
     
     @EnvironmentObject var warehouse: Warehouse
     
-    func buildBinding(for action: HomeAction) -> Binding<Bool> {
+    func buildBinding(for modal: HomeModal) -> Binding<Bool> {
         let binding = Binding<Bool>(
-            get: { return selectedAction == action },
+            get: { return showModal == modal },
             set: { (newVal) in
                 if newVal {
-                    selectedAction = action
+                    showModal = modal
                 } else {
-                    selectedAction = nil
+                    showModal = nil
                 }
             }
         )
@@ -115,7 +130,7 @@ struct Home: View {
                 }
                     
                 Section(header: Text("Accounts").titleStyle()) {
-                    CategoryList(selectedAction: $selectedAction, selectedCategory: $primarySelectedCategory)
+                    CategoryList(accountAction: handleAccountAction, categoryAction: handleCategoryAction)
                 }
                 .listRowInsets(EdgeInsets())
                 
@@ -137,7 +152,7 @@ struct Home: View {
             }
             .listStyle(InsetGroupedListStyle())
             .navigationTitle("Time")
-            .sheet(item: $selectedAction) { (option) -> AnyView in
+            .sheet(item: $showModal) { (option) -> AnyView in
                 switch (option) {
                 case .addChild:
                     return AnyView(Text("Add Child").environmentObject(self.warehouse))
@@ -151,6 +166,22 @@ struct Home: View {
         }.onReceive(timer, perform: { _ in
             self.warehouse.refreshAsNeeded()
         })
+    }
+    
+    func handleAccountAction(category: TimeSDK.Category, accountAction: AccountMenu.Selection) {
+        print("do \(accountAction)")
+    }
+    
+    func handleCategoryAction(category: TimeSDK.Category, categoryAction: CategoryMenu.Selection) {
+        switch categoryAction {
+        case .addChild, .move, .rename, .delete:
+            self.showModal = HomeModal.from(categoryAction)
+            self.primarySelectedCategory = category
+        case .toggleState:
+            self.warehouse.time?.store.toggleRange(for: category, completion: nil)
+        case .recordEvent:
+            self.warehouse.time?.store.recordEvent(for: category, completion: nil)
+        }
     }
     
     func moveView() -> AnyView {
@@ -182,7 +213,7 @@ struct Home: View {
                                 }
                             }
                         }
-                        self.selectedAction = nil
+                        self.showModal = nil
                     }),
                     secondaryButton: .cancel(Text("Cancel"))
                 )

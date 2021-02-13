@@ -57,6 +57,8 @@
 		D8CB935525D06F5D00C250E9 /* MoveCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB935425D06F5D00C250E9 /* MoveCategory.swift */; };
 		D8CB935725D06F9300C250E9 /* CategoryList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB935625D06F9300C250E9 /* CategoryList.swift */; };
 		D8CB936425D41E3200C250E9 /* Mainify.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB936325D41E3200C250E9 /* Mainify.swift */; };
+		D8CB936625D8842000C250E9 /* CategoryMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB936525D8842000C250E9 /* CategoryMenu.swift */; };
+		D8CB936825D885B500C250E9 /* AccountMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB936725D885B500C250E9 /* AccountMenu.swift */; };
 		D8D3BA9623C4C024002B0082 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D8D3BA9523C4C024002B0082 /* Settings.bundle */; };
 		D8DD2A432331083600F26665 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DD2A422331083500F26665 /* HomeViewController.swift */; };
 		D8E85C34229D682C00204D14 /* EntriesViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E85C33229D682C00204D14 /* EntriesViewController+Alerts.swift */; };
@@ -162,6 +164,8 @@
 		D8CB935425D06F5D00C250E9 /* MoveCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveCategory.swift; sourceTree = "<group>"; };
 		D8CB935625D06F9300C250E9 /* CategoryList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryList.swift; sourceTree = "<group>"; };
 		D8CB936325D41E3200C250E9 /* Mainify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mainify.swift; sourceTree = "<group>"; };
+		D8CB936525D8842000C250E9 /* CategoryMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryMenu.swift; sourceTree = "<group>"; };
+		D8CB936725D885B500C250E9 /* AccountMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMenu.swift; sourceTree = "<group>"; };
 		D8D3BA9423C42BA7002B0082 /* Time-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Time-iOS.entitlements"; sourceTree = "<group>"; };
 		D8D3BA9523C4C024002B0082 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		D8DD2A422331083500F26665 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -318,6 +322,8 @@
 				D856108B25CB928B00A325B3 /* RecentCategory.swift */,
 				D856108D25CB9BDC00A325B3 /* QuantityMetric.swift */,
 				D856108F25CBA44600A325B3 /* ListItem.swift */,
+				D8CB936525D8842000C250E9 /* CategoryMenu.swift */,
+				D8CB936725D885B500C250E9 /* AccountMenu.swift */,
 			);
 			name = Generic;
 			sourceTree = "<group>";
@@ -517,10 +523,12 @@
 				D8CB936425D41E3200C250E9 /* Mainify.swift in Sources */,
 				D851081024561DEC001752B1 /* DisclosureIndicatorButtonTableViewCell.swift in Sources */,
 				D8F549B123A9005D009E8512 /* ImportListViewController.swift in Sources */,
+				D8CB936825D885B500C250E9 /* AccountMenu.swift in Sources */,
 				D85CFB012462ED07005E1AE2 /* CategoryTableViewCell.swift in Sources */,
 				D856109025CBA44600A325B3 /* ListItem.swift in Sources */,
 				D8500CB3228AF16D009052DC /* EntriesViewController.swift in Sources */,
 				D856108E25CB9BDC00A325B3 /* QuantityMetric.swift in Sources */,
+				D8CB936625D8842000C250E9 /* CategoryMenu.swift in Sources */,
 				D8CB935125D03FA500C250E9 /* Warehouse.swift in Sources */,
 				D852538124CD1D4100F724EC /* Widget.intentdefinition in Sources */,
 				D855812321BDE9A200DCB577 /* AppDelegate.swift in Sources */,
