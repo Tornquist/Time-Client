@@ -12,6 +12,7 @@ import TimeSDK
 struct MoveCategory: View {
     @Binding var movingCategory: TimeSDK.Category?
     @Binding var show: Bool
+    var selected: ((_ categoryTree: CategoryTree) -> ())?
     
     @EnvironmentObject var warehouse: Warehouse
     
@@ -65,7 +66,9 @@ struct MoveCategory: View {
                 open: true,
                 showIcon: category.children.count > 0,
                 tapped: {
-                    // Selected destination
+                    if viableChoice {
+                        self.selected?(category)
+                    }
                 }
             ).transition(.slide)
             .foregroundColor(textColor(for: category.node, canMove: viableChoice))

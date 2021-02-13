@@ -72,8 +72,16 @@ class Warehouse: ObservableObject {
     
     func getName(for categoryID: Int?) -> String {
         let category = self.time?.store.categories.first(where: { $0.id == categoryID })
-        let categoryName = category?.name ?? NSLocalizedString("Unknown", comment: "")
-        return categoryName
+        return self.getName(for: category)
+    }
+    
+    func getName(for category: TimeSDK.Category?) -> String {
+        guard category != nil else {
+            return NSLocalizedString("Unknown", comment: "")
+        }
+        let isAccount = category!.parentID == nil
+        let name = isAccount ? NSLocalizedString("Account \(category!.accountID)", comment: "") : category!.name
+        return name
     }
     
     func getParentHierarchyName(_ tree: CategoryTree) -> String {

@@ -366,19 +366,32 @@ class API: APIQueueDelegate {
         complexCompletion(data, error, apiRequest.completion, apiRequest.sideEffects)
     }
     
-    func complexCompletion<T>(_ data: Data?, _ error: Error?, _ completion: (T?, Error?) -> (), _ sideEffects: ((T) -> ())? = nil) where T : Decodable {
-        guard let data = data, error == nil else {
-            let returnError = error ?? TimeError.requestFailed("Missing response data")
-            completion(nil, returnError)
-            return
+    func complexCompletion<T>(_ data: Data?, _ error: Error?, _ completion: @escaping (T?, Error?) -> (), _ sideEffects: ((T) -> ())? = nil) where T : Decodable {
+        // Force all actions to the main thread to make updates and interactions
+        // with combine-driven objects safe and stable.
+        
+        let performCompletion = {
+            guard let data = data, error == nil else {
+                let returnError = error ?? TimeError.requestFailed("Missing response data")
+                completion(nil, returnError)
+                return
+            }
+            
+            do {
+                let t = try JSONDecoder().decode(T.self, from: data)
+                sideEffects?(t)
+                completion(t, nil)
+            } catch {
+                completion(nil, TimeError.unableToDecodeResponse)
+            }
         }
         
-        do {
-            let t = try JSONDecoder().decode(T.self, from: data)
-            sideEffects?(t)
-            completion(t, nil)
-        } catch {
-            completion(nil, TimeError.unableToDecodeResponse)
+        if Thread.isMainThread {
+            performCompletion()
+        } else {
+            DispatchQueue.main.async {
+                performCompletion()
+            }
         }
     }
     

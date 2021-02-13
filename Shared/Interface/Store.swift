@@ -667,7 +667,9 @@ public class Store {
     
     private func archive<T>(data: T) where T : Codable {
         guard self.hasInitialized else { return }
-        _ = self.archive.record(data)
+        DispatchQueue.global(qos: .background).async {
+            _ = self.archive.record(data)
+        }
     }
     
     // MARK: - Remote Syncing

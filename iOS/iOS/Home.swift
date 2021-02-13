@@ -12,6 +12,7 @@ import TimeSDK
 
 struct Home: View {
     @State var showMore = false
+    @State var showAlert = false // Shared by all actions
     
     let showSeconds = true
     var emptyDuration: String {
@@ -30,7 +31,8 @@ struct Home: View {
     }
     
     @State var selectedAction: HomeAction? = nil
-    @State var selectedCategory: TimeSDK.Category? = nil
+    @State var primarySelectedCategory: TimeSDK.Category? = nil
+    @State var secondarySelectedCategory: TimeSDK.Category? = nil
     
     @EnvironmentObject var warehouse: Warehouse
     
@@ -113,7 +115,7 @@ struct Home: View {
                 }
                     
                 Section(header: Text("Accounts").titleStyle()) {
-                    CategoryList(selectedAction: $selectedAction, selectedCategory: $selectedCategory)
+                    CategoryList(selectedAction: $selectedAction, selectedCategory: $primarySelectedCategory)
                 }
                 .listRowInsets(EdgeInsets())
                 
@@ -139,11 +141,7 @@ struct Home: View {
                 switch (option) {
                 case .addChild:
                     return AnyView(Text("Add Child").environmentObject(self.warehouse))
-                case .move:
-                    return AnyView(MoveCategory(
-                        movingCategory: $selectedCategory,
-                        show: buildBinding(for: .move)
-                    ).environmentObject(self.warehouse))
+                case .move: return moveView()
                 case .rename:
                     return AnyView(Text("Rename").environmentObject(self.warehouse))
                 case .delete:
@@ -153,6 +151,44 @@ struct Home: View {
         }.onReceive(timer, perform: { _ in
             self.warehouse.refreshAsNeeded()
         })
+    }
+    
+    func moveView() -> AnyView {
+        return AnyView(
+            MoveCategory(
+                movingCategory: $primarySelectedCategory,
+                show: buildBinding(for: .move),
+                selected: { (tree) in
+                    self.secondarySelectedCategory = tree.node
+                    self.showAlert = true
+                }
+            )
+            .alert(isPresented: $showAlert, content: {
+                Alert(
+                    title: Text("Confirm Move"),
+                    message: Text("Are you sure you wish to move \(self.warehouse.getName(for: self.primarySelectedCategory)) to \(self.warehouse.getName(for: self.secondarySelectedCategory))?"),
+                    primaryButton: .default(Text("Move"), action: {
+                        if let category = self.primarySelectedCategory,
+                           let destination = self.secondarySelectedCategory {
+                            self.warehouse.time?.store.moveCategory(category, to: destination) { (success) in
+                                if success,
+                                    let destinationTree = Time.shared.store.categoryTrees[destination.accountID],
+                                    let movedTree = destinationTree.findItem(withID: category.id ) {
+                                    var parent = movedTree.parent
+                                    while parent != nil {
+                                        parent?.toggleExpanded(forceTo: true)
+                                        parent = parent?.parent
+                                    }
+                                }
+                            }
+                        }
+                        self.selectedAction = nil
+                    }),
+                    secondaryButton: .cancel(Text("Cancel"))
+                )
+            })
+            .environmentObject(self.warehouse)
+        )
     }
 }
 
