@@ -167,7 +167,11 @@ struct Home: View {
                         AddCategory(category: $primarySelectedCategory, show: buildBinding(for: .addChild))
                             .environmentObject(self.warehouse)
                     )
-                case .move: return moveView()
+                case .move:
+                    return AnyView(
+                        MoveCategory(movingCategory: $primarySelectedCategory, show: buildBinding(for: .move))
+                            .environmentObject(self.warehouse)
+                    )
                 case .rename:
                     return AnyView(
                         RenameCategory(category: $primarySelectedCategory, show: buildBinding(for: .rename))
@@ -202,44 +206,6 @@ struct Home: View {
         case .recordEvent:
             self.warehouse.time?.store.recordEvent(for: category, completion: nil)
         }
-    }
-    
-    func moveView() -> AnyView {
-        return AnyView(
-            MoveCategory(
-                movingCategory: $primarySelectedCategory,
-                show: buildBinding(for: .move),
-                selected: { (tree) in
-                    self.secondarySelectedCategory = tree.node
-                    self.showAlert = true
-                }
-            )
-            .alert(isPresented: $showAlert, content: {
-                Alert(
-                    title: Text("Confirm Move"),
-                    message: Text("Are you sure you wish to move \(self.warehouse.getName(for: self.primarySelectedCategory)) to \(self.warehouse.getName(for: self.secondarySelectedCategory))?"),
-                    primaryButton: .default(Text("Move"), action: {
-                        if let category = self.primarySelectedCategory,
-                           let destination = self.secondarySelectedCategory {
-                            self.warehouse.time?.store.moveCategory(category, to: destination) { (success) in
-                                if success,
-                                   let destinationTree = self.warehouse.time?.store.categoryTrees[destination.accountID],
-                                    let movedTree = destinationTree.findItem(withID: category.id) {
-                                    var parent = movedTree.parent
-                                    while parent != nil {
-                                        parent?.toggleExpanded(forceTo: true)
-                                        parent = parent?.parent
-                                    }
-                                }
-                            }
-                        }
-                        self.showModal = nil
-                    }),
-                    secondaryButton: .cancel(Text("Cancel"))
-                )
-            })
-            .environmentObject(self.warehouse)
-        )
     }
 }
 

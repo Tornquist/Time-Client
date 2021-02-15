@@ -27,14 +27,8 @@ struct AddCategory: View {
             onSave: { (newName) in
                 if let category = category {
                     warehouse.time?.store.addCategory(withName: newName, to: category) { (success, newCategory) in
-                        if success,
-                           let destinationTree = self.warehouse.time?.store.categoryTrees[category.accountID],
-                           let movedTree = destinationTree.findItem(withID: category.id) {
-                            var parent: CategoryTree? = movedTree
-                            while parent != nil {
-                                parent?.toggleExpanded(forceTo: true)
-                                parent = parent?.parent
-                            }
+                        if success {
+                            self.warehouse.showChildrenOf(category)
                         }
                     }
                 }

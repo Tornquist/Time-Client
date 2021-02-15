@@ -99,6 +99,17 @@ class Warehouse: ObservableObject {
         let parentName = possibleParentName.count > 0 ? possibleParentName : NSLocalizedString("Account \(tree.node.accountID)", comment: "")
         return parentName
     }
+
+    func showChildrenOf(_ category: TimeSDK.Category) {
+        if let accountTree = self.time?.store.categoryTrees[category.accountID],
+           let categoryLeaf = accountTree.findItem(withID: category.id) {
+            var parent: CategoryTree? = categoryLeaf
+            while parent != nil {
+                parent?.toggleExpanded(forceTo: true)
+                parent = parent?.parent
+            }
+        }
+    }
     
     // MARK: - Refresh All
     

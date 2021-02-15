@@ -12,7 +12,9 @@ import TimeSDK
 struct MoveCategory: View {
     @Binding var movingCategory: TimeSDK.Category?
     @Binding var show: Bool
-    var selected: ((_ categoryTree: CategoryTree) -> ())?
+    
+    @State var showAlert = false
+    @State var destinationCategory: TimeSDK.Category? = nil
     
     @EnvironmentObject var warehouse: Warehouse
     
@@ -67,7 +69,8 @@ struct MoveCategory: View {
                 showIcon: category.children.count > 0,
                 tapped: {
                     if viableChoice {
-                        self.selected?(category)
+                        self.destinationCategory = category.node
+                        self.showAlert = true
                     }
                 }
             ).transition(.slide)
@@ -88,6 +91,24 @@ struct MoveCategory: View {
             }
             .listStyle(InsetGroupedListStyle())
             .navigationTitle("Select Destination")
+            .alert(isPresented: $showAlert, content: {
+                Alert(
+                    title: Text("Confirm Move"),
+                    message: Text("Are you sure you wish to move \(self.warehouse.getName(for: self.movingCategory)) to \(self.warehouse.getName(for: self.destinationCategory))?"),
+                    primaryButton: .default(Text("Move"), action: {
+                        if let category = self.movingCategory,
+                           let destination = self.destinationCategory {
+                            self.warehouse.time?.store.moveCategory(category, to: destination) { (success) in
+                                if success {
+                                    self.warehouse.showChildrenOf(destination)
+                                }
+                            }
+                        }
+                        self.show = false
+                    }),
+                    secondaryButton: .cancel(Text("Cancel"))
+                )
+            })
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
