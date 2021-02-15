@@ -27,11 +27,11 @@ struct AccountMenu: View {
             }, label: {
                 Label("Add Child", systemImage: "plus")
             })
-            Button(action: {
-                self.selected?(root, .rename)
-            }, label: {
-                Label("Rename", systemImage: "text.cursor")
-            })
+//            Button(action: {
+//                self.selected?(root, .rename)
+//            }, label: {
+//                Label("Rename", systemImage: "text.cursor")
+//            })
         } label: {
             Image(systemName: "ellipsis")
                 .font(Font.system(size: 12.0, weight: .semibold))

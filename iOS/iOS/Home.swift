@@ -27,6 +27,15 @@ struct Home: View {
         case rename
         case delete
         
+        static func from(_ selection: AccountMenu.Selection) -> HomeModal? {
+            switch selection {
+            case .addChild:
+                return HomeModal.addChild
+            default:
+                return nil
+            }
+        }
+        
         static func from(_ selection: CategoryMenu.Selection) -> HomeModal? {
             switch selection {
             case .addChild:
@@ -148,28 +157,39 @@ struct Home: View {
                 }
                 .background(Color(.systemGroupedBackground))
                 .listRowInsets(EdgeInsets())
-                
             }
             .listStyle(InsetGroupedListStyle())
             .navigationTitle("Time")
-            .sheet(item: $showModal) { (option) -> AnyView in
+            .sheet(item: $showModal, content: { (option) -> AnyView in
                 switch (option) {
                 case .addChild:
-                    return AnyView(Text("Add Child").environmentObject(self.warehouse))
+                    return AnyView(
+                        AddCategory(category: $primarySelectedCategory, show: buildBinding(for: .addChild))
+                            .environmentObject(self.warehouse)
+                    )
                 case .move: return moveView()
                 case .rename:
-                    return AnyView(Text("Rename").environmentObject(self.warehouse))
+                    return AnyView(
+                        RenameCategory(category: $primarySelectedCategory, show: buildBinding(for: .rename))
+                            .environmentObject(self.warehouse)
+                    )
                 case .delete:
                     return AnyView(Text("Delete").environmentObject(self.warehouse))
                 }
-            }
+            })
         }.onReceive(timer, perform: { _ in
             self.warehouse.refreshAsNeeded()
         })
     }
     
     func handleAccountAction(category: TimeSDK.Category, accountAction: AccountMenu.Selection) {
-        print("do \(accountAction)")
+        switch accountAction {
+        case .addChild:
+            self.showModal = HomeModal.from(accountAction)
+            self.primarySelectedCategory = category
+        case .rename:
+            break // No actions yet
+        }
     }
     
     func handleCategoryAction(category: TimeSDK.Category, categoryAction: CategoryMenu.Selection) {
@@ -203,8 +223,8 @@ struct Home: View {
                            let destination = self.secondarySelectedCategory {
                             self.warehouse.time?.store.moveCategory(category, to: destination) { (success) in
                                 if success,
-                                    let destinationTree = Time.shared.store.categoryTrees[destination.accountID],
-                                    let movedTree = destinationTree.findItem(withID: category.id ) {
+                                   let destinationTree = self.warehouse.time?.store.categoryTrees[destination.accountID],
+                                    let movedTree = destinationTree.findItem(withID: category.id) {
                                     var parent = movedTree.parent
                                     while parent != nil {
                                         parent?.toggleExpanded(forceTo: true)

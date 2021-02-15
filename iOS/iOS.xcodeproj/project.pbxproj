@@ -59,6 +59,9 @@
 		D8CB936425D41E3200C250E9 /* Mainify.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB936325D41E3200C250E9 /* Mainify.swift */; };
 		D8CB936625D8842000C250E9 /* CategoryMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB936525D8842000C250E9 /* CategoryMenu.swift */; };
 		D8CB936825D885B500C250E9 /* AccountMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB936725D885B500C250E9 /* AccountMenu.swift */; };
+		D8CB937125DACAC600C250E9 /* TextModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB937025DACAC600C250E9 /* TextModal.swift */; };
+		D8CB937325DAD50600C250E9 /* RenameCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB937225DAD50600C250E9 /* RenameCategory.swift */; };
+		D8CB937525DAD79100C250E9 /* AddCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB937425DAD79100C250E9 /* AddCategory.swift */; };
 		D8D3BA9623C4C024002B0082 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D8D3BA9523C4C024002B0082 /* Settings.bundle */; };
 		D8DD2A432331083600F26665 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DD2A422331083500F26665 /* HomeViewController.swift */; };
 		D8E85C34229D682C00204D14 /* EntriesViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E85C33229D682C00204D14 /* EntriesViewController+Alerts.swift */; };
@@ -166,6 +169,9 @@
 		D8CB936325D41E3200C250E9 /* Mainify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mainify.swift; sourceTree = "<group>"; };
 		D8CB936525D8842000C250E9 /* CategoryMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryMenu.swift; sourceTree = "<group>"; };
 		D8CB936725D885B500C250E9 /* AccountMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMenu.swift; sourceTree = "<group>"; };
+		D8CB937025DACAC600C250E9 /* TextModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextModal.swift; sourceTree = "<group>"; };
+		D8CB937225DAD50600C250E9 /* RenameCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameCategory.swift; sourceTree = "<group>"; };
+		D8CB937425DAD79100C250E9 /* AddCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCategory.swift; sourceTree = "<group>"; };
 		D8D3BA9423C42BA7002B0082 /* Time-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Time-iOS.entitlements"; sourceTree = "<group>"; };
 		D8D3BA9523C4C024002B0082 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		D8DD2A422331083500F26665 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -319,11 +325,10 @@
 		D8CB930C25CEE77300C250E9 /* Generic */ = {
 			isa = PBXGroup;
 			children = (
+				D8CB937025DACAC600C250E9 /* TextModal.swift */,
 				D856108B25CB928B00A325B3 /* RecentCategory.swift */,
 				D856108D25CB9BDC00A325B3 /* QuantityMetric.swift */,
 				D856108F25CBA44600A325B3 /* ListItem.swift */,
-				D8CB936525D8842000C250E9 /* CategoryMenu.swift */,
-				D8CB936725D885B500C250E9 /* AccountMenu.swift */,
 			);
 			name = Generic;
 			sourceTree = "<group>";
@@ -332,7 +337,7 @@
 			isa = PBXGroup;
 			children = (
 				D8CB935C25D2C39B00C250E9 /* Home */,
-				D8CB935E25D2C3B200C250E9 /* Entry */,
+				D8CB935E25D2C3B200C250E9 /* Entries */,
 				D8CB930C25CEE77300C250E9 /* Generic */,
 			);
 			name = Views;
@@ -360,17 +365,29 @@
 			children = (
 				D8CB930E25CEE79F00C250E9 /* Home.swift */,
 				D8CB935625D06F9300C250E9 /* CategoryList.swift */,
-				D8CB935425D06F5D00C250E9 /* MoveCategory.swift */,
+				D8CB936525D8842000C250E9 /* CategoryMenu.swift */,
+				D8CB936725D885B500C250E9 /* AccountMenu.swift */,
+				D8CB936F25DACA9900C250E9 /* Sheets */,
 			);
 			name = Home;
 			sourceTree = "<group>";
 		};
-		D8CB935E25D2C3B200C250E9 /* Entry */ = {
+		D8CB935E25D2C3B200C250E9 /* Entries */ = {
 			isa = PBXGroup;
 			children = (
 				D856108825C3A52B00A325B3 /* EntryView.swift */,
 			);
-			name = Entry;
+			name = Entries;
+			sourceTree = "<group>";
+		};
+		D8CB936F25DACA9900C250E9 /* Sheets */ = {
+			isa = PBXGroup;
+			children = (
+				D8CB935425D06F5D00C250E9 /* MoveCategory.swift */,
+				D8CB937225DAD50600C250E9 /* RenameCategory.swift */,
+				D8CB937425DAD79100C250E9 /* AddCategory.swift */,
+			);
+			name = Sheets;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -498,6 +515,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D8CB931225CEE95C00C250E9 /* Text+.swift in Sources */,
+				D8CB937125DACAC600C250E9 /* TextModal.swift in Sources */,
 				D806B91222772507005DC715 /* CategoriesViewController+Alerts.swift in Sources */,
 				D8A1B50424CD223000580DCA /* Colors.swift in Sources */,
 				D85108142456262E001752B1 /* RecentEntryTableViewCell.swift in Sources */,
@@ -519,8 +537,10 @@
 				D8216FEB24A0125A000C72FD /* CategoriesViewController+TableViewManagement.swift in Sources */,
 				D855812B21BDE9A200DCB577 /* Time_iOS.xcdatamodeld in Sources */,
 				D856108C25CB928B00A325B3 /* RecentCategory.swift in Sources */,
+				D8CB937325DAD50600C250E9 /* RenameCategory.swift in Sources */,
 				D8CB935725D06F9300C250E9 /* CategoryList.swift in Sources */,
 				D8CB936425D41E3200C250E9 /* Mainify.swift in Sources */,
+				D8CB937525DAD79100C250E9 /* AddCategory.swift in Sources */,
 				D851081024561DEC001752B1 /* DisclosureIndicatorButtonTableViewCell.swift in Sources */,
 				D8F549B123A9005D009E8512 /* ImportListViewController.swift in Sources */,
 				D8CB936825D885B500C250E9 /* AccountMenu.swift in Sources */,
