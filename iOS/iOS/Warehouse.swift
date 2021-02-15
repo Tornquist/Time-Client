@@ -52,7 +52,7 @@ class Warehouse: ObservableObject {
     }
     
     convenience init(for time: Time) {
-        let trees = Time.shared.store.categoryTrees.values.sorted { (a, b) -> Bool in
+        let trees = time.store.categoryTrees.values.sorted { (a, b) -> Bool in
             return a.node.accountID < b.node.accountID
         }
         
@@ -124,6 +124,13 @@ class Warehouse: ObservableObject {
             DispatchQueue.main.async {
                 if categoriesDone && entriesDone {
                     self.isRefreshing = false
+                    
+                    // Refresh existing trees to make sure all root nodes are tracked
+                    if let trees = self.time?.store.categoryTrees.values.sorted(by: { (a, b) -> Bool in
+                        return a.node.accountID < b.node.accountID
+                    }) {
+                        self.trees = trees
+                    }
                 }
             }
             self.refreshAllCalculations()

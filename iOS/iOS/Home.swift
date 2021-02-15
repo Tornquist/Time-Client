@@ -12,7 +12,12 @@ import TimeSDK
 
 struct Home: View {
     @State var showMore = false
-    @State var showAlert = false // Shared by all actions
+    
+    @State var showModal: HomeModal? = nil
+    @State var showAlert: HomeAlert? = nil
+    @State var selectedCategory: TimeSDK.Category? = nil
+    
+    @EnvironmentObject var warehouse: Warehouse
     
     let showSeconds = true
     var emptyDuration: String {
@@ -20,6 +25,12 @@ struct Home: View {
     }
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
+    enum HomeAlert: Identifiable {
+        case addAccount
+        
+        var id: Int { hashValue }
+    }
     
     enum HomeModal: Identifiable {
         case addChild
@@ -53,13 +64,7 @@ struct Home: View {
         
         var id: Int { hashValue }
     }
-    
-    @State var showModal: HomeModal? = nil
-    @State var primarySelectedCategory: TimeSDK.Category? = nil
-    @State var secondarySelectedCategory: TimeSDK.Category? = nil
-    
-    @EnvironmentObject var warehouse: Warehouse
-    
+        
     func buildBinding(for modal: HomeModal) -> Binding<Bool> {
         let binding = Binding<Bool>(
             get: { return showModal == modal },
@@ -150,7 +155,9 @@ struct Home: View {
                         }
                     })
                     if showMore {
-                        ListItem(text: "Add Account", level: 0, open: true, showIcon: false)
+                        ListItem(text: "Add Account", level: 0, open: true, showIcon: false) {
+                            self.showAlert = .addAccount
+                        }
                         ListItem(text: "Import Records", level: 0, open: false, showIcon: false)
                         ListItem(text: "Sign Out", level: 0, open: false, showIcon: false)
                     }
@@ -160,26 +167,41 @@ struct Home: View {
             }
             .listStyle(InsetGroupedListStyle())
             .navigationTitle("Time")
+            .alert(item: $showAlert, content: { (option) -> Alert in
+                switch (option) {
+                case .addAccount:
+                    return Alert(
+                        title: Text("Create Account"),
+                        message: Text("Are you sure you would like to create a new account?"),
+                        primaryButton: .default(Text("Create"), action: {
+                            self.warehouse.time?.store.createAccount(completion: { (newAccount, error) in
+                                self.warehouse.loadData(refresh: true)
+                            })
+                        }),
+                        secondaryButton: .cancel(Text("Cancel"))
+                    )
+                }
+            })
             .sheet(item: $showModal, content: { (option) -> AnyView in
                 switch (option) {
                 case .addChild:
                     return AnyView(
-                        AddCategory(category: $primarySelectedCategory, show: buildBinding(for: .addChild))
+                        AddCategory(category: $selectedCategory, show: buildBinding(for: .addChild))
                             .environmentObject(self.warehouse)
                     )
                 case .move:
                     return AnyView(
-                        MoveCategory(movingCategory: $primarySelectedCategory, show: buildBinding(for: .move))
+                        MoveCategory(movingCategory: $selectedCategory, show: buildBinding(for: .move))
                             .environmentObject(self.warehouse)
                     )
                 case .rename:
                     return AnyView(
-                        RenameCategory(category: $primarySelectedCategory, show: buildBinding(for: .rename))
+                        RenameCategory(category: $selectedCategory, show: buildBinding(for: .rename))
                             .environmentObject(self.warehouse)
                     )
                 case .delete:
                     return AnyView(
-                        DeleteCategory(category: $primarySelectedCategory, show: buildBinding(for: .delete))
+                        DeleteCategory(category: $selectedCategory, show: buildBinding(for: .delete))
                             .environmentObject(self.warehouse)
                     )
                 }
@@ -193,7 +215,7 @@ struct Home: View {
         switch accountAction {
         case .addChild:
             self.showModal = HomeModal.from(accountAction)
-            self.primarySelectedCategory = category
+            self.selectedCategory = category
         case .rename:
             break // No actions yet
         }
@@ -203,7 +225,7 @@ struct Home: View {
         switch categoryAction {
         case .addChild, .move, .rename, .delete:
             self.showModal = HomeModal.from(categoryAction)
-            self.primarySelectedCategory = category
+            self.selectedCategory = category
         case .toggleState:
             self.warehouse.time?.store.toggleRange(for: category, completion: nil)
         case .recordEvent:
