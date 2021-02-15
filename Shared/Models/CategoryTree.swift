@@ -169,7 +169,7 @@ public class CategoryTree: ObservableObject, Equatable, Identifiable {
         self.cancellables[tree.id] = cancellable
     }
     
-    func listCategories() -> [Category] {
+    public func listCategories() -> [Category] {
         var list = [self.node]
         self.children.forEach({ list.append(contentsOf: $0.listCategories()) })
         return list

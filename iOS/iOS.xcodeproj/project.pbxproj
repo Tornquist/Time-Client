@@ -62,6 +62,7 @@
 		D8CB937125DACAC600C250E9 /* TextModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB937025DACAC600C250E9 /* TextModal.swift */; };
 		D8CB937325DAD50600C250E9 /* RenameCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB937225DAD50600C250E9 /* RenameCategory.swift */; };
 		D8CB937525DAD79100C250E9 /* AddCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB937425DAD79100C250E9 /* AddCategory.swift */; };
+		D8CB937725DAE95300C250E9 /* DeleteCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB937625DAE95200C250E9 /* DeleteCategory.swift */; };
 		D8D3BA9623C4C024002B0082 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D8D3BA9523C4C024002B0082 /* Settings.bundle */; };
 		D8DD2A432331083600F26665 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DD2A422331083500F26665 /* HomeViewController.swift */; };
 		D8E85C34229D682C00204D14 /* EntriesViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E85C33229D682C00204D14 /* EntriesViewController+Alerts.swift */; };
@@ -172,6 +173,7 @@
 		D8CB937025DACAC600C250E9 /* TextModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextModal.swift; sourceTree = "<group>"; };
 		D8CB937225DAD50600C250E9 /* RenameCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameCategory.swift; sourceTree = "<group>"; };
 		D8CB937425DAD79100C250E9 /* AddCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCategory.swift; sourceTree = "<group>"; };
+		D8CB937625DAE95200C250E9 /* DeleteCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteCategory.swift; sourceTree = "<group>"; };
 		D8D3BA9423C42BA7002B0082 /* Time-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Time-iOS.entitlements"; sourceTree = "<group>"; };
 		D8D3BA9523C4C024002B0082 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		D8DD2A422331083500F26665 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -386,6 +388,7 @@
 				D8CB935425D06F5D00C250E9 /* MoveCategory.swift */,
 				D8CB937225DAD50600C250E9 /* RenameCategory.swift */,
 				D8CB937425DAD79100C250E9 /* AddCategory.swift */,
+				D8CB937625DAE95200C250E9 /* DeleteCategory.swift */,
 			);
 			name = Sheets;
 			sourceTree = "<group>";
@@ -530,6 +533,7 @@
 				D86AB87124982E3E00F71BE1 /* EntryTableViewCell.swift in Sources */,
 				D85B0A4A2246DD1A00835E55 /* LoginViewController.swift in Sources */,
 				D855812521BDE9A200DCB577 /* LandingViewController.swift in Sources */,
+				D8CB937725DAE95300C250E9 /* DeleteCategory.swift in Sources */,
 				D8CB931425CF460700C250E9 /* Unwrap.swift in Sources */,
 				D8E85C34229D682C00204D14 /* EntriesViewController+Alerts.swift in Sources */,
 				D8DD2A432331083600F26665 /* HomeViewController.swift in Sources */,

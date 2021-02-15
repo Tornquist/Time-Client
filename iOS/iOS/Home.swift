@@ -178,7 +178,10 @@ struct Home: View {
                             .environmentObject(self.warehouse)
                     )
                 case .delete:
-                    return AnyView(Text("Delete").environmentObject(self.warehouse))
+                    return AnyView(
+                        DeleteCategory(category: $primarySelectedCategory, show: buildBinding(for: .delete))
+                            .environmentObject(self.warehouse)
+                    )
                 }
             })
         }.onReceive(timer, perform: { _ in
