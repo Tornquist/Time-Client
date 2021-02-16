@@ -44,6 +44,7 @@ struct TextModal<Content: View>: View {
     }
 }
 
+#if DEBUG
 struct TextModal_Previews: PreviewProvider {
     @State static var show: Bool = true
     
@@ -59,3 +60,4 @@ struct TextModal_Previews: PreviewProvider {
             .environment(\.colorScheme, .dark)
     }
 }
+#endif

@@ -92,7 +92,10 @@ struct Home: View {
                 .listRowInsets(EdgeInsets())
                     
                 Section {
-                    NavigationLink("Show All Entries", destination: Text("test"))
+                    NavigationLink(
+                        "Show All Entries",
+                        destination: Entries()
+                    )
                         .foregroundColor(.blue)
                         .font(Font.system(size: 14.0))
                         .padding(.leading, -4.0)
