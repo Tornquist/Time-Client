@@ -16,13 +16,11 @@ struct Home: View {
     @State var showModal: HomeModal? = nil
     @State var showAlert: HomeAlert? = nil
     @State var selectedCategory: TimeSDK.Category? = nil
+    var signOut: (() -> ())? = nil
     
     @EnvironmentObject var warehouse: Warehouse
     
     let showSeconds = true
-    var emptyDuration: String {
-        return showSeconds ? "00:00:00" : "00:00"
-    }
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -83,55 +81,13 @@ struct Home: View {
         NavigationView {
             List {
                 Section(header: Text("Metrics").titleStyle()) {
-                    QuantityMetric(
-                        total: self.warehouse.dayTotal?.displayDuration(withSeconds: showSeconds) ?? emptyDuration,
-                        description: "Today",
-                        items: self.warehouse.dayCategories.map({ (result) -> QuantityMetric.QuantityItem in
-                            QuantityMetric.QuantityItem(
-                                name: self.warehouse.getName(for: result.categoryID),
-                                total: result.displayDuration(withSeconds: showSeconds),
-                                active: result.open
-                            )
-                        })
-                    )
-                    QuantityMetric(
-                        total: self.warehouse.weekTotal?.displayDuration(withSeconds: showSeconds) ?? emptyDuration,
-                        description: "This Week",
-                        items: self.warehouse.weekCategories.map({ (result) -> QuantityMetric.QuantityItem in
-                            QuantityMetric.QuantityItem(
-                                name: self.warehouse.getName(for: result.categoryID),
-                                total: result.displayDuration(withSeconds: showSeconds),
-                                active: result.open
-                            )
-                        })
-                    )
+                    MetricSection(showSeconds: showSeconds)
                 }
                 .listRowInsets(EdgeInsets())
                 .padding(EdgeInsets())
                 
                 Section(header: Text("Recents").titleStyle()) {
-                    ForEach(self.warehouse.recentCategories.indices) { (index) -> RecentCategory in
-                        let categoryTree = self.warehouse.recentCategories[index]
-                        let name = categoryTree.node.name
-                        let parentName = self.warehouse.getParentHierarchyName(categoryTree)
-                        let isActive = self.warehouse.openCategoryIDs.contains(categoryTree.id)
-                        let isRange = self.warehouse.recentCategoryIsRange[index]
-                        let action = isActive
-                            ? RecentCategory.Action.pause
-                            : (
-                                isRange
-                                    ? RecentCategory.Action.play
-                                    : RecentCategory.Action.record
-                            )
-                        
-                        RecentCategory(name: name, parents: parentName, action: action, active: isActive) {
-                            if action == RecentCategory.Action.record {
-                                self.warehouse.time?.store.recordEvent(for: categoryTree.node, completion: nil)
-                            } else {
-                                self.warehouse.time?.store.toggleRange(for: categoryTree.node, completion: nil)
-                            }
-                        }
-                    }
+                    RecentSection()
                 }
                 .listRowInsets(EdgeInsets())
                     
@@ -159,7 +115,9 @@ struct Home: View {
                             self.showAlert = .addAccount
                         }
                         ListItem(text: "Import Records", level: 0, open: false, showIcon: false)
-                        ListItem(text: "Sign Out", level: 0, open: false, showIcon: false)
+                        ListItem(text: "Sign Out", level: 0, open: false, showIcon: false) {
+                            signOut?()
+                        }
                     }
                 }
                 .background(Color(.systemGroupedBackground))
@@ -167,45 +125,8 @@ struct Home: View {
             }
             .listStyle(InsetGroupedListStyle())
             .navigationTitle("Time")
-            .alert(item: $showAlert, content: { (option) -> Alert in
-                switch (option) {
-                case .addAccount:
-                    return Alert(
-                        title: Text("Create Account"),
-                        message: Text("Are you sure you would like to create a new account?"),
-                        primaryButton: .default(Text("Create"), action: {
-                            self.warehouse.time?.store.createAccount(completion: { (newAccount, error) in
-                                self.warehouse.loadData(refresh: true)
-                            })
-                        }),
-                        secondaryButton: .cancel(Text("Cancel"))
-                    )
-                }
-            })
-            .sheet(item: $showModal, content: { (option) -> AnyView in
-                switch (option) {
-                case .addChild:
-                    return AnyView(
-                        AddCategory(category: $selectedCategory, show: buildBinding(for: .addChild))
-                            .environmentObject(self.warehouse)
-                    )
-                case .move:
-                    return AnyView(
-                        MoveCategory(movingCategory: $selectedCategory, show: buildBinding(for: .move))
-                            .environmentObject(self.warehouse)
-                    )
-                case .rename:
-                    return AnyView(
-                        RenameCategory(category: $selectedCategory, show: buildBinding(for: .rename))
-                            .environmentObject(self.warehouse)
-                    )
-                case .delete:
-                    return AnyView(
-                        DeleteCategory(category: $selectedCategory, show: buildBinding(for: .delete))
-                            .environmentObject(self.warehouse)
-                    )
-                }
-            })
+            .alert(item: $showAlert, content: buildAlert)
+            .sheet(item: $showModal, content: buildModal)
         }.onReceive(timer, perform: { _ in
             self.warehouse.refreshAsNeeded()
         })
@@ -230,6 +151,47 @@ struct Home: View {
             self.warehouse.time?.store.toggleRange(for: category, completion: nil)
         case .recordEvent:
             self.warehouse.time?.store.recordEvent(for: category, completion: nil)
+        }
+    }
+    
+    func buildAlert(_ option: HomeAlert) -> Alert {
+        switch (option) {
+        case .addAccount:
+            return Alert(
+                title: Text("Create Account"),
+                message: Text("Are you sure you would like to create a new account?"),
+                primaryButton: .default(Text("Create"), action: {
+                    self.warehouse.time?.store.createAccount(completion: { (newAccount, error) in
+                        self.warehouse.loadData(refresh: true)
+                    })
+                }),
+                secondaryButton: .cancel(Text("Cancel"))
+            )
+        }
+    }
+    
+    func buildModal(_ option: HomeModal) -> AnyView {
+        switch (option) {
+        case .addChild:
+            return AnyView(
+                AddCategory(category: $selectedCategory, show: buildBinding(for: .addChild))
+                    .environmentObject(self.warehouse)
+            )
+        case .move:
+            return AnyView(
+                MoveCategory(movingCategory: $selectedCategory, show: buildBinding(for: .move))
+                    .environmentObject(self.warehouse)
+            )
+        case .rename:
+            return AnyView(
+                RenameCategory(category: $selectedCategory, show: buildBinding(for: .rename))
+                    .environmentObject(self.warehouse)
+            )
+        case .delete:
+            return AnyView(
+                DeleteCategory(category: $selectedCategory, show: buildBinding(for: .delete))
+                    .environmentObject(self.warehouse)
+            )
         }
     }
 }

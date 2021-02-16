@@ -9,6 +9,7 @@
 import Foundation
 import Combine
 import TimeSDK
+import WidgetKit
 
 class Warehouse: ObservableObject {
     
@@ -152,17 +153,17 @@ class Warehouse: ObservableObject {
 
     @objc private func handleBackgroundUpdate(_ notification:Notification) {
         self.calculateMetrics()
-        self.calculateMetrics()
     }
     
     @objc private func handleEntryNotification(_ notification:Notification) {
-        self.refreshAllCalculations()
         self.refreshAllCalculations()
     }
     
     private func refreshAllCalculations() {
         self.calculateRecentCategories()
         self.calculateMetrics()
+        
+        WidgetCenter.shared.reloadAllTimelines()
     }
         
     // MARK: - Recents

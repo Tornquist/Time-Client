@@ -11,7 +11,7 @@ import CoreData
 import TimeSDK
 import WidgetKit
 
-@UIApplicationMain
+//@UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
