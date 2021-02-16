@@ -12,7 +12,7 @@ struct RecentSection: View {
     @EnvironmentObject var warehouse: Warehouse
     
     var body: some View {
-        ForEach(self.warehouse.recentCategories.indices) { (index) -> TitleSubtitleActionView in
+        ForEach(self.warehouse.recentCategories.indices) { (index) in
             let categoryTree = self.warehouse.recentCategories[index]
             let name = categoryTree.node.name
             let parentName = self.warehouse.getParentHierarchyName(categoryTree)
@@ -32,7 +32,7 @@ struct RecentSection: View {
                 } else {
                     self.warehouse.time?.store.toggleRange(for: categoryTree.node, completion: nil)
                 }
-            }
+            }.padding(.all, 16)
         }
     }
 }

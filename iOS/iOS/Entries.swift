@@ -13,27 +13,65 @@ struct Entries: View {
     
     @EnvironmentObject var warehouse: Warehouse
     
-    // Shared between all instances
+    @State var selectedEntry: Entry? = nil
+    
+    var timezones: [(String, String)]
+    
+    // Shared between all cells
     static var dateFormatters: [String:DateFormatter] = [:]
-
+    
+    init() {
+        // Prepare timezone list
+        let allTimezones = TimeZone.knownTimeZoneIdentifiers
+        let timezoneLabels = allTimezones.map({
+            $0.replacingOccurrences(of: "/", with: " > ")
+                .replacingOccurrences(of: "_", with: " ")
+        })
+        let timezoneValues = allTimezones
+        self.timezones = Array(zip(timezoneLabels, timezoneValues))
+    }
+    
     var body: some View {
-        List {
-            ForEach(self.warehouse.entries) { (entry) in
-                let active = entry.endedAt == nil && entry.type == .range
-                TitleSubtitleActionView(
-                    title: getName(entry),
-                    subtitle: getTimeString(for: entry),
-                    action: active ? .stop : .none,
-                    active: active,
-                    onTap: {
-                        if active {
-                            self.warehouse.time?.store.stop(entry: entry, completion: nil)
-                        }
+        let showEdit = Binding<Bool>(
+            get: {
+                self.selectedEntry != nil
+            },
+            set: { newBool in
+                if !newBool {
+                    self.selectedEntry = nil
+                }
+            }
+        )
+        
+        return List(self.warehouse.entries) { (entry) in
+            let active = entry.endedAt == nil && entry.type == .range
+            TitleSubtitleActionView(
+                title: getName(entry),
+                subtitle: getTimeString(for: entry),
+                action: active ? .stop : .none,
+                active: active,
+                onTap: {
+                    if active {
+                        self.warehouse.time?.store.stop(entry: entry, completion: nil)
                     }
-                )
-                    .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                }
+            )
+            .onTapGesture {
+                self.selectedEntry = entry
             }
         }
+        .sheet(
+            isPresented: showEdit, content: {
+                EditEntry(
+                    self.selectedEntry!,
+                    show: showEdit,
+                    timezones: self.timezones,
+                    categories: self.identifyCategoryOptions(),
+                    onSave: saveEdit,
+                    onDelete: deleteEntry
+                )
+            }
+        )
         .navigationTitle("Entries")
     }
     
@@ -54,7 +92,6 @@ struct Entries: View {
             }
             position = position?.parent
         }
-        
         
         let displayName = displayNameParts.reversed().joined(separator: " > ")
         
@@ -99,5 +136,68 @@ struct Entries: View {
         }
         
         return Entries.dateFormatters[safeTimezone]!.string(from: time)
+    }
+    
+    // MARK: - Category Options
+    
+    func identifyCategoryOptions() -> [EditEntry.CategoryOption] {
+        // Prepare/flatten category data
+        let accountIDs = self.warehouse.time?.store.accountIDs.sorted() ?? []
+        let categoryTreesByAccount = accountIDs.compactMap { self.warehouse.time?.store.categoryTrees[$0]?.listCategoryTrees() }
+        let categories = categoryTreesByAccount.flatMap { (categoryTrees) -> [EditEntry.CategoryOption] in
+            return categoryTrees.map { (categoryTree) -> EditEntry.CategoryOption in
+                let isRoot = categoryTree.parent == nil
+                let name = isRoot ? "Account \(categoryTree.node.accountID)" : categoryTree.node.name
+                return (name: name, depth: categoryTree.depth, categoryID: categoryTree.node.id)
+            }
+        }
+        
+        return categories
+    }
+    
+    // MARK: - On Entry Save
+    
+    func saveEdit(_ newEntry: Entry) -> () {
+        guard let entry = self.selectedEntry else { return }
+        
+        let changedCategory = entry.categoryID != newEntry.categoryID
+        let changedType = entry.type != newEntry.type
+        let changedStartedAt = entry.startedAt != newEntry.startedAt
+        let changedStartedAtTimezone = entry.startedAtTimezone != newEntry.startedAtTimezone
+        let changedEndedAt = entry.endedAt != newEntry.endedAt
+        let changedEndedAtTimezone = entry.endedAtTimezone != newEntry.endedAtTimezone
+
+        let someChanged = changedCategory || changedType || changedStartedAt || changedStartedAtTimezone || changedEndedAt || changedEndedAtTimezone
+        guard someChanged else {
+            self.selectedEntry = nil
+            return
+        }
+
+        let newCategory = changedCategory
+            ? self.warehouse.time?.store.categories.first(where: { $0.id == newEntry.categoryID })
+            : nil
+
+        self.warehouse.time?.store.update(
+            entry: entry,
+            setCategory: newCategory,
+            setType: changedType ? newEntry.type : nil,
+            setStartedAt: changedStartedAt ? newEntry.startedAt : nil,
+            setStartedAtTimezone: changedStartedAtTimezone ? newEntry.startedAtTimezone : nil,
+            setEndedAt: changedEndedAt ? newEntry.endedAt : nil,
+            setEndedAtTimezone: changedEndedAtTimezone ? newEntry.endedAtTimezone : nil,
+            completion: { (success) -> Void in
+                if success {
+                    self.selectedEntry = nil
+                }
+            }
+        )
+    }
+    
+    func deleteEntry() -> () {
+        guard let entry = self.selectedEntry else { return }
+        
+        self.warehouse.time?.store.delete(entry: entry, completion: { (success) in
+            self.selectedEntry = nil
+        })
     }
 }

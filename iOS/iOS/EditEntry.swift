@@ -1,5 +1,5 @@
 //
-//  EntryView.swift
+//  EditEntry.swift
 //  iOS
 //
 //  Created by Nathan Tornquist on 1/28/21.
@@ -9,7 +9,7 @@
 import SwiftUI
 import TimeSDK
 
-struct EntryView: View {
+struct EditEntry: View {
     
     typealias TimezoneOption = (name: String, value: String)
     typealias CategoryOption = (name: String, depth: Int, categoryID: Int)
@@ -41,8 +41,11 @@ struct EntryView: View {
     
     // MARK: - View management
     
-    var presentingVC: UIViewController?
+    @State var showDelete: Bool = false
+    
+    var show: Binding<Bool>
     var save: ((_ entry: Entry) -> ())?
+    var delete: (() -> ())?
     
     enum FieldType {
         case startedAt
@@ -60,7 +63,16 @@ struct EntryView: View {
         }
     }
 
-    init(_ entry: Entry, timezones: [TimezoneOption], categories: [CategoryOption]) {
+    init(
+        _ entry: Entry,
+        show: Binding<Bool>,
+        timezones: [TimezoneOption],
+        categories: [CategoryOption],
+        onSave save: ((_ entry: Entry) -> ())? = nil,
+        onDelete delete: (() -> ())? = nil
+    ) {
+        self.show = show
+        
         // Build initial state from entry
         
         self.id = entry.id
@@ -77,6 +89,11 @@ struct EntryView: View {
         
         self.timezones = timezones
         self.categories = categories
+        
+        // Lifecycle methods
+        
+        self.save = save
+        self.delete = delete
     }
     
     func getTitleRow(for field: FieldType) -> some View {
@@ -199,12 +216,33 @@ struct EntryView: View {
                             }
                         }
                     }
+                    
+                    Section {
+                        HStack {
+                            Spacer()
+                            Button("Delete Entry") {
+                                self.showDelete = true
+                            }.foregroundColor(Color(.systemRed))
+                            .alert(isPresented: $showDelete, content: {
+                                Alert(
+                                    title: Text("Are you sure you wish to delete this entry?"),
+                                    message: Text("This action cannot be reversed."),
+                                    primaryButton: .destructive(Text("Delete"), action: {
+                                        self.delete?()
+                                    }),
+                                    secondaryButton: .cancel(Text("Cancel"))
+                                )
+                            })
+                            Spacer()
+                        }
+                        
+                    }
                 }
                 .navigationTitle("Edit Entry")
                 .toolbar(content: {
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button("Cancel") {
-                            self.presentingVC?.presentedViewController?.dismiss(animated: true)
+                            self.show.wrappedValue = false
                         }
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -220,7 +258,6 @@ struct EntryView: View {
                                     endedAtTimezone: self.type == .range ? self.endedAtTimezone : nil
                                 )
                             )
-                            self.presentingVC?.presentedViewController?.dismiss(animated: true)
                         }
                     }
                 })
@@ -333,7 +370,7 @@ struct EntryView: View {
 }
 
 #if DEBUG
-struct EntryView_Previews: PreviewProvider {
+struct EditEntry_Previews: PreviewProvider {
     static var previews: some View {
         let allTimezones = TimeZone.knownTimeZoneIdentifiers
         let timezoneLabels = allTimezones.map({
@@ -365,14 +402,16 @@ struct EntryView_Previews: PreviewProvider {
             (["Account 2", "C"], 15)
         ]
         
-        let categoriesFormatted = categoriesRaw.map { (incoming) -> EntryView.CategoryOption in
+        let categoriesFormatted = categoriesRaw.map { (incoming) -> EditEntry.CategoryOption in
             let names: [String] = incoming.0
             let categoryID: Int = incoming.1
             
             return (name: names.last ?? "", depth: names.count - 1, categoryID: categoryID)
         }
+        
+        let show = Binding<Bool> { () -> Bool in return true } set: { (newVal) in }
 
-        return EntryView(
+        return EditEntry(
             Entry(
                 id: 1,
                 type: .range,
@@ -382,6 +421,7 @@ struct EntryView_Previews: PreviewProvider {
                 endedAt: nil,
                 endedAtTimezone: nil
             ),
+            show: show,
             timezones: timezones,
             categories: categoriesFormatted
         )

@@ -95,72 +95,72 @@ class EntriesViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func edit(entry: Entry, at indexPath: IndexPath,  completion: @escaping (Bool) -> Void) {
-        // Prepare/flatten category data
-        let accountIDs = Time.shared.store.accountIDs.sorted()
-        let categoryTreesByAccount = accountIDs.compactMap { Time.shared.store.categoryTrees[$0]?.listCategoryTrees() }
-        let categories = categoryTreesByAccount.flatMap { (categoryTrees) -> [EntryView.CategoryOption] in
-            return categoryTrees.map { (categoryTree) -> EntryView.CategoryOption in
-                let isRoot = categoryTree.parent == nil
-                let name = isRoot ? "Account \(categoryTree.node.accountID)" : categoryTree.node.name
-                return (name: name, depth: categoryTree.depth, categoryID: categoryTree.node.id)
-            }
-        }
-        
-        // Prepare timezone list
-        let allTimezones = TimeZone.knownTimeZoneIdentifiers
-        let timezoneLabels = allTimezones.map({
-            $0.replacingOccurrences(of: "/", with: " > ")
-                .replacingOccurrences(of: "_", with: " ")
-        })
-        let timezoneValues = allTimezones
-        let timezones = Array(zip(timezoneLabels, timezoneValues))
-
-        var editView = EntryView(entry, timezones: timezones, categories: categories)
-        
-        editView.presentingVC = self
-        editView.save = { newEntry in
-            
-            let changedCategory = entry.categoryID != newEntry.categoryID
-            let changedType = entry.type != newEntry.type
-            let changedStartedAt = entry.startedAt != newEntry.startedAt
-            let changedStartedAtTimezone = entry.startedAtTimezone != newEntry.startedAtTimezone
-            let changedEndedAt = entry.endedAt != newEntry.endedAt
-            let changedEndedAtTimezone = entry.endedAtTimezone != newEntry.endedAtTimezone
-                        
-            let someChanged = changedCategory || changedType || changedStartedAt || changedStartedAtTimezone || changedEndedAt || changedEndedAtTimezone
-            guard someChanged else {
-                return
-            }
-            
-            let newCategory = changedCategory
-                ? Time.shared.store.categories.first(where: { $0.id == newEntry.categoryID })
-                : nil
-            
-            Time.shared.store.update(
-                entry: entry,
-                setCategory: newCategory,
-                setType: changedType ? newEntry.type : nil,
-                setStartedAt: changedStartedAt ? newEntry.startedAt : nil,
-                setStartedAtTimezone: changedStartedAtTimezone ? newEntry.startedAtTimezone : nil,
-                setEndedAt: changedEndedAt ? newEntry.endedAt : nil,
-                setEndedAtTimezone: changedEndedAtTimezone ? newEntry.endedAtTimezone : nil
-            ) { (success) in
-                DispatchQueue.main.async {
-                    if changedStartedAt {
-                        self.refreshEntries() // Re-sort
-                        self.tableView.reloadData()
-                    } else {
-                        self.tableView.reloadRows(at: [indexPath], with: .right)
-                    }
-                }
-            }
-        }
-        
-        let editVC = UIHostingController(rootView: editView)
-        self.present(editVC, animated: true, completion: {
-            // Hide swipe over
-            completion(true)
-        })
+//        // Prepare/flatten category data
+//        let accountIDs = Time.shared.store.accountIDs.sorted()
+//        let categoryTreesByAccount = accountIDs.compactMap { Time.shared.store.categoryTrees[$0]?.listCategoryTrees() }
+//        let categories = categoryTreesByAccount.flatMap { (categoryTrees) -> [EntryView.CategoryOption] in
+//            return categoryTrees.map { (categoryTree) -> EntryView.CategoryOption in
+//                let isRoot = categoryTree.parent == nil
+//                let name = isRoot ? "Account \(categoryTree.node.accountID)" : categoryTree.node.name
+//                return (name: name, depth: categoryTree.depth, categoryID: categoryTree.node.id)
+//            }
+//        }
+//
+//        // Prepare timezone list
+//        let allTimezones = TimeZone.knownTimeZoneIdentifiers
+//        let timezoneLabels = allTimezones.map({
+//            $0.replacingOccurrences(of: "/", with: " > ")
+//                .replacingOccurrences(of: "_", with: " ")
+//        })
+//        let timezoneValues = allTimezones
+//        let timezones = Array(zip(timezoneLabels, timezoneValues))
+//
+//        var editView = EntryView(entry, timezones: timezones, categories: categories)
+//
+//        editView.presentingVC = self
+//        editView.save = { newEntry in
+//
+//            let changedCategory = entry.categoryID != newEntry.categoryID
+//            let changedType = entry.type != newEntry.type
+//            let changedStartedAt = entry.startedAt != newEntry.startedAt
+//            let changedStartedAtTimezone = entry.startedAtTimezone != newEntry.startedAtTimezone
+//            let changedEndedAt = entry.endedAt != newEntry.endedAt
+//            let changedEndedAtTimezone = entry.endedAtTimezone != newEntry.endedAtTimezone
+//
+//            let someChanged = changedCategory || changedType || changedStartedAt || changedStartedAtTimezone || changedEndedAt || changedEndedAtTimezone
+//            guard someChanged else {
+//                return
+//            }
+//
+//            let newCategory = changedCategory
+//                ? Time.shared.store.categories.first(where: { $0.id == newEntry.categoryID })
+//                : nil
+//
+//            Time.shared.store.update(
+//                entry: entry,
+//                setCategory: newCategory,
+//                setType: changedType ? newEntry.type : nil,
+//                setStartedAt: changedStartedAt ? newEntry.startedAt : nil,
+//                setStartedAtTimezone: changedStartedAtTimezone ? newEntry.startedAtTimezone : nil,
+//                setEndedAt: changedEndedAt ? newEntry.endedAt : nil,
+//                setEndedAtTimezone: changedEndedAtTimezone ? newEntry.endedAtTimezone : nil
+//            ) { (success) in
+//                DispatchQueue.main.async {
+//                    if changedStartedAt {
+//                        self.refreshEntries() // Re-sort
+//                        self.tableView.reloadData()
+//                    } else {
+//                        self.tableView.reloadRows(at: [indexPath], with: .right)
+//                    }
+//                }
+//            }
+//        }
+//
+//        let editVC = UIHostingController(rootView: editView)
+//        self.present(editVC, animated: true, completion: {
+//            // Hide swipe over
+//            completion(true)
+//        })
     }
     
     func stop(entry: Entry, at indexPath: IndexPath, completion: @escaping (Bool) -> Void) {

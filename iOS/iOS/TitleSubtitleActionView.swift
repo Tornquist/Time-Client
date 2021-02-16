@@ -64,7 +64,7 @@ struct TitleSubtitleActionView: View {
                     Spacer()
                 }
             }
-        }.padding(.all, 16)
+        }
     }
 }
 
