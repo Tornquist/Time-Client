@@ -31,15 +31,15 @@ struct QuantityMetric: View {
                         .font(Font.system(size: 34.0).monospacedDigit())
                         .foregroundColor(someActive ? Color(Colors.active) : Color(.label))
                     Spacer()
-                }
+                }.padding(.bottom, 2)
                 HStack {
                     Text(description)
                         .font(Font.system(size: 12.0))
                     Spacer()
                 }
-                Spacer()
+                Spacer(minLength: 0)
             }
-            .padding(.trailing, 4)
+            Spacer(minLength: 4)
             VStack {
                 ForEach(items, id: \.name) { (item) in
                     HStack {
@@ -51,7 +51,7 @@ struct QuantityMetric: View {
                     }
                     .foregroundColor(item.active ? Color(Colors.active) : Color(.label))
                 }
-                Spacer()
+                Spacer(minLength: 0)
             }
         }.padding(.all, 16)
     }

@@ -56,8 +56,9 @@ struct TitleSubtitleActionView: View {
                     Button(action: {
                         onTap?()
                     }) {
-                        Image(systemName: self.action.icon ?? "questionmark")
+                        Text(Image(systemName: self.action.icon ?? "questionmark"))
                             .imageScale(.large)
+                            .font(Font.system(size: 16.0))
                             .foregroundColor(Color(Colors.button))
                     }
                     .buttonStyle(BorderlessButtonStyle())
