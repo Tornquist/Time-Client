@@ -33,6 +33,7 @@ struct Home: View {
         case move
         case rename
         case delete
+        case importList
         
         static func from(_ selection: AccountMenu.Selection) -> HomeModal? {
             switch selection {
@@ -135,7 +136,9 @@ struct Home: View {
                         ListItem(text: "Add Account", level: 0, open: true, showIcon: false) {
                             self.showAlert = .addAccount
                         }
-                        ListItem(text: "Import Records", level: 0, open: false, showIcon: false)
+                        ListItem(text: "Import Records", level: 0, open: false, showIcon: false) {
+                            self.showModal = .importList
+                        }
                         ListItem(text: "Sign Out", level: 0, open: false, showIcon: false) {
                             signOut?()
                         }
@@ -209,6 +212,11 @@ struct Home: View {
         case .delete:
             return AnyView(
                 DeleteCategory(category: $selectedCategory, show: buildBinding(for: .delete))
+                    .environmentObject(self.warehouse)
+            )
+        case .importList:
+            return AnyView(
+                ImportList(model: ImportModel(for: self.warehouse), show: buildBinding(for: .importList))
                     .environmentObject(self.warehouse)
             )
         }
