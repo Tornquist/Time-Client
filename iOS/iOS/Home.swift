@@ -22,8 +22,6 @@ struct Home: View {
     
     let showSeconds = true
     
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
     enum HomeAlert: Identifiable {
         case addAccount
         
@@ -81,7 +79,10 @@ struct Home: View {
         NavigationView {
             List {
                 Section(header: Text("Metrics").titleStyle()) {
-                    MetricSection(showSeconds: showSeconds)
+                    MetricSection(
+                        store: AnalyticsStore(for: self.warehouse),
+                        showSeconds: showSeconds
+                    )
                 }
                 .listRowInsets(EdgeInsets())
                 .padding(EdgeInsets())
@@ -101,11 +102,28 @@ struct Home: View {
                         .padding(.leading, -4.0)
                         .padding(.trailing, -4.0)
                 }
-                    
-                Section(header: Text("Accounts").titleStyle()) {
-                    CategoryList(accountAction: handleAccountAction, categoryAction: handleCategoryAction)
+
+                ForEach(self.warehouse.trees.indices) { (id) in
+                    if id == 0 {
+                        Section(header: Text("Accounts").titleStyle()) {
+                            CategoryList(
+                                root: self.warehouse.trees[id],
+                                accountAction: handleAccountAction,
+                                categoryAction: handleCategoryAction
+                            )
+                        }
+                        .listRowInsets(EdgeInsets())
+                    } else {
+                        Section {
+                            CategoryList(
+                                root: self.warehouse.trees[id],
+                                accountAction: handleAccountAction,
+                                categoryAction: handleCategoryAction
+                            )
+                        }
+                        .listRowInsets(EdgeInsets())
+                    }
                 }
-                .listRowInsets(EdgeInsets())
                 
                 Section {
                     ListItem(text: "More", level: 0, open: self.showMore, tapped: {
@@ -130,9 +148,7 @@ struct Home: View {
             .navigationTitle("Time")
             .alert(item: $showAlert, content: buildAlert)
             .sheet(item: $showModal, content: buildModal)
-        }.onReceive(timer, perform: { _ in
-            self.warehouse.refreshAsNeeded()
-        })
+        }
     }
     
     func handleAccountAction(category: TimeSDK.Category, accountAction: AccountMenu.Selection) {

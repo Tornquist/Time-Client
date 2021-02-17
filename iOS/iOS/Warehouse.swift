@@ -33,14 +33,7 @@ class Warehouse: ObservableObject {
     @Published var recentCategoryIsRange: [Bool] = []
     
     @Published var openCategoryIDs: [Int] = []
-    
-    @Published var dayTotal: Analyzer.Result? = nil
-    @Published var dayCategories: [Analyzer.Result] = []
-    
-    @Published var weekTotal: Analyzer.Result? = nil
-    @Published var weekCategories: [Analyzer.Result] = []
 
-    var secondUpdateTimer: Timer? = nil
     @Published var isRefreshing: Bool = false
     
     var cancellables = [AnyCancellable]()
@@ -74,10 +67,6 @@ class Warehouse: ObservableObject {
 
         self.registerNotifications()
         self.loadData()
-    }
-    
-    public func refreshAsNeeded() {
-        self.refreshMetricsAsNeeded()
     }
     
     // MARK: - Display Helpers
@@ -163,7 +152,6 @@ class Warehouse: ObservableObject {
     }
 
     @objc private func handleBackgroundUpdate(_ notification:Notification) {
-        self.calculateMetrics()
     }
     
     @objc private func handleEntryStartedNotification(_ notification:Notification) {
@@ -197,7 +185,7 @@ class Warehouse: ObservableObject {
     
     private func refreshAllCalculations() {
         self.calculateRecentCategories()
-        self.calculateMetrics()
+        self.calculateOpenCategories()
         
         WidgetCenter.shared.reloadAllTimelines()
     }
@@ -258,70 +246,14 @@ class Warehouse: ObservableObject {
         }
     }
     
-    // MARK: - Metrics
-    
-    private func refreshMetricsAsNeeded() {
-        guard self.openCategoryIDs.count > 0 else { return }
-        
-        self.calculateMetrics()
-    }
-    
-    private func calculateMetrics() {
-        let dayAnalysisResult = Time.shared.analyzer.evaluate(
-            TimeRange(current: .day),
-            groupBy: .day,
-            perform: [.calculateTotal, .calculatePerCategory]
-        )
-        
-        if dayAnalysisResult.keys.count == 1,
-           let dayAnalysis = dayAnalysisResult.values.first,
-           let dayTotal = dayAnalysis.first(where: { $0.operation == .calculateTotal }) {
-            let dayCategories = dayAnalysis.filter({ $0.operation == .calculatePerCategory })
-                .sorted(by: sortAnalyzerResults)
-            
-            Mainify {
-                self.dayTotal = dayTotal
-                self.dayCategories = dayCategories
-                
-                self.openCategoryIDs = self.dayCategories.filter({ $0.open == true }).compactMap({ $0.categoryID })
-            }
-        } else {
-            Mainify {
-                self.dayTotal = nil
-                self.dayCategories = []
-                
-                self.openCategoryIDs = []
-            }
+    private func calculateOpenCategories() {
+        let openEntries = self.entries.filter { (entry) -> Bool in
+            return entry.type == .range && entry.endedAt == nil
         }
+        let categoryIDs = openEntries.map({ $0.categoryID })
+        let dedupedIDs = Array(Set(categoryIDs))
         
-        let weekAnalysisResult = Time.shared.analyzer.evaluate(
-            TimeRange(current: .week),
-            groupBy: .week,
-            perform: [.calculateTotal, .calculatePerCategory]
-        )
-        
-        if weekAnalysisResult.keys.count == 1,
-           let weekAnalysis = weekAnalysisResult.values.first,
-           let weekTotal = weekAnalysis.first(where: { $0.operation == .calculateTotal }) {
-            let weekCategories = weekAnalysis.filter({ $0.operation == .calculatePerCategory })
-                .sorted(by: sortAnalyzerResults)
-            
-            Mainify {
-                self.weekTotal = weekTotal
-                self.weekCategories = weekCategories
-            }
-        } else {
-            Mainify {
-                self.weekTotal = nil
-                self.weekCategories = []
-            }
-        }
-    }
-    
-    private func sortAnalyzerResults(a: Analyzer.Result, b: Analyzer.Result) -> Bool {
-        let aName = self.getName(for: a.categoryID)
-        let bName = self.getName(for: b.categoryID)
-        return aName < bName
+        self.openCategoryIDs = dedupedIDs
     }
     
     // MARK: - Debug Support

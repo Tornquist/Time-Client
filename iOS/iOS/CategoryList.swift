@@ -11,10 +11,11 @@ import TimeSDK
 
 struct CategoryList: View {
     
+    var root: CategoryTree
+    @EnvironmentObject var warehouse: Warehouse
+    
     var accountAction: ((TimeSDK.Category, AccountMenu.Selection) -> Void)? = nil
     var categoryAction: ((TimeSDK.Category, CategoryMenu.Selection) -> Void)? = nil
-    
-    @EnvironmentObject var warehouse: Warehouse
     
     func build(categories: [CategoryTree]) -> AnyView {
         if categories.count == 0 {
@@ -59,7 +60,7 @@ struct CategoryList: View {
     }
     
     var body: some View {
-        build(categories: self.warehouse.trees)
+        build(categories: [root])
     }
 }
 
@@ -68,11 +69,10 @@ struct CategoryList_Previews: PreviewProvider {
 
     struct PreviewWrapper: View {
         var warehouse = Warehouse.getPreviewWarehouse()
-        
         var body: some View {
             NavigationView {
                 List {
-                    CategoryList()
+                    CategoryList(root: warehouse.trees[0])
                 }
             }
                 .environmentObject(warehouse)

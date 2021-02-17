@@ -50,6 +50,7 @@
 		D8977DD725DB3A9900870A9D /* Login.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8977DD625DB3A9900870A9D /* Login.swift */; };
 		D8977DD925DB440900870A9D /* View+NotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8977DD825DB440900870A9D /* View+NotificationCenter.swift */; };
 		D8977DDB25DB616100870A9D /* Entries.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8977DDA25DB616100870A9D /* Entries.swift */; };
+		D8977DE525DCB60E00870A9D /* AnalyticsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8977DE425DCB60E00870A9D /* AnalyticsStore.swift */; };
 		D89CEA0D2482BBE9002913AA /* MetricTotalSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89CEA0C2482BBE9002913AA /* MetricTotalSplitView.swift */; };
 		D89CEA0F2482BBF8002913AA /* MetricTotalSplitView.xib in Resources */ = {isa = PBXBuildFile; fileRef = D89CEA0E2482BBF8002913AA /* MetricTotalSplitView.xib */; };
 		D8A1B50424CD223000580DCA /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89CEA102482CB07002913AA /* Colors.swift */; };
@@ -168,6 +169,7 @@
 		D8977DD625DB3A9900870A9D /* Login.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Login.swift; sourceTree = "<group>"; };
 		D8977DD825DB440900870A9D /* View+NotificationCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+NotificationCenter.swift"; sourceTree = "<group>"; };
 		D8977DDA25DB616100870A9D /* Entries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entries.swift; sourceTree = "<group>"; };
+		D8977DE425DCB60E00870A9D /* AnalyticsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsStore.swift; sourceTree = "<group>"; };
 		D89CEA0C2482BBE9002913AA /* MetricTotalSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTotalSplitView.swift; sourceTree = "<group>"; };
 		D89CEA0E2482BBF8002913AA /* MetricTotalSplitView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MetricTotalSplitView.xib; sourceTree = "<group>"; };
 		D89CEA102482CB07002913AA /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
@@ -409,6 +411,7 @@
 			isa = PBXGroup;
 			children = (
 				D8CB935025D03FA500C250E9 /* Warehouse.swift */,
+				D8977DE425DCB60E00870A9D /* AnalyticsStore.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -596,6 +599,7 @@
 				D855812B21BDE9A200DCB577 /* Time_iOS.xcdatamodeld in Sources */,
 				D856108C25CB928B00A325B3 /* TitleSubtitleActionView.swift in Sources */,
 				D8CB937325DAD50600C250E9 /* RenameCategory.swift in Sources */,
+				D8977DE525DCB60E00870A9D /* AnalyticsStore.swift in Sources */,
 				D8CB935725D06F9300C250E9 /* CategoryList.swift in Sources */,
 				D8CB936425D41E3200C250E9 /* Mainify.swift in Sources */,
 				D8CB937525DAD79100C250E9 /* AddCategory.swift in Sources */,

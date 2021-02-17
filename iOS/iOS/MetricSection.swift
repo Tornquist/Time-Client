@@ -10,34 +10,41 @@ import SwiftUI
 
 struct MetricSection: View {
     @EnvironmentObject var warehouse: Warehouse
+    @ObservedObject var store: AnalyticsStore
     
     var showSeconds: Bool
     var emptyDuration: String {
         return showSeconds ? "00:00:00" : "00:00"
     }
+    
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
         
     var body: some View {
-        QuantityMetric(
-            total: self.warehouse.dayTotal?.displayDuration(withSeconds: showSeconds) ?? emptyDuration,
-            description: "Today",
-            items: self.warehouse.dayCategories.map({ (result) -> QuantityMetric.QuantityItem in
-                QuantityMetric.QuantityItem(
-                    name: self.warehouse.getName(for: result.categoryID),
-                    total: result.displayDuration(withSeconds: showSeconds),
-                    active: result.open
-                )
-            })
-        )
-        QuantityMetric(
-            total: self.warehouse.weekTotal?.displayDuration(withSeconds: showSeconds) ?? emptyDuration,
-            description: "This Week",
-            items: self.warehouse.weekCategories.map({ (result) -> QuantityMetric.QuantityItem in
-                QuantityMetric.QuantityItem(
-                    name: self.warehouse.getName(for: result.categoryID),
-                    total: result.displayDuration(withSeconds: showSeconds),
-                    active: result.open
-                )
-            })
-        )
+        Group {
+            QuantityMetric(
+                total: store.dayTotal?.displayDuration(withSeconds: showSeconds) ?? emptyDuration,
+                description: "Today",
+                items: store.dayCategories.map({ (result) -> QuantityMetric.QuantityItem in
+                    QuantityMetric.QuantityItem(
+                        name: self.warehouse.getName(for: result.categoryID),
+                        total: result.displayDuration(withSeconds: showSeconds),
+                        active: result.open
+                    )
+                })
+            )
+            QuantityMetric(
+                total: store.weekTotal?.displayDuration(withSeconds: showSeconds) ?? emptyDuration,
+                description: "This Week",
+                items: store.weekCategories.map({ (result) -> QuantityMetric.QuantityItem in
+                    QuantityMetric.QuantityItem(
+                        name: self.warehouse.getName(for: result.categoryID),
+                        total: result.displayDuration(withSeconds: showSeconds),
+                        active: result.open
+                    )
+                })
+            )
+        }.onReceive(timer, perform: { _ in
+            store.refreshAsNeeded()
+        })
     }
 }
