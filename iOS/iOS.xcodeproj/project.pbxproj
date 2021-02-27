@@ -53,6 +53,7 @@
 		D8977DE525DCB60E00870A9D /* AnalyticsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8977DE425DCB60E00870A9D /* AnalyticsStore.swift */; };
 		D8977DE925DD4D3800870A9D /* ImportList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8977DE825DD4D3800870A9D /* ImportList.swift */; };
 		D8977DF325DD508200870A9D /* ImportModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8977DF225DD508200870A9D /* ImportModel.swift */; };
+		D8977DF525DEB2E400870A9D /* ImportWizard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8977DF425DEB2E400870A9D /* ImportWizard.swift */; };
 		D89CEA0D2482BBE9002913AA /* MetricTotalSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89CEA0C2482BBE9002913AA /* MetricTotalSplitView.swift */; };
 		D89CEA0F2482BBF8002913AA /* MetricTotalSplitView.xib in Resources */ = {isa = PBXBuildFile; fileRef = D89CEA0E2482BBF8002913AA /* MetricTotalSplitView.xib */; };
 		D8A1B50424CD223000580DCA /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89CEA102482CB07002913AA /* Colors.swift */; };
@@ -174,6 +175,7 @@
 		D8977DE425DCB60E00870A9D /* AnalyticsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsStore.swift; sourceTree = "<group>"; };
 		D8977DE825DD4D3800870A9D /* ImportList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportList.swift; sourceTree = "<group>"; };
 		D8977DF225DD508200870A9D /* ImportModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportModel.swift; sourceTree = "<group>"; };
+		D8977DF425DEB2E400870A9D /* ImportWizard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWizard.swift; sourceTree = "<group>"; };
 		D89CEA0C2482BBE9002913AA /* MetricTotalSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTotalSplitView.swift; sourceTree = "<group>"; };
 		D89CEA0E2482BBF8002913AA /* MetricTotalSplitView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MetricTotalSplitView.xib; sourceTree = "<group>"; };
 		D89CEA102482CB07002913AA /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
@@ -394,6 +396,7 @@
 			children = (
 				D8977DE825DD4D3800870A9D /* ImportList.swift */,
 				D8977DF225DD508200870A9D /* ImportModel.swift */,
+				D8977DF425DEB2E400870A9D /* ImportWizard.swift */,
 			);
 			name = Import;
 			sourceTree = "<group>";
@@ -635,6 +638,7 @@
 				D8500CB3228AF16D009052DC /* EntriesViewController.swift in Sources */,
 				D856108E25CB9BDC00A325B3 /* QuantityMetric.swift in Sources */,
 				D8CB936625D8842000C250E9 /* CategoryMenu.swift in Sources */,
+				D8977DF525DEB2E400870A9D /* ImportWizard.swift in Sources */,
 				D8CB935125D03FA500C250E9 /* Warehouse.swift in Sources */,
 				D852538124CD1D4100F724EC /* Widget.intentdefinition in Sources */,
 				D855812321BDE9A200DCB577 /* AppDelegate.swift in Sources */,

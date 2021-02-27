@@ -13,6 +13,7 @@ struct ImportList: View {
     
     @ObservedObject var model: ImportModel
     var show: Binding<Bool>
+    @State var showNew: Bool = false
     
     let dateFormatter: DateFormatter
     
@@ -48,8 +49,18 @@ struct ImportList: View {
                         self.show.wrappedValue = false
                     }
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        self.showNew = true
+                    }) {
+                        Image(systemName: "plus")
+                    }
+                }
             }
         }
+        .sheet(isPresented: $showNew, content: {
+            ImportWizard(show: $showNew)
+        })
     }
 }
 
