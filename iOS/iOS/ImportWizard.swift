@@ -17,9 +17,11 @@ struct ImportWizard: View {
     
     @State var url: URL? = nil
     @State var delimiter: String = ","
+        
     @State var importer: FileImporter? = nil
     
     @State var loadingData: Bool = false
+    @State var loadingError: Bool = false
     
     @State var step: Step = .welcome
     
@@ -30,6 +32,27 @@ struct ImportWizard: View {
     }
     
     var body: some View {
+        let urlBinding = Binding<URL?>(
+            get: {
+                return self.url
+            },
+            set: { (newURL) in
+                self.url = newURL
+                self.importer = nil
+                self.loadingError = false
+            }
+        )
+        let delimiterBinding = Binding<String>(
+            get: {
+                return self.delimiter
+            },
+            set: { (newDelimiter) in
+                self.delimiter = newDelimiter
+                self.importer = nil
+                self.loadingError = false
+            }
+        )
+        
         NavigationView {
             Form {
                 if step == .welcome {
@@ -67,7 +90,7 @@ Common delimiters include: ,;|
                             }
                             HStack {
                                 Text("Enter delimiter:")
-                                TextField("Delimiter", text: $delimiter)
+                                TextField("Delimiter", text: delimiterBinding)
                                     .textFieldStyle(RoundedBorderTextFieldStyle())
                             }
                         }
@@ -76,6 +99,10 @@ Common delimiters include: ,;|
                     if self.url != nil && self.delimiter.count == 1 {
                         Section(header: Text("Load data").titleStyle()) {
                             Text("Attempt to load the data from the provided file with the provided delimiter.").padding(.top, 8)
+                            if loadingError {
+                                Text("⚠️ Unable to read contents of file")
+                                    .foregroundColor(Color(.systemRed))
+                            }
                             Button(action: {
                                 let delimiterIndex = self.delimiter.index(self.delimiter.startIndex, offsetBy: 0)
                                 let importer = FileImporter(
@@ -91,8 +118,8 @@ Common delimiters include: ,;|
                                             self.loadingData = false
                                         }
                                     } catch {
-                                        // TODO: Handle error
                                         DispatchQueue.main.async {
+                                            self.loadingError = true
                                             self.loadingData = false
                                         }
                                     }
@@ -151,7 +178,7 @@ Common delimiters include: ,;|
                 }
             }.navigationTitle("Import Wizard")
             .sheet(isPresented: $showFilePicker, content: {
-                ImportDocumentPicker(url: $url)
+                ImportDocumentPicker(url: urlBinding)
             })
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
