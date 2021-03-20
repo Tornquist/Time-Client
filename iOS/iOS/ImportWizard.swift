@@ -48,12 +48,11 @@ struct ImportWizard: View {
                 }
                  
                 if self.step == .processDates {
-                    ParseDates(importer: $importer, step: $step)
+                    ParseDatesStep(importer: $importer, step: $step)
                 }
                  
                 if self.step == .review {
-                    Section(header: Text("Review")) {
-                    }
+                    ReviewStep(importer: $importer, show: $show)
                 }
             }.navigationTitle("Import Wizard")
             .toolbar {
@@ -322,7 +321,7 @@ The following tree roots were identified:
     }
 }
 
-fileprivate struct ParseDates: View {
+fileprivate struct ParseDatesStep: View {
     var importer: Binding<FileImporter?>
     @Binding var step: ImportWizard.Step
     
@@ -526,6 +525,50 @@ fileprivate struct ParseDates: View {
                     }
                 }
             }
+        }
+    }
+}
+
+fileprivate struct ReviewStep: View {
+    var importer: Binding<FileImporter?>
+    @Binding var show: Bool
+    
+    var body: some View {
+        Section(header: Text("Review").titleStyle()) {
+            Text("""
+Review the processed csv data and confirm the import of the following objects.
+""").padding(.top, 8)
+            HStack {
+                Text("Ranges:")
+                Spacer()
+                Text("\(self.importer.wrappedValue?.ranges ?? 0)")
+            }
+            HStack {
+                Text("Events:")
+                Spacer()
+                Text("\(self.importer.wrappedValue?.events ?? 0)")
+            }
+            HStack {
+                Text("Total records:")
+                Spacer()
+                Text("\(self.importer.wrappedValue?.entries ?? 0)")
+            }
+            HStack {
+                Text("Total root categories:")
+                Spacer()
+                Text("\(self.importer.wrappedValue?.rootCategories?.count ?? 0)")
+            }
+            
+            Button("Import data") {
+                Time.shared.store.importData(from: self.importer.wrappedValue!) { (importedRequest, error) in
+                    guard error == nil else {
+                        return
+                    }
+                    DispatchQueue.main.async {
+                        self.show = false
+                    }
+                }
+            }.disabled(self.importer.wrappedValue == nil)
         }
     }
 }

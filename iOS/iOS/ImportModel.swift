@@ -27,8 +27,8 @@ class ImportModel: ObservableObject {
 
         self.loadData()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(didModifyImportRequests), name: .TimeImportRequestCreated, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(didModifyImportRequests), name: .TimeImportRequestCompleted, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didCreateImportRequest), name: .TimeImportRequestCreated, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didCompleteImportRequest), name: .TimeImportRequestCompleted, object: nil)
     }
     
     // MARK: - Data Methods and Actions
@@ -60,7 +60,14 @@ class ImportModel: ObservableObject {
     
     // MARK: - Time Notifictions
     
-    @objc func didModifyImportRequests() {
+    @objc func didCreateImportRequest() {
         self.loadData()
+    }
+    
+    @objc func didCompleteImportRequest() {
+        self.loadData()
+        DispatchQueue.main.async {
+            self.warehouse.loadData(refresh: true)
+        }
     }
 }
