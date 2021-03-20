@@ -37,6 +37,11 @@ public class FileImporter {
     public var entries: Int? {
         return self.categoryTree?.count(events: true, ranges: true)
     }
+    public var rootCategories: [String]? {
+        return self.categoryTree?.children.map({ (rootCategory) -> String in
+            return rootCategory.name
+        }).sorted()
+    }
     
     // Internal
     var _columns: [String]? = nil

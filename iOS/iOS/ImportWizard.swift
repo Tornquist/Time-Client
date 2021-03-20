@@ -23,22 +23,15 @@ struct ImportWizard: View {
     @State var loadingError: Bool = false
     
     @State var step: Step = .welcome
-    
+        
     enum Step {
         case welcome
         case loadFile
+        case buildTree
         case configureParsing
     }
         
     var body: some View {
-
-        let addColumnBinding = Binding<String>(
-            get: { return "" },
-            set: { (newColumn) in
-                print(newColumn)
-            }
-        )
-        
         NavigationView {
             Form {
                 if step == .welcome {
@@ -49,26 +42,11 @@ struct ImportWizard: View {
                     LoadFileStep(importer: $importer, step: $step)
                 }
                 
+                if self.step == .buildTree {
+                    BuildTreeStep(importer: $importer, step: $step)
+                }
+                 
                 if self.step == .configureParsing {
-                    Section(header: Text("Identify tree").titleStyle()) {
-                        Text("""
-Select the columns to use when parsing the tree.
-
-Choose the parent column, then child, then grandchild, etc. You may choose as many columns as you wish, with a minimum of one column required.
-""").padding(.top, 8)
-                        Picker(selection: addColumnBinding, label: Text("Add Column"), content: {
-                            ForEach(0 ..< (self.importer?.columns?.count ?? 0)) {
-                                let name: String = self.importer?.columns?[$0] ?? "Unknown"
-                                Text(name)
-                            }
-                        })
-                        Button(action: {
-                            self.step = .loadFile
-                        }, label: {
-                            Text("Add Column")
-                        })
-                    }
-                    
                     Section(header: Text("Specify date format")) {
                         
                     }
@@ -230,10 +208,115 @@ Common delimiters include: ,;|
                     }
                 }
                 Button(action: {
-                    self.step = .configureParsing
+                    self.step = .buildTree
                 }, label: {
                     Text("Continue")
                 })
+            }
+        }
+    }
+}
+
+fileprivate struct BuildTreeStep: View {
+    var importer: Binding<FileImporter?>
+    @Binding var step: ImportWizard.Step
+    
+    struct Column: Identifiable {
+        let id: UUID
+        var number: Int
+        let name: String
+        
+        init(_ name: String) {
+            self.id = UUID()
+            self.number = 1
+            self.name = name
+        }
+    }
+    
+    func renumberColumns() {
+        let correcttedColumns = self.treeColumns.enumerated().map { (element) -> Column in
+            var newColumn = Column(element.element.name)
+            newColumn.number = element.offset + 1 // Start at 1
+            return newColumn
+        }
+        self.treeColumns = correcttedColumns
+    }
+
+    @State var treeColumns: [Column] = []
+    @State var didEvaluate: Bool = false
+    
+    var body: some View {
+        let addColumnBinding = Binding<String>(
+            get: { return "" },
+            set: { (newColumn) in
+                self.treeColumns.append(Column(newColumn))
+                self.renumberColumns()
+                self.didEvaluate = false
+            }
+        )
+        
+        Section(header: Text("Identify tree").titleStyle()) {
+            Text("""
+Select the columns to use when parsing the tree.
+
+Choose the parent column, then child, then grandchild, etc. You may choose as many columns as you wish, with a minimum of one column required.
+""").padding(.top, 8)
+            Picker(selection: addColumnBinding, label: Text("Add Column"), content: {
+                ForEach(
+                    (self.importer.wrappedValue?.columns ?? [])
+                        .filter({ (columnName) in
+                            return !self.treeColumns.contains { (column) -> Bool in
+                                return column.name == columnName
+                            }
+                        }),
+                    id: \.self) { (column) in
+                    Text(column)
+                }
+            })
+            
+            if (self.treeColumns.count > 0) {
+                ForEach(self.treeColumns) { (column) in
+                    HStack {
+                        Text("\(column.number).")
+                        Text(column.name)
+                        Spacer()
+                        Button(action: {
+                            self.treeColumns = self.treeColumns.filter({ $0.id != column.id})
+                            self.renumberColumns()
+                            self.didEvaluate = false
+                        }, label: {
+                            Image(systemName: "trash")
+                        }).buttonStyle(PlainButtonStyle())
+                        .foregroundColor(Color(.systemRed))
+                    }
+                }
+            }
+            
+            Button(action: {
+                self.importer.wrappedValue?.categoryColumns = self.treeColumns.map({ $0.name })
+                do {
+                    try self.importer.wrappedValue?.buildCategoryTree()
+                    self.didEvaluate = true
+                } catch {
+                    // No clear error resolution present
+                }
+            }, label: {
+                Text("Evaluate")
+            }).disabled(self.treeColumns.count == 0)
+        }
+        
+        if self.didEvaluate {
+            Section(header: Text("Confirm results").titleStyle()) {
+                Text("""
+The following tree roots were identified:
+
+\(self.importer.wrappedValue?.rootCategories?.joined(separator: ", ") ?? "Unknown")
+""").padding(.top, 8)
+                Button(action: {
+                    self.step = .configureParsing
+                }, label: {
+                    Text("Continue")
+                }).disabled(self.treeColumns.count == 0)
             }
         }
     }
