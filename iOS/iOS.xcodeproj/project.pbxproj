@@ -44,6 +44,7 @@
 		D85CFB032462ED13005E1AE2 /* CategoryTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D85CFB022462ED13005E1AE2 /* CategoryTableViewCell.xib */; };
 		D86AB86F24982E3300F71BE1 /* EntryTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D86AB86E24982E3300F71BE1 /* EntryTableViewCell.xib */; };
 		D86AB87124982E3E00F71BE1 /* EntryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86AB87024982E3E00F71BE1 /* EntryTableViewCell.swift */; };
+		D86D427B260665DC00CC211E /* Binding+onChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86D427A260665DC00CC211E /* Binding+onChange.swift */; };
 		D8792D2525DB303300F4669D /* MetricSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8792D2425DB303300F4669D /* MetricSection.swift */; };
 		D8792D2725DB30FA00F4669D /* RecentSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8792D2625DB30FA00F4669D /* RecentSection.swift */; };
 		D8977DD525DB345A00870A9D /* AppEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8977DD425DB345A00870A9D /* AppEntry.swift */; };
@@ -166,6 +167,7 @@
 		D85CFB022462ED13005E1AE2 /* CategoryTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CategoryTableViewCell.xib; sourceTree = "<group>"; };
 		D86AB86E24982E3300F71BE1 /* EntryTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EntryTableViewCell.xib; sourceTree = "<group>"; };
 		D86AB87024982E3E00F71BE1 /* EntryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryTableViewCell.swift; sourceTree = "<group>"; };
+		D86D427A260665DC00CC211E /* Binding+onChange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Binding+onChange.swift"; sourceTree = "<group>"; };
 		D8792D2425DB303300F4669D /* MetricSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricSection.swift; sourceTree = "<group>"; };
 		D8792D2625DB30FA00F4669D /* RecentSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentSection.swift; sourceTree = "<group>"; };
 		D8977DD425DB345A00870A9D /* AppEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEntry.swift; sourceTree = "<group>"; };
@@ -428,6 +430,7 @@
 				D8CB931125CEE95C00C250E9 /* Text+.swift */,
 				D8CB931325CF460700C250E9 /* Unwrap.swift */,
 				D8977DD825DB440900870A9D /* View+NotificationCenter.swift */,
+				D86D427A260665DC00CC211E /* Binding+onChange.swift */,
 			);
 			name = Modifiers;
 			sourceTree = "<group>";
@@ -609,6 +612,7 @@
 				D8CB935525D06F5D00C250E9 /* MoveCategory.swift in Sources */,
 				D8CB930F25CEE79F00C250E9 /* Home.swift in Sources */,
 				D856E83824D6EFD0001E564A /* Constants.swift in Sources */,
+				D86D427B260665DC00CC211E /* Binding+onChange.swift in Sources */,
 				D8216FE9249F96AF000C72FD /* AccountTableViewCell.swift in Sources */,
 				D8977DDB25DB616100870A9D /* Entries.swift in Sources */,
 				D89CEA0D2482BBE9002913AA /* MetricTotalSplitView.swift in Sources */,

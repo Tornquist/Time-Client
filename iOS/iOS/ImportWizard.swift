@@ -28,7 +28,8 @@ struct ImportWizard: View {
         case welcome
         case loadFile
         case buildTree
-        case configureParsing
+        case processDates
+        case review
     }
         
     var body: some View {
@@ -46,13 +47,12 @@ struct ImportWizard: View {
                     BuildTreeStep(importer: $importer, step: $step)
                 }
                  
-                if self.step == .configureParsing {
-                    Section(header: Text("Specify date format")) {
-                        
-                    }
-                    
+                if self.step == .processDates {
+                    ParseDates(importer: $importer, step: $step)
+                }
+                 
+                if self.step == .review {
                     Section(header: Text("Review")) {
-                        
                     }
                 }
             }.navigationTitle("Import Wizard")
@@ -178,7 +178,7 @@ Common delimiters include: ,;|
                         }
                     }
                 }, label: {
-                    Text("Load Data")
+                    Text("Load data")
                 }).disabled(self.loadingData)
             }
         }
@@ -313,10 +313,218 @@ The following tree roots were identified:
 \(self.importer.wrappedValue?.rootCategories?.joined(separator: ", ") ?? "Unknown")
 """).padding(.top, 8)
                 Button(action: {
-                    self.step = .configureParsing
+                    self.step = .processDates
                 }, label: {
                     Text("Continue")
                 }).disabled(self.treeColumns.count == 0)
+            }
+        }
+    }
+}
+
+fileprivate struct ParseDates: View {
+    var importer: Binding<FileImporter?>
+    @Binding var step: ImportWizard.Step
+    
+    @State var dateTimeColumns: Bool = true
+    @State var dateColumn: String = ""
+    @State var startColumn: String = ""
+    @State var endColumn: String = ""
+    
+    @State var dateFormat: String = "M/d/yy"
+    @State var timeFormat: String = "h:mm a"
+    @State var timezone: String = TimeZone.current.abbreviation() ?? "CST"
+    
+    @State var hasTestedFormatting: Bool = false
+    @State var testParseStartRaw: String? = nil
+    @State var testParseStartParsed: String? = nil
+    
+    enum DateTimeColumnType {
+        case date
+        case start
+        case end
+    }
+    
+    func availableColumns(for selfColumn: DateTimeColumnType) -> [String] {
+        guard let columns = self.importer.wrappedValue?.columns else {
+            return []
+        }
+        let columnsForCategories = self.importer.wrappedValue?.categoryColumns ?? []
+        let selectedDateColumns = [
+            (self.dateTimeColumns ? self.dateColumn : ""),
+            self.startColumn,
+            self.endColumn
+        ].filter({ $0 != "" }).map({ $0! })
+        
+        var remainingColumns = columns.filter { (columnName) -> Bool in
+            if columnsForCategories.contains(columnName) {
+                return false
+            }
+            if selectedDateColumns.contains(columnName) {
+                return false
+            }
+            return true
+        }
+        
+        // Inject self for display
+        if selfColumn == .date && self.dateColumn != "" {
+            remainingColumns.append(self.dateColumn)
+        }
+        if selfColumn == .start && self.startColumn != "" {
+            remainingColumns.append(self.startColumn)
+        }
+        if selfColumn == .end && self.endColumn != "" {
+            remainingColumns.append(self.endColumn)
+        }
+        
+        return remainingColumns
+    }
+    
+    func readyToTest() -> Bool {
+        let requiredFields: [String] = self.dateTimeColumns
+            ? [
+                self.dateColumn,
+                self.startColumn,
+                self.endColumn,
+                self.dateFormat,
+                self.timeFormat,
+                self.timezone
+            ] : [
+                self.startColumn,
+                self.endColumn,
+                self.timezone
+            ]
+        
+        let hasAllFields = requiredFields.map({ $0 != "" }).reduce(true, { $0 && $1 })
+        return hasAllFields
+    }
+    
+    var body: some View {
+        let dateTimeBinding = Binding<Bool>(
+            get: {
+                return self.dateTimeColumns
+            },
+            set: { (newDateTimeType) in
+                self.dateTimeColumns = newDateTimeType
+                if self.dateTimeColumns == false { // Unix
+                    self.dateColumn = ""
+                }
+                self.hasTestedFormatting = false
+            }
+        )
+        
+        Section(header: Text("Specify date format").titleStyle()) {
+            Picker("Column style", selection: dateTimeBinding) {
+                Text("Date/Time").tag(true)
+                Text("Unix").tag(false)
+            }.pickerStyle(SegmentedPickerStyle())
+                                    
+            if self.dateTimeColumns {
+                Picker("Date column", selection: $dateColumn.onChange({ _ in self.hasTestedFormatting = false })) {
+                    ForEach(availableColumns(for: .date), id: \.self) { (column) in
+                        Text(column)
+                    }
+                }
+            }
+            
+            Picker(
+                self.dateTimeColumns ? "Start time column" : "Start timestamp",
+                selection: $startColumn.onChange({ _ in self.hasTestedFormatting = false })
+            ) {
+                ForEach(availableColumns(for: .start), id: \.self) { (column) in
+                    Text(column)
+                }
+            }
+            
+            Picker(
+                self.dateTimeColumns ? "End time column" : "End timestamp",
+                selection: $endColumn.onChange({ _ in self.hasTestedFormatting = false })
+            ) {
+                ForEach(availableColumns(for: .end), id: \.self) { (column) in
+                    Text(column)
+                }
+            }
+            
+            if self.dateTimeColumns {
+                HStack {
+                    Text("Date format")
+                        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                    TextField("M/d/yy", text: $dateFormat.onChange({ _ in self.hasTestedFormatting = false }))
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .frame(minWidth: 0, maxWidth: .infinity)
+                }
+                
+                HStack {
+                    Text("Time format")
+                        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                    TextField("h:mm a", text: $timeFormat.onChange({ _ in self.hasTestedFormatting = false }))
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .frame(minWidth: 0, maxWidth: .infinity)
+                }
+            }
+            
+            HStack {
+                Text("Timezone")
+                    .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                TextField("Timezone", text: $timezone.onChange({ _ in self.hasTestedFormatting = false }))
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .frame(minWidth: 0, maxWidth: .infinity)
+            }
+            
+            Button("Test formatting") {
+                if self.dateTimeColumns {
+                    // Parse as Date/Time
+                    do {
+                        let result = try self.importer.wrappedValue?.setDateTimeParseRules(
+                            dateColumn: self.dateColumn,
+                            startTimeColumn: self.startColumn,
+                            endTimeColumn: self.endColumn,
+                            dateFormat: self.dateFormat,
+                            timeFormat: self.timeFormat,
+                            timezoneAbbreviation: self.timezone,
+                            testFormat: "MMM d, y @ h:mm a zzz"
+                        )
+                        
+                        self.testParseStartRaw = result?.startRaw
+                        self.testParseStartParsed = result?.startParsed
+                    } catch {
+                        // Show error
+                        return
+                    }
+                } else {
+                    // Parse as Unix
+                    do {
+                        let result = try self.importer.wrappedValue?.setDateTimeParseRules(
+                            startUnixColumn: self.startColumn,
+                            endUnixColumn: self.endColumn,
+                            timezoneAbbreviation: self.timezone,
+                            testFormat: "MMM d, y @ h:mm a zzz"
+                        )
+                        
+                        self.testParseStartRaw = result?.startRaw
+                        self.testParseStartParsed = result?.startParsed
+                    } catch {
+                        // Show error
+                        return
+                    }
+                }
+                
+                self.hasTestedFormatting = true
+            }.disabled(!self.readyToTest())
+        }
+        
+        if self.hasTestedFormatting {
+            Section(header: Text("Confirm format").titleStyle()) {
+                Text("First row raw start: \(self.testParseStartRaw ?? "<error>")")
+                Text("First row parsed start: \(self.testParseStartParsed ?? "<error>")")
+                Button("Confirm") {
+                    do {
+                        try self.importer.wrappedValue?.parseAll()
+                        self.step = .review
+                    } catch {
+                        // Show error
+                    }
+                }
             }
         }
     }
