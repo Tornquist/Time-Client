@@ -26,6 +26,9 @@ struct EditEntry: View {
     @State var endedAt: Date?
     @State var endedAtTimezone: String?
     
+    @State var deleting: Bool = false
+    @State var saving: Bool = false
+    
     // MARK: - Picker data
     
     var timezones: [TimezoneOption]
@@ -220,14 +223,23 @@ struct EditEntry: View {
                     Section {
                         HStack {
                             Spacer()
-                            Button("Delete Entry") {
-                                self.showDelete = true
-                            }.foregroundColor(Color(.systemRed))
+                            Button(action: {
+                                    self.showDelete = true
+                            }, label: {
+                                if deleting {
+                                    ProgressView().progressViewStyle(CircularProgressViewStyle())
+                                } else {
+                                    Text("Delete Entry")
+                                }
+                            })
+                            .foregroundColor(Color(.systemRed))
+                            .disabled(saving || deleting)
                             .alert(isPresented: $showDelete, content: {
                                 Alert(
                                     title: Text("Are you sure you wish to delete this entry?"),
                                     message: Text("This action cannot be reversed."),
                                     primaryButton: .destructive(Text("Delete"), action: {
+                                        self.deleting = true
                                         self.delete?()
                                     }),
                                     secondaryButton: .cancel(Text("Cancel"))
@@ -246,7 +258,8 @@ struct EditEntry: View {
                         }
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Save") {
+                        Button(action: {
+                            self.saving = true
                             self.save?(
                                 Entry(
                                     id: self.id,
@@ -258,7 +271,14 @@ struct EditEntry: View {
                                     endedAtTimezone: self.type == .range ? self.endedAtTimezone : nil
                                 )
                             )
-                        }
+                        }, label: {
+                            if saving {
+                                ProgressView().progressViewStyle(CircularProgressViewStyle())
+                            } else {
+                                Text("Save")
+                            }
+                        })
+                        .disabled(saving || deleting)
                     }
                 })
             }

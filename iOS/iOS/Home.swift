@@ -88,10 +88,12 @@ struct Home: View {
                 .listRowInsets(EdgeInsets())
                 .padding(EdgeInsets())
                 
-                Section(header: Text("Recents").titleStyle()) {
-                    RecentSection()
+                if self.warehouse.recentCategories.count > 0 {
+                    Section(header: Text("Recents").titleStyle()) {
+                        RecentSection()
+                    }
+                    .listRowInsets(EdgeInsets())
                 }
-                .listRowInsets(EdgeInsets())
                     
                 Section {
                     NavigationLink(

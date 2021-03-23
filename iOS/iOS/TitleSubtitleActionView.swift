@@ -13,6 +13,7 @@ struct TitleSubtitleActionView: View {
     var subtitle: String
     var action: Action
     var active: Bool
+    var loading: Bool
     var onTap: (() -> ())? = nil
     
     enum Action {
@@ -50,7 +51,14 @@ struct TitleSubtitleActionView: View {
                 }
             })
             Spacer()
-            if action != .none {
+            if loading {
+                VStack {
+                    Spacer()
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
+                    Spacer()
+                }
+            } else if action != .none {
                 VStack {
                     Spacer()
                     Button(action: {
@@ -74,35 +82,35 @@ struct TitleSubtitleActionView: View {
 struct TitleSubtitleActionView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            TitleSubtitleActionView(title: "Time", subtitle: "Side Projects", action: .pause, active: true)
+            TitleSubtitleActionView(title: "Time", subtitle: "Side Projects", action: .pause, active: true, loading: true)
                 .background(Color(.secondarySystemGroupedBackground))
                 .previewLayout(.fixed(width: 375, height: 75))
                 .previewDisplayName("Active Light")
             
-            TitleSubtitleActionView(title: "Time", subtitle: "Side Projects", action: .play, active: false)
+            TitleSubtitleActionView(title: "Time", subtitle: "Side Projects", action: .play, active: false, loading: false)
                 .background(Color(.secondarySystemGroupedBackground))
                 .previewLayout(.fixed(width: 375, height: 75))
                 .previewDisplayName("Inactive Light")
             
-            TitleSubtitleActionView(title: "Time", subtitle: "Side Projects", action: .pause, active: true)
+            TitleSubtitleActionView(title: "Time", subtitle: "Side Projects", action: .pause, active: true, loading: true)
                 .background(Color(.secondarySystemGroupedBackground))
                 .previewLayout(.fixed(width: 375, height: 75))
                 .previewDisplayName("Active Dark")
                 .environment(\.colorScheme, .dark)
             
-            TitleSubtitleActionView(title: "Time", subtitle: "Side Projects", action: .play, active: false)
+            TitleSubtitleActionView(title: "Time", subtitle: "Side Projects", action: .play, active: false, loading: false)
                 .background(Color(.secondarySystemGroupedBackground))
                 .previewLayout(.fixed(width: 375, height: 75))
                 .previewDisplayName("Inactive Dark")
                 .environment(\.colorScheme, .dark)
             
-            TitleSubtitleActionView(title: "Side Projects > Time", subtitle: "02/15/21 08:09 PM CST - Present", action: .stop, active: true)
+            TitleSubtitleActionView(title: "Side Projects > Time", subtitle: "02/15/21 08:09 PM CST - Present", action: .stop, active: true, loading: false)
                 .background(Color(.secondarySystemGroupedBackground))
                 .previewLayout(.fixed(width: 375, height: 75))
                 .previewDisplayName("Open Entry")
                 .environment(\.colorScheme, .dark)
             
-            TitleSubtitleActionView(title: "Side Projects > Time", subtitle: "02/15/21 02:09 PM CST - 06:19 CST", action: .none, active: false)
+            TitleSubtitleActionView(title: "Side Projects > Time", subtitle: "02/15/21 02:09 PM CST - 06:19 CST", action: .none, active: false, loading: false)
                 .background(Color(.secondarySystemGroupedBackground))
                 .previewLayout(.fixed(width: 375, height: 75))
                 .previewDisplayName("Closed Entry")

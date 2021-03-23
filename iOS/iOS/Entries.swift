@@ -14,6 +14,7 @@ struct Entries: View {
     @EnvironmentObject var warehouse: Warehouse
     
     @State var selectedEntry: Entry? = nil
+    @State var handlingId: [Int: Bool] = [:]
     
     var timezones: [(String, String)]
     
@@ -50,9 +51,15 @@ struct Entries: View {
                 subtitle: getTimeString(for: entry),
                 action: active ? .stop : .none,
                 active: active,
+                loading: handlingId[entry.id] ?? false,
                 onTap: {
                     if active {
-                        self.warehouse.time?.store.stop(entry: entry, completion: nil)
+                        Mainify {
+                            handlingId[entry.id] = true
+                        }
+                        self.warehouse.time?.store.stop(entry: entry, completion: { _ in
+                            Mainify { handlingId[entry.id] = false }
+                        })
                     }
                 }
             )
