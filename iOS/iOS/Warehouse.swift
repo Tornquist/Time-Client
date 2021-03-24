@@ -157,6 +157,9 @@ class Warehouse: ObservableObject {
     @objc private func handleEntryStartedNotification(_ notification:Notification) {
         if let entry = notification.object as? Entry {
             self.entries.insert(entry, at: 0)
+            // Track new cancellable
+            let c = entry.objectWillChange.sink { self.objectWillChange.send() }
+            self.cancellables.append(c)
         }
         
         self.handleEntryNotification(notification)
