@@ -36,19 +36,20 @@ class Warehouse: ObservableObject {
 
     @Published var isRefreshing: Bool = false
     
-    var cancellables = [AnyCancellable]()
+    var treeCancellables = [AnyCancellable]()
+    var entryCancellables = [AnyCancellable]()
         
     init(trees: [CategoryTree], entries: [Entry]) {
         self.trees = trees
         self.trees.forEach { (tree) in
             let c = tree.objectWillChange.sink { self.objectWillChange.send() }
-            self.cancellables.append(c)
+            self.treeCancellables.append(c)
         }
         
         self.entries = entries
         self.entries.forEach { (entry) in
             let c = entry.objectWillChange.sink { self.objectWillChange.send() }
-            self.cancellables.append(c)
+            self.entryCancellables.append(c)
         }
     }
     
@@ -122,7 +123,7 @@ class Warehouse: ObservableObject {
         var entriesDone = false
         
         let completion: (Error?) -> Void = { error in
-            DispatchQueue.main.async {
+            Mainify {
                 if categoriesDone && entriesDone {
                     self.isRefreshing = false
                     
@@ -131,6 +132,12 @@ class Warehouse: ObservableObject {
                         return a.node.accountID < b.node.accountID
                     }) {
                         self.trees = trees
+                        // Reset cancellables
+                        self.treeCancellables.removeAll()
+                        self.trees.forEach { (tree) in
+                            let c = tree.objectWillChange.sink { self.objectWillChange.send() }
+                            self.treeCancellables.append(c)
+                        }
                     }
                 }
             }
@@ -149,6 +156,7 @@ class Warehouse: ObservableObject {
         NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryRecorded, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleEntryModifiedNotification(_:)), name: .TimeEntryModified, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleEntryDeletedNotification(_:)), name: .TimeEntryDeleted, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didCompleteImportRequest), name: .TimeImportRequestCompleted, object: nil)
     }
 
     @objc private func handleBackgroundUpdate(_ notification:Notification) {
@@ -159,7 +167,7 @@ class Warehouse: ObservableObject {
             self.entries.insert(entry, at: 0)
             // Track new cancellable
             let c = entry.objectWillChange.sink { self.objectWillChange.send() }
-            self.cancellables.append(c)
+            self.entryCancellables.append(c)
         }
         
         self.handleEntryNotification(notification)
@@ -191,6 +199,10 @@ class Warehouse: ObservableObject {
         self.calculateOpenCategories()
         
         WidgetCenter.shared.reloadAllTimelines()
+    }
+    
+    @objc private func didCompleteImportRequest(_ notification:Notification) {
+        self.loadData(refresh: true)
     }
         
     // MARK: - Recents

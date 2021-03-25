@@ -325,7 +325,7 @@ fileprivate struct ParseDatesStep: View {
     var importer: Binding<FileImporter?>
     @Binding var step: ImportWizard.Step
     
-    @State var dateTimeColumns: Bool = true
+    @State var dateTimeColumns: Bool = false
     @State var dateColumn: String = ""
     @State var startColumn: String = ""
     @State var endColumn: String = ""
@@ -414,8 +414,8 @@ fileprivate struct ParseDatesStep: View {
         
         Section(header: Text("Specify date format").titleStyle()) {
             Picker("Column style", selection: dateTimeBinding) {
-                Text("Date/Time").tag(true)
                 Text("Unix").tag(false)
+                Text("Date/Time").tag(true)
             }.pickerStyle(SegmentedPickerStyle())
                                     
             if self.dateTimeColumns {

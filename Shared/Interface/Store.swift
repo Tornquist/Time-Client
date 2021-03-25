@@ -102,6 +102,8 @@ public class Store {
     // to their own named stack.
     private let completeSyncCollisonQueue = DispatchQueue(label: "completeSyncCollisonQueue", attributes: .concurrent)
     
+    private let archiveQueue = DispatchQueue(label: "archiveQueue", qos: .utility)
+    
     // MARK: - Accounts
     
     public func createAccount(completion: ((Account?, Error?) -> ())?) {
@@ -647,7 +649,7 @@ public class Store {
         _ = self.archive.removeAllData()
     }
     
-    private func restoreDataFromDisk() {        
+    private func restoreDataFromDisk() {
         if let categories: [Category] = self.archive.retrieveData() {
             self.categories = categories
             self.staleTrees = true
@@ -667,7 +669,7 @@ public class Store {
     
     private func archive<T>(data: T) where T : Codable {
         guard self.hasInitialized else { return }
-        DispatchQueue.global(qos: .background).async {
+        self.archiveQueue.async {
             _ = self.archive.record(data)
         }
     }

@@ -12,7 +12,7 @@ import TimeSDK
 
 class ImportModel: ObservableObject {
     
-    @Published var warehouse: Warehouse
+    var warehouse: Warehouse
     
     var requests: [FileImporter.Request] = []
     @Published var isRefreshing: Bool = false
@@ -20,11 +20,8 @@ class ImportModel: ObservableObject {
     var cancellables = [AnyCancellable]()
     
     init(for warehouse: Warehouse) {
-        self.warehouse = warehouse
+        self.warehouse = warehouse // For time API only. Comm through notification center
         
-        let c = warehouse.objectWillChange.sink { self.objectWillChange.send() }
-        self.cancellables.append(c)
-
         self.loadData()
         
         NotificationCenter.default.addObserver(self, selector: #selector(didCreateImportRequest), name: .TimeImportRequestCreated, object: nil)
@@ -36,7 +33,7 @@ class ImportModel: ObservableObject {
     func loadData(refresh: Bool = false) {
         self.isRefreshing = true
         let networkMode: Store.NetworkMode = refresh ? .refreshAll : .asNeeded
-        Time.shared.store.getImportRequests(networkMode) { (requests, error) in
+        self.warehouse.time?.store.getImportRequests(networkMode) { (requests, error) in
             self.isRefreshing = false
             
             if let requests = requests {
@@ -66,8 +63,5 @@ class ImportModel: ObservableObject {
     
     @objc func didCompleteImportRequest() {
         self.loadData()
-        DispatchQueue.main.async {
-            self.warehouse.loadData(refresh: true)
-        }
     }
 }
