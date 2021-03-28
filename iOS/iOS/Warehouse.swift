@@ -150,16 +150,17 @@ class Warehouse: ObservableObject {
     }
     
     private func registerNotifications() {
-        NotificationCenter.default.addObserver(self, selector: #selector(handleBackgroundUpdate(_:)), name: .TimeBackgroundStoreUpdate, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleEntryStartedNotification(_:)), name: .TimeEntryStarted, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryStopped, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryRecorded, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleEntryModifiedNotification(_:)), name: .TimeEntryModified, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleEntryDeletedNotification(_:)), name: .TimeEntryDeleted, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(didCompleteImportRequest), name: .TimeImportRequestCompleted, object: nil)
-    }
 
-    @objc private func handleBackgroundUpdate(_ notification:Notification) {
+        NotificationCenter.default.addObserver(self, selector: #selector(didCompleteImportRequest), name: .TimeImportRequestCompleted, object: nil)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(didUpdateStore), name: .TimeBackgroundStoreUpdate, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didRefreshEntries), name: .TimeEntriesRefresh, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didRefreshCategories), name: .TimeCategoriesRefresh, object: nil)
     }
     
     @objc private func handleEntryStartedNotification(_ notification:Notification) {
@@ -203,6 +204,41 @@ class Warehouse: ObservableObject {
     
     @objc private func didCompleteImportRequest(_ notification:Notification) {
         self.loadData(refresh: true)
+    }
+    
+    @objc private func didUpdateStore(_ notification:Notification) {
+        self.didRefreshEntries(notification)
+        self.didRefreshCategories(notification)
+    }
+    
+    @objc private func didRefreshEntries(_ notification:Notification) {
+        // Background refresh of entries --> Resync warehouse to get object changes
+        if let entries = self.time?.store.entries {
+            self.entries = entries.sorted { (a, b) -> Bool in
+                return a.startedAt > b.startedAt
+            }
+        }
+        
+        self.entryCancellables.removeAll()
+        self.entries.forEach { (entry) in
+            let c = entry.objectWillChange.sink { self.objectWillChange.send() }
+            self.entryCancellables.append(c)
+        }
+    }
+    
+    @objc private func didRefreshCategories(_ notification:Notification) {
+        // Background refresh of categories --> Resync warehouse to get object changes
+        if let trees = self.time?.store.categoryTrees.values.compactMap({ $0 }) {
+            self.trees = trees.sorted { (a, b) -> Bool in
+                return a.node.accountID < b.node.accountID
+            }
+        }
+                
+        self.treeCancellables.removeAll()
+        self.trees.forEach { (tree) in
+            let c = tree.objectWillChange.sink { self.objectWillChange.send() }
+            self.treeCancellables.append(c)
+        }
     }
         
     // MARK: - Recents
