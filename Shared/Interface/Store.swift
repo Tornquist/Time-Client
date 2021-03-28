@@ -445,6 +445,7 @@ public class Store {
             } else {
                 if let updatedEntry = self.entries.first(where: { $0.id == entry!.id }) {
                     updatedEntry.endedAt = entry!.endedAt
+                    updatedEntry.endedAtTimezone = entry!.endedAtTimezone
                     self.archive(data: self.entries)
                     NotificationCenter.default.post(name: .TimeEntryStopped, object: updatedEntry)
                 } else {
@@ -467,7 +468,13 @@ public class Store {
     // MARK: Entry Interface
     
     public func stop(entry: Entry, completion: ((Bool) -> Void)?) {
-        self.update(entry: entry, setEndedAt: Date(), completion: completion)
+        let timezone = TimeZone.autoupdatingCurrent.identifier
+        self.update(
+            entry: entry,
+            setEndedAt: Date(),
+            setEndedAtTimezone: timezone,
+            completion: completion
+        )
     }
     
     public func update(entry: Entry, setCategory category: Category? = nil, setType type: EntryType? = nil, setStartedAt startedAt: Date? = nil, setStartedAtTimezone startedAtTimezone: String? = nil, setEndedAt endedAt: Date? = nil, setEndedAtTimezone endedAtTimezone: String? = nil, completion: ((Bool) -> Void)?) {
