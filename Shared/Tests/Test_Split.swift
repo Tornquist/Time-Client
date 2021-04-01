@@ -420,7 +420,7 @@ class Test_Split: XCTestCase {
         let firstDayDuration = TimeInterval((60 - 25) + (60 - 31 - 1) * 60 + (24 - 18 - 1) * 60 * 60)
         let firstDay = splits[0]
         XCTAssertEqual(firstDay.year, components.year ?? 0)
-        XCTAssertEqual(firstDay.month, components.month ?? 0)
+        XCTAssertEqual(firstDay.month, components.month ?? 0) // Not stable on April 1st, 2021 in CDT
         XCTAssertEqual(firstDay.day, startDay)
         XCTAssertEqual(firstDay.duration, firstDayDuration, accuracy: 1.0) // within 1s
         XCTAssertEqual(firstDay.categoryID, 3)

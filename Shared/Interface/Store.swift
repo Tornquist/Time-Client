@@ -7,8 +7,9 @@
 //
 
 import Foundation
+import Combine
 
-public class Store {
+public class Store: ObservableObject {
     
     private enum StoreKeys: String {
         case entriesSyncTimestamp = "time-entries-sync-timestamp"
@@ -50,9 +51,10 @@ public class Store {
     }
 
     private var _hasFetchedEntries: Bool = false
-    public var entries: [Entry] = [] {
+    @Published public var entries: [Entry] = [] {
         didSet { self.archive(data: self.entries) }
     }
+    private var entryCancellables = [AnyCancellable]()
     
     public var categories: [Category] = [] {
         didSet { self.archive(data: self.categories) }
@@ -178,7 +180,7 @@ public class Store {
                     let startingEntries = self.entries
                     let currentCategoryIDs = self.categories.map({ $0.id })
                     let endingEntries = startingEntries.filter({ currentCategoryIDs.contains($0.categoryID) })
-                    self.entries = endingEntries
+                    self.set(entries: endingEntries, refreshCancellables: true)
                 }
                 NotificationCenter.default.post(name: .TimeCategoriesRefresh, object: self)
             }
@@ -306,7 +308,8 @@ public class Store {
                     categoryTree.parent?.children = safeChildren
                 }
                 self.categories = filteredCategories
-                self.entries = self.entries.filter({ !removeIds.contains($0.categoryID) })
+                let cleanEntries = self.entries.filter({ !removeIds.contains($0.categoryID) })
+                self.set(entries: cleanEntries, refreshCancellables: false)
             } else {
                 let filteredCategories = self.categories.filter({ (testCategory) -> Bool in
                     return testCategory.id != category.id
@@ -318,7 +321,8 @@ public class Store {
                     categoryTree.parent?.sortChildren()
                 }
                 self.categories = filteredCategories
-                self.entries = self.entries.filter({ $0.categoryID != category.id })
+                let cleanEntries = self.entries.filter({ $0.categoryID != category.id })
+                self.set(entries: cleanEntries, refreshCancellables: false)
             }
             completion?(true)
         }
@@ -358,9 +362,9 @@ public class Store {
                     let addEntries = entries!.filter({ $0.deleted != true })
                     cleanEntries.append(contentsOf: addEntries)
                     
-                    self.entries = cleanEntries
+                    self.set(entries: cleanEntries, refreshCancellables: true)
                 } else {
-                    self.entries = entries!
+                    self.set(entries: entries!, refreshCancellables: true)
                 }
                 
                 NotificationCenter.default.post(name: .TimeEntriesRefresh, object: self)
@@ -411,7 +415,7 @@ public class Store {
                 return
             }
             
-            self.entries.append(newEntry!)
+            self.add(entry: newEntry!)
             NotificationCenter.default.post(name: .TimeEntryRecorded, object: newEntry!)
             completion?(true)
         }
@@ -440,16 +444,17 @@ public class Store {
             }
             
             if action == .start {
-                self.entries.append(entry!)
+                self.add(entry: entry!)
                 NotificationCenter.default.post(name: .TimeEntryStarted, object: entry!)
             } else {
                 if let updatedEntry = self.entries.first(where: { $0.id == entry!.id }) {
                     updatedEntry.endedAt = entry!.endedAt
                     updatedEntry.endedAtTimezone = entry!.endedAtTimezone
                     self.archive(data: self.entries)
+                    self.sortEntries()
                     NotificationCenter.default.post(name: .TimeEntryStopped, object: updatedEntry)
                 } else {
-                    self.entries.append(entry!)
+                    self.add(entry: entry!)
                     NotificationCenter.default.post(name: .TimeEntryStopped, object: entry!)
                 }
             }
@@ -500,6 +505,7 @@ public class Store {
             entry.endedAtTimezone = updatedEntry!.endedAtTimezone
             
             self.archive(data: self.entries)
+            self.sortEntries()
             
             if wasStopAction {
                 NotificationCenter.default.post(name: .TimeEntryStopped, object: entry)
@@ -518,14 +524,56 @@ public class Store {
                 completion?(false)
                 return
             }
-            
 
-            if let index = self.entries.firstIndex(where: { $0.id == entry.id }) {
-                self.entries.remove(at: index)
-            }
+            self.delete(entry: entry)
             NotificationCenter.default.post(name: .TimeEntryDeleted, object: entry)
             completion?(true)
         }
+    }
+    
+    // MARK: Internal Entry Tracking
+    
+    private func add(entry: Entry) {
+        var expandedEntries = self.entries
+        expandedEntries.append(entry)
+        
+        let cancellable = entry.objectWillChange.sink { self.objectWillChange.send() }
+        self.entryCancellables.append(cancellable)
+        
+        self.set(entries: expandedEntries, refreshCancellables: false)
+    }
+    
+    private func delete(entry: Entry) {
+        if let index = self.entries.firstIndex(where: { $0.id == entry.id }) {
+            self.entries.remove(at: index)
+        }
+    }
+    
+    private func set(entries: [Entry], refreshCancellables: Bool) {
+        let sortedEntries = entries.sorted { (a, b) -> Bool in
+            let diff = a.startedAt.distance(to: b.startedAt)
+            // Resolves conflicts for rapid testing
+            guard abs(diff) > 1 else {
+                return a.id > b.id
+            }
+            
+            return diff < 0 // Negative means greater. second is behind first
+        }
+        
+        if refreshCancellables {
+            self.entryCancellables.removeAll()
+            sortedEntries.forEach { (entry) in
+                let c = entry.objectWillChange.sink { self.objectWillChange.send() }
+                self.entryCancellables.append(c)
+            }
+        }
+        
+        self.entries = sortedEntries
+    }
+    
+    private func sortEntries() {
+        // (Above) sorting occurs on every set. Trigger self set to re-sort
+        self.set(entries: self.entries, refreshCancellables: false)
     }
     
     // MARK: - Import Interface
@@ -663,7 +711,7 @@ public class Store {
         }
         
         if let entries: [Entry] = self.archive.retrieveData() {
-            self.entries = entries
+            self.set(entries: entries, refreshCancellables: true)
             self._hasFetchedEntries = true
         }
         
