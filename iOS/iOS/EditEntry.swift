@@ -35,12 +35,9 @@ struct EditEntry: View {
     var categories: [CategoryOption]
     
     // MARK: - Formatters and copy
-        
-    let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MM/dd/yy h:mm a"
-        return formatter
-    }()
+    
+    // Shared between all cells
+    static var dateFormatters: [String:DateFormatter] = [:]
     
     // MARK: - View management
     
@@ -352,18 +349,36 @@ struct EditEntry: View {
         }
     }
     
-    func getTimeDisplay(for date: Date?) -> String {
-        return date != nil ? dateFormatter.string(from: date!) : NSLocalizedString("No value", comment: "")
+    func getTimeDisplay(for date: Date?, with timezoneIdentifier: String?) -> String {
+        guard let date = date else {
+            return NSLocalizedString("No value", comment: "")
+        }
+        
+        // Copied from Entries
+        let defaultTimezone = TimeZone.autoupdatingCurrent
+        let safeTimezone = timezoneIdentifier ?? defaultTimezone.identifier
+        
+        if (EditEntry.dateFormatters[safeTimezone] == nil) {
+            let timezone = TimeZone(identifier: safeTimezone) ?? defaultTimezone
+            if (EditEntry.dateFormatters[timezone.identifier] == nil) {
+                let newFormatter = DateFormatter.init()
+                newFormatter.dateFormat = "MM/dd/yy h:mm a"
+                newFormatter.timeZone = timezone
+                EditEntry.dateFormatters[safeTimezone] = newFormatter
+            }
+        }
+        
+        return EditEntry.dateFormatters[safeTimezone]!.string(from: date)
     }
     
     func getDisplayValue(for field: FieldType) -> String {
         switch field {
         case .startedAt:
-            return self.getTimeDisplay(for: self.startedAt)
+            return self.getTimeDisplay(for: self.startedAt, with: self.startedAtTimezone)
         case .startedAtTimezone:
             return self.getTimezoneDisplay(for: self.startedAtTimezone)
         case .endedAt:
-            return self.getTimeDisplay(for: self.endedAt)
+            return self.getTimeDisplay(for: self.endedAt, with: self.endedAtTimezone)
         case .endedAtTimezone:
             return self.getTimezoneDisplay(for: self.endedAtTimezone)
         case .none:
