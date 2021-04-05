@@ -27,7 +27,6 @@ class Warehouse: ObservableObject {
     var time: Time? = nil
     
     @Published var trees: [CategoryTree] = []
-    @Published var entries: [Entry] = []
     
     @Published var recentCategories: [CategoryTree] = []
     @Published var recentCategoryIsRange: [Bool] = []
@@ -37,19 +36,12 @@ class Warehouse: ObservableObject {
     @Published var isRefreshing: Bool = false
     
     var treeCancellables = [AnyCancellable]()
-    var entryCancellables = [AnyCancellable]()
         
-    init(trees: [CategoryTree], entries: [Entry]) {
+    init(trees: [CategoryTree]) {
         self.trees = trees
         self.trees.forEach { (tree) in
             let c = tree.objectWillChange.sink { self.objectWillChange.send() }
             self.treeCancellables.append(c)
-        }
-        
-        self.entries = entries
-        self.entries.forEach { (entry) in
-            let c = entry.objectWillChange.sink { self.objectWillChange.send() }
-            self.entryCancellables.append(c)
         }
     }
     
@@ -58,11 +50,7 @@ class Warehouse: ObservableObject {
             return a.node.accountID < b.node.accountID
         }
         
-        let entries = time.store.entries.sorted { (a, b) -> Bool in
-            return a.startedAt > b.startedAt
-        }
-        
-        self.init(trees: trees, entries: entries)
+        self.init(trees: trees)
         
         self.time = time
 
@@ -150,47 +138,18 @@ class Warehouse: ObservableObject {
     }
     
     private func registerNotifications() {
-        NotificationCenter.default.addObserver(self, selector: #selector(handleEntryStartedNotification(_:)), name: .TimeEntryStarted, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryStarted, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryStopped, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryRecorded, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(handleEntryModifiedNotification(_:)), name: .TimeEntryModified, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(handleEntryDeletedNotification(_:)), name: .TimeEntryDeleted, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryModified, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryDeleted, object: nil)
 
         NotificationCenter.default.addObserver(self, selector: #selector(didCompleteImportRequest), name: .TimeImportRequestCompleted, object: nil)
 
         NotificationCenter.default.addObserver(self, selector: #selector(didUpdateStore), name: .TimeBackgroundStoreUpdate, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(didRefreshEntries), name: .TimeEntriesRefresh, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(didRefreshCategories), name: .TimeCategoriesRefresh, object: nil)
     }
-    
-    @objc private func handleEntryStartedNotification(_ notification:Notification) {
-        if let entry = notification.object as? Entry {
-            self.entries.insert(entry, at: 0)
-            // Track new cancellable
-            let c = entry.objectWillChange.sink { self.objectWillChange.send() }
-            self.entryCancellables.append(c)
-        }
-        
-        self.handleEntryNotification(notification)
-    }
-    
-    @objc private func handleEntryModifiedNotification(_ notification:Notification) {
-        let sortedEntries = entries.sorted { (a, b) -> Bool in
-            return a.startedAt > b.startedAt
-        }
-        self.entries = sortedEntries
-        
-        self.handleEntryNotification(notification)
-    }
-    
-    @objc private func handleEntryDeletedNotification(_ notification:Notification) {
-        if let entry = notification.object as? Entry {
-            self.entries = entries.filter({ $0.id != entry.id })
-        }
-        
-        self.handleEntryNotification(notification)
-    }
-    
+
     @objc private func handleEntryNotification(_ notification:Notification) {
         self.refreshAllCalculations()
     }
@@ -203,27 +162,12 @@ class Warehouse: ObservableObject {
     }
     
     @objc private func didCompleteImportRequest(_ notification:Notification) {
+        // TODO: Identify if this is still needed with time as an ObservableObject
         self.loadData(refresh: true)
     }
     
     @objc private func didUpdateStore(_ notification:Notification) {
-        self.didRefreshEntries(notification)
         self.didRefreshCategories(notification)
-    }
-    
-    @objc private func didRefreshEntries(_ notification:Notification) {
-        // Background refresh of entries --> Resync warehouse to get object changes
-        if let entries = self.time?.store.entries {
-            self.entries = entries.sorted { (a, b) -> Bool in
-                return a.startedAt > b.startedAt
-            }
-        }
-        
-        self.entryCancellables.removeAll()
-        self.entries.forEach { (entry) in
-            let c = entry.objectWillChange.sink { self.objectWillChange.send() }
-            self.entryCancellables.append(c)
-        }
     }
     
     @objc private func didRefreshCategories(_ notification:Notification) {
@@ -298,8 +242,10 @@ class Warehouse: ObservableObject {
     }
     
     private func calculateOpenCategories() {
-        let openEntries = self.entries.filter { (entry) -> Bool in
+        guard let openEntries = self.time?.store.entries.filter({ (entry) -> Bool in
             return entry.type == .range && entry.endedAt == nil
+        }) else {
+            return
         }
         let categoryIDs = openEntries.map({ $0.categoryID })
         let dedupedIDs = Array(Set(categoryIDs))
@@ -338,7 +284,7 @@ class Warehouse: ObservableObject {
         let decoder = JSONDecoder()
         let categories = try! decoder.decode([TimeSDK.Category].self, from: data.data(using: .utf8)!)
         let trees = CategoryTree.generateFrom(categories)
-        let store = Warehouse(trees: trees, entries: [])
+        let store = Warehouse(trees: trees)
         
         store.recentCategories = [
             trees[0].findItem(withID: 11)!, // time
