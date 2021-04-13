@@ -60,6 +60,10 @@ public class Store: ObservableObject {
         didSet { self.archive(data: self.categories) }
     }
     
+    // This array contains ordered root trees _only_
+    @Published public var accountTrees: [CategoryTree] = []
+    private var accountTreeCancellables = [AnyCancellable]()
+    
     private var _categoryTrees: [Int: CategoryTree] = [:]
     public var categoryTrees: [Int: CategoryTree] {
         let hasCategories = self.categories.count != 0
@@ -130,8 +134,8 @@ public class Store: ObservableObject {
                 
                 let newTrees = CategoryTree.generateFrom(newCategories!)
                 let tree = newTrees.first(where: { $0.node.accountID == newAccount!.id })
-                if tree != nil {
-                    self._categoryTrees[newAccount!.id] = tree!
+                if let tree = tree {
+                    self.add(accountTree: tree)
                 } else {
                     self.staleTrees = true
                 }
@@ -328,6 +332,40 @@ public class Store: ObservableObject {
         }
     }
     
+    // MARK: Internal Category Tracking
+    
+    private func add(accountTree: CategoryTree) {
+        self._categoryTrees[accountTree.node.accountID] = accountTree
+        
+        let cancellable = accountTree.objectWillChange.sink { self.objectWillChange.send() }
+        self.accountTreeCancellables.append(cancellable)
+        
+        self.set(accountTrees: Array(_categoryTrees.values), refreshCancellables: false)
+    }
+    
+    private func set(categoryTrees: [Int: CategoryTree]) {
+        self._categoryTrees = categoryTrees
+        self.set(accountTrees: Array(self._categoryTrees.values), refreshCancellables: true)
+    }
+        
+    private func set(accountTrees: [CategoryTree], refreshCancellables: Bool) {
+        // TODO: Support alternative sorting methods
+        let sortedAccountTrees = accountTrees.sorted { (a, b) -> Bool in
+            return a.node.accountID < b.node.accountID
+        }
+        
+        if refreshCancellables || self.accountTreeCancellables.count == 0 {
+            self.accountTreeCancellables.removeAll()
+            sortedAccountTrees.forEach { (entry) in
+                let c = entry.objectWillChange.sink { self.objectWillChange.send() }
+                self.accountTreeCancellables.append(c)
+            }
+        }
+        
+        print("Set account trees")
+        self.accountTrees = sortedAccountTrees
+    }
+
     // MARK: - Entries
     
     public func getEntries(_ network: NetworkMode = .asNeeded, completion: (([Entry]?, Error?) -> ())? = nil) {
@@ -658,7 +696,8 @@ public class Store: ObservableObject {
             treeMapping[tree.node.accountID] = tree
         }
         
-        self._categoryTrees = treeMapping
+        print("regenerateTrees")
+        self.set(categoryTrees: treeMapping)
         self.staleTrees = false
     }
     
@@ -720,6 +759,8 @@ public class Store: ObservableObject {
         } else {
             self.staleAccountIDs = true
         }
+        
+        self.regenerateTrees()
     }
     
     private func archive<T>(data: T) where T : Codable {

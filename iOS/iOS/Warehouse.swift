@@ -25,8 +25,13 @@ class Warehouse: ObservableObject {
     }
     
     var time: Time? = nil
-    
-    @Published var trees: [CategoryTree] = []
+    var storeCancellable: AnyCancellable?
+    var entries: [Entry] {
+        return self.time?.store.entries ?? []
+    }
+    var accountTrees: [CategoryTree] {
+        return self.time?.store.accountTrees ?? []
+    }
     
     @Published var recentCategories: [CategoryTree] = []
     @Published var recentCategoryIsRange: [Bool] = []
@@ -35,24 +40,13 @@ class Warehouse: ObservableObject {
 
     @Published var isRefreshing: Bool = false
     
-    var treeCancellables = [AnyCancellable]()
-        
-    init(trees: [CategoryTree]) {
-        self.trees = trees
-        self.trees.forEach { (tree) in
-            let c = tree.objectWillChange.sink { self.objectWillChange.send() }
-            self.treeCancellables.append(c)
-        }
-    }
+    init() { }
     
     convenience init(for time: Time) {
-        let trees = time.store.categoryTrees.values.sorted { (a, b) -> Bool in
-            return a.node.accountID < b.node.accountID
-        }
-        
-        self.init(trees: trees)
+        self.init()
         
         self.time = time
+        self.storeCancellable = self.time!.store.objectWillChange.sink { self.objectWillChange.send() }
 
         self.registerNotifications()
         self.loadData()
@@ -106,35 +100,14 @@ class Warehouse: ObservableObject {
     func loadData(refresh: Bool = false) {
         guard !self.isRefreshing else { return }
         self.isRefreshing = true
-        
-        var categoriesDone = false
-        var entriesDone = false
-        
+    
         let completion: (Error?) -> Void = { error in
-            Mainify {
-                if categoriesDone && entriesDone {
-                    self.isRefreshing = false
-                    
-                    // Refresh existing trees to make sure all root nodes are tracked
-                    if let trees = self.time?.store.categoryTrees.values.sorted(by: { (a, b) -> Bool in
-                        return a.node.accountID < b.node.accountID
-                    }) {
-                        self.trees = trees
-                        // Reset cancellables
-                        self.treeCancellables.removeAll()
-                        self.trees.forEach { (tree) in
-                            let c = tree.objectWillChange.sink { self.objectWillChange.send() }
-                            self.treeCancellables.append(c)
-                        }
-                    }
-                }
-            }
             self.refreshAllCalculations()
         }
         
         let networkMode: Store.NetworkMode = refresh ? .refreshAll : .asNeeded
-        time?.store.getCategories(networkMode) { (categories, error) in categoriesDone = true; completion(error) }
-        time?.store.getEntries(networkMode) { (entries, error) in entriesDone = true; completion(error) }
+        time?.store.getCategories(networkMode) { (categories, error) in completion(error) }
+        time?.store.getEntries(networkMode) { (entries, error) in completion(error) }
     }
     
     private func registerNotifications() {
@@ -145,9 +118,6 @@ class Warehouse: ObservableObject {
         NotificationCenter.default.addObserver(self, selector: #selector(handleEntryNotification(_:)), name: .TimeEntryDeleted, object: nil)
 
         NotificationCenter.default.addObserver(self, selector: #selector(didCompleteImportRequest), name: .TimeImportRequestCompleted, object: nil)
-
-        NotificationCenter.default.addObserver(self, selector: #selector(didUpdateStore), name: .TimeBackgroundStoreUpdate, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(didRefreshCategories), name: .TimeCategoriesRefresh, object: nil)
     }
 
     @objc private func handleEntryNotification(_ notification:Notification) {
@@ -164,25 +134,6 @@ class Warehouse: ObservableObject {
     @objc private func didCompleteImportRequest(_ notification:Notification) {
         // TODO: Identify if this is still needed with time as an ObservableObject
         self.loadData(refresh: true)
-    }
-    
-    @objc private func didUpdateStore(_ notification:Notification) {
-        self.didRefreshCategories(notification)
-    }
-    
-    @objc private func didRefreshCategories(_ notification:Notification) {
-        // Background refresh of categories --> Resync warehouse to get object changes
-        if let trees = self.time?.store.categoryTrees.values.compactMap({ $0 }) {
-            self.trees = trees.sorted { (a, b) -> Bool in
-                return a.node.accountID < b.node.accountID
-            }
-        }
-                
-        self.treeCancellables.removeAll()
-        self.trees.forEach { (tree) in
-            let c = tree.objectWillChange.sink { self.objectWillChange.send() }
-            self.treeCancellables.append(c)
-        }
     }
         
     // MARK: - Recents
@@ -284,7 +235,7 @@ class Warehouse: ObservableObject {
         let decoder = JSONDecoder()
         let categories = try! decoder.decode([TimeSDK.Category].self, from: data.data(using: .utf8)!)
         let trees = CategoryTree.generateFrom(categories)
-        let store = Warehouse(trees: trees)
+        let store = Warehouse()
         
         store.recentCategories = [
             trees[0].findItem(withID: 11)!, // time

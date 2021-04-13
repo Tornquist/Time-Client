@@ -85,7 +85,7 @@ struct MoveCategory: View {
         NavigationView {
             List {
                 Section {
-                    build(categories: self.warehouse.trees)
+                    build(categories: self.warehouse.accountTrees)
                 }
                 .listRowInsets(EdgeInsets())
             }

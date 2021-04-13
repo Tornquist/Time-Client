@@ -75,7 +75,7 @@ struct DeleteCategory: View {
         guard let category = category else {
             return nil
         }
-        return self.warehouse.time?.store.entries.filter({ $0.categoryID == category.id }).count
+        return self.warehouse.entries.filter({ $0.categoryID == category.id }).count
     }
 
     func countChildCategories() -> Int? {
@@ -104,7 +104,7 @@ struct DeleteCategory: View {
             return testCategory.id
         }
 
-        return self.warehouse.time?.store.entries.filter({ childCategoryIds.contains($0.categoryID) }).count
+        return self.warehouse.entries.filter({ childCategoryIds.contains($0.categoryID) }).count
     }
     
     // MARK: - Display Helpers

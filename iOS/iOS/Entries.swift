@@ -44,7 +44,7 @@ struct Entries: View {
             }
         )
         
-        return List(self.warehouse.time?.store.entries ?? []) { (entry) in
+        return List(self.warehouse.entries) { (entry) in
             let active = entry.endedAt == nil && entry.type == .range
             TitleSubtitleActionView(
                 title: getName(entry),

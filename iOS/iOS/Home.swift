@@ -106,8 +106,8 @@ struct Home: View {
                         .padding(.trailing, -4.0)
                 }
 
-                ForEach(self.warehouse.trees) { (tree) in
-                    let isFirst = self.warehouse.trees[0].id == tree.id
+                ForEach(self.warehouse.accountTrees) { (tree) in
+                    let isFirst = self.warehouse.accountTrees[0].id == tree.id
                     if isFirst {
                         Section(header: Text("Accounts").titleStyle()) {
                             CategoryList(

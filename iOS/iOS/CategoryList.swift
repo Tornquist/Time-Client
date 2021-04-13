@@ -72,7 +72,7 @@ struct CategoryList_Previews: PreviewProvider {
         var body: some View {
             NavigationView {
                 List {
-                    CategoryList(root: warehouse.trees[0])
+                    CategoryList(root: warehouse.accountTrees[0])
                 }
             }
                 .environmentObject(warehouse)
