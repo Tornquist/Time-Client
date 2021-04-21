@@ -7,8 +7,9 @@
 //
 
 import Foundation
+import Combine
 
-public class Store {
+public class Store: ObservableObject {
     
     private enum StoreKeys: String {
         case entriesSyncTimestamp = "time-entries-sync-timestamp"
@@ -50,13 +51,18 @@ public class Store {
     }
 
     private var _hasFetchedEntries: Bool = false
-    public var entries: [Entry] = [] {
+    @Published public var entries: [Entry] = [] {
         didSet { self.archive(data: self.entries) }
     }
+    private var entryCancellables = [AnyCancellable]()
     
     public var categories: [Category] = [] {
         didSet { self.archive(data: self.categories) }
     }
+    
+    // This array contains ordered root trees _only_
+    @Published public var accountTrees: [CategoryTree] = []
+    private var accountTreeCancellables = [AnyCancellable]()
     
     private var _categoryTrees: [Int: CategoryTree] = [:]
     public var categoryTrees: [Int: CategoryTree] {
@@ -102,6 +108,8 @@ public class Store {
     // to their own named stack.
     private let completeSyncCollisonQueue = DispatchQueue(label: "completeSyncCollisonQueue", attributes: .concurrent)
     
+    private let archiveQueue = DispatchQueue(label: "archiveQueue", qos: .utility)
+    
     // MARK: - Accounts
     
     public func createAccount(completion: ((Account?, Error?) -> ())?) {
@@ -126,8 +134,8 @@ public class Store {
                 
                 let newTrees = CategoryTree.generateFrom(newCategories!)
                 let tree = newTrees.first(where: { $0.node.accountID == newAccount!.id })
-                if tree != nil {
-                    self._categoryTrees[newAccount!.id] = tree!
+                if let tree = tree {
+                    self.add(accountTree: tree)
                 } else {
                     self.staleTrees = true
                 }
@@ -176,8 +184,9 @@ public class Store {
                     let startingEntries = self.entries
                     let currentCategoryIDs = self.categories.map({ $0.id })
                     let endingEntries = startingEntries.filter({ currentCategoryIDs.contains($0.categoryID) })
-                    self.entries = endingEntries
+                    self.set(entries: endingEntries, refreshCancellables: true)
                 }
+                NotificationCenter.default.post(name: .TimeCategoriesRefresh, object: self)
             }
             completion?(categories, nil)
         }
@@ -192,15 +201,12 @@ public class Store {
             }
 
             self.categories.append(category!)
-            
-            let newTree = CategoryTree(category!)
-            
+                        
             let accountID = parent.accountID
             if let accountTree = self.categoryTrees[accountID],
                 let parentTree = accountTree.findItem(withID: parent.id) {
                 
-                parentTree.children.append(newTree)
-                newTree.parent = parentTree
+                parentTree.insert(item: category!)
                 parentTree.sortChildren()
             } else {
                 self.staleTrees = true
@@ -265,8 +271,7 @@ public class Store {
                         return child.node.id != category.id
                     })
                 }
-                parentTree.children.append(categoryTree)
-                categoryTree.parent = parentTree
+                parentTree.insert(tree: categoryTree)
                 parentTree.sortChildren()
             }
             
@@ -307,7 +312,8 @@ public class Store {
                     categoryTree.parent?.children = safeChildren
                 }
                 self.categories = filteredCategories
-                self.entries = self.entries.filter({ !removeIds.contains($0.categoryID) })
+                let cleanEntries = self.entries.filter({ !removeIds.contains($0.categoryID) })
+                self.set(entries: cleanEntries, refreshCancellables: false)
             } else {
                 let filteredCategories = self.categories.filter({ (testCategory) -> Bool in
                     return testCategory.id != category.id
@@ -316,18 +322,49 @@ public class Store {
                 if var safeChildren = categoryTree.parent?.children.filter({ $0.node.id != categoryTree.node.id }) {
                     safeChildren.append(contentsOf: elevateChildren)
                     categoryTree.parent?.children = safeChildren
-                    elevateChildren.forEach({ (child) in
-                        child.parent = categoryTree.parent
-                    })
                     categoryTree.parent?.sortChildren()
                 }
                 self.categories = filteredCategories
-                self.entries = self.entries.filter({ $0.categoryID != category.id })
+                let cleanEntries = self.entries.filter({ $0.categoryID != category.id })
+                self.set(entries: cleanEntries, refreshCancellables: false)
             }
             completion?(true)
         }
     }
     
+    // MARK: Internal Category Tracking
+    
+    private func add(accountTree: CategoryTree) {
+        self._categoryTrees[accountTree.node.accountID] = accountTree
+        
+        let cancellable = accountTree.objectWillChange.sink { self.objectWillChange.send() }
+        self.accountTreeCancellables.append(cancellable)
+        
+        self.set(accountTrees: Array(_categoryTrees.values), refreshCancellables: false)
+    }
+    
+    private func set(categoryTrees: [Int: CategoryTree]) {
+        self._categoryTrees = categoryTrees
+        self.set(accountTrees: Array(self._categoryTrees.values), refreshCancellables: true)
+    }
+        
+    private func set(accountTrees: [CategoryTree], refreshCancellables: Bool) {
+        // TODO: Support alternative sorting methods
+        let sortedAccountTrees = accountTrees.sorted { (a, b) -> Bool in
+            return a.node.accountID < b.node.accountID
+        }
+        
+        if refreshCancellables || self.accountTreeCancellables.count == 0 {
+            self.accountTreeCancellables.removeAll()
+            sortedAccountTrees.forEach { (entry) in
+                let c = entry.objectWillChange.sink { self.objectWillChange.send() }
+                self.accountTreeCancellables.append(c)
+            }
+        }
+
+        self.accountTrees = sortedAccountTrees
+    }
+
     // MARK: - Entries
     
     public func getEntries(_ network: NetworkMode = .asNeeded, completion: (([Entry]?, Error?) -> ())? = nil) {
@@ -362,10 +399,12 @@ public class Store {
                     let addEntries = entries!.filter({ $0.deleted != true })
                     cleanEntries.append(contentsOf: addEntries)
                     
-                    self.entries = cleanEntries
+                    self.set(entries: cleanEntries, refreshCancellables: true)
                 } else {
-                    self.entries = entries!
+                    self.set(entries: entries!, refreshCancellables: true)
                 }
+                
+                NotificationCenter.default.post(name: .TimeEntriesRefresh, object: self)
             }
             
             completion?(self.entries, nil)
@@ -413,7 +452,7 @@ public class Store {
                 return
             }
             
-            self.entries.append(newEntry!)
+            self.add(entry: newEntry!)
             NotificationCenter.default.post(name: .TimeEntryRecorded, object: newEntry!)
             completion?(true)
         }
@@ -442,15 +481,17 @@ public class Store {
             }
             
             if action == .start {
-                self.entries.append(entry!)
+                self.add(entry: entry!)
                 NotificationCenter.default.post(name: .TimeEntryStarted, object: entry!)
             } else {
                 if let updatedEntry = self.entries.first(where: { $0.id == entry!.id }) {
                     updatedEntry.endedAt = entry!.endedAt
+                    updatedEntry.endedAtTimezone = entry!.endedAtTimezone
                     self.archive(data: self.entries)
+                    self.sortEntries()
                     NotificationCenter.default.post(name: .TimeEntryStopped, object: updatedEntry)
                 } else {
-                    self.entries.append(entry!)
+                    self.add(entry: entry!)
                     NotificationCenter.default.post(name: .TimeEntryStopped, object: entry!)
                 }
             }
@@ -469,7 +510,13 @@ public class Store {
     // MARK: Entry Interface
     
     public func stop(entry: Entry, completion: ((Bool) -> Void)?) {
-        self.update(entry: entry, setEndedAt: Date(), completion: completion)
+        let timezone = TimeZone.autoupdatingCurrent.identifier
+        self.update(
+            entry: entry,
+            setEndedAt: Date(),
+            setEndedAtTimezone: timezone,
+            completion: completion
+        )
     }
     
     public func update(entry: Entry, setCategory category: Category? = nil, setType type: EntryType? = nil, setStartedAt startedAt: Date? = nil, setStartedAtTimezone startedAtTimezone: String? = nil, setEndedAt endedAt: Date? = nil, setEndedAtTimezone endedAtTimezone: String? = nil, completion: ((Bool) -> Void)?) {
@@ -495,6 +542,7 @@ public class Store {
             entry.endedAtTimezone = updatedEntry!.endedAtTimezone
             
             self.archive(data: self.entries)
+            self.sortEntries()
             
             if wasStopAction {
                 NotificationCenter.default.post(name: .TimeEntryStopped, object: entry)
@@ -513,14 +561,56 @@ public class Store {
                 completion?(false)
                 return
             }
-            
 
-            if let index = self.entries.firstIndex(where: { $0.id == entry.id }) {
-                self.entries.remove(at: index)
-            }
+            self.delete(entry: entry)
             NotificationCenter.default.post(name: .TimeEntryDeleted, object: entry)
             completion?(true)
         }
+    }
+    
+    // MARK: Internal Entry Tracking
+    
+    private func add(entry: Entry) {
+        var expandedEntries = self.entries
+        expandedEntries.append(entry)
+        
+        let cancellable = entry.objectWillChange.sink { self.objectWillChange.send() }
+        self.entryCancellables.append(cancellable)
+        
+        self.set(entries: expandedEntries, refreshCancellables: false)
+    }
+    
+    private func delete(entry: Entry) {
+        if let index = self.entries.firstIndex(where: { $0.id == entry.id }) {
+            self.entries.remove(at: index)
+        }
+    }
+    
+    private func set(entries: [Entry], refreshCancellables: Bool) {
+        let sortedEntries = entries.sorted { (a, b) -> Bool in
+            let diff = a.startedAt.distance(to: b.startedAt)
+            // Resolves conflicts for rapid testing
+            guard abs(diff) > 1 else {
+                return a.id > b.id
+            }
+            
+            return diff < 0 // Negative means greater. second is behind first
+        }
+        
+        if refreshCancellables {
+            self.entryCancellables.removeAll()
+            sortedEntries.forEach { (entry) in
+                let c = entry.objectWillChange.sink { self.objectWillChange.send() }
+                self.entryCancellables.append(c)
+            }
+        }
+        
+        self.entries = sortedEntries
+    }
+    
+    private func sortEntries() {
+        // (Above) sorting occurs on every set. Trigger self set to re-sort
+        self.set(entries: self.entries, refreshCancellables: false)
     }
     
     // MARK: - Import Interface
@@ -604,8 +694,8 @@ public class Store {
         trees.forEach { (tree) in
             treeMapping[tree.node.accountID] = tree
         }
-        
-        self._categoryTrees = treeMapping
+
+        self.set(categoryTrees: treeMapping)
         self.staleTrees = false
     }
     
@@ -651,14 +741,14 @@ public class Store {
         _ = self.archive.removeAllData()
     }
     
-    private func restoreDataFromDisk() {        
+    private func restoreDataFromDisk() {
         if let categories: [Category] = self.archive.retrieveData() {
             self.categories = categories
             self.staleTrees = true
         }
         
         if let entries: [Entry] = self.archive.retrieveData() {
-            self.entries = entries
+            self.set(entries: entries, refreshCancellables: true)
             self._hasFetchedEntries = true
         }
         
@@ -667,11 +757,15 @@ public class Store {
         } else {
             self.staleAccountIDs = true
         }
+        
+        self.regenerateTrees()
     }
     
     private func archive<T>(data: T) where T : Codable {
         guard self.hasInitialized else { return }
-        _ = self.archive.record(data)
+        self.archiveQueue.async {
+            _ = self.archive.record(data)
+        }
     }
     
     // MARK: - Remote Syncing

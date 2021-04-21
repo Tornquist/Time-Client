@@ -37,6 +37,11 @@ public class FileImporter {
     public var entries: Int? {
         return self.categoryTree?.count(events: true, ranges: true)
     }
+    public var rootCategories: [String]? {
+        return self.categoryTree?.children.map({ (rootCategory) -> String in
+            return rootCategory.name
+        }).sorted()
+    }
     
     // Internal
     var _columns: [String]? = nil
@@ -434,11 +439,16 @@ extension FileImporter {
         public var complete: Bool
         public var success: Bool
                 
-        public struct Status: Codable {
+        public struct Status {
             var imported: Int
             var expected: Int
+            
+            public init(imported: Int, expected: Int) {
+                self.imported = imported
+                self.expected = expected
+            }
         }
-        
+
         enum CodingKeys: String, CodingKey
         {
             case id
@@ -479,5 +489,20 @@ extension FileImporter {
             
             self.init(id: id, createdAt: createdAt, updatedAt: updatedAt, categories: categories, entries: entries, complete: complete, success: success)
         }
+    }
+}
+
+extension FileImporter.Request.Status: Codable {
+    enum CodingKeys: String, CodingKey
+    {
+        case imported = "imported"
+        case expected = "expected"
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        
+        self.imported = try values.decode(Int.self, forKey: .imported)
+        self.expected = try values.decode(Int.self, forKey: .expected)
     }
 }

@@ -811,8 +811,8 @@ class Test_Store: XCTestCase {
         }
         waitForExpectations(timeout: 5, handler: nil)
         
-        // Grab last entry --> Entries are not sorted
-        let newEntry = self.store.entries[self.store.entries.count - 1]
+        // Grab first entry --> Entries are sorted in reverse order
+        let newEntry = self.store.entries[0]
         
         let changeTypeExpectation = self.expectation(description: "toggleType")
         self.store.update(entry: newEntry, setType: .range) { (success) in
@@ -830,7 +830,7 @@ class Test_Store: XCTestCase {
             self.store.accountIDs.count == 2,
             let rootA = self.store.categoryTrees[self.store.accountIDs.sorted()[0]],
             rootA.children.count > 0,
-            let entry = self.store.entries.last
+            let entry = self.store.entries.first // Grab newest from previous test
             else {
                 XCTFail("Missing setup info")
                 return
@@ -878,8 +878,8 @@ class Test_Store: XCTestCase {
         }
         waitForExpectations(timeout: 5, handler: nil)
        
-        // Grab last entry --> Entries are not sorted
-        let newEntry = self.store.entries[self.store.entries.count - 1]
+        // Grab fist entry --> Entries are sorted in descending order
+        let newEntry = self.store.entries[0]
         
         // Range is open
         XCTAssertTrue(self.store.isRangeOpen(for: category) ?? false)

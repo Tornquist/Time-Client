@@ -8,14 +8,14 @@
 
 import Foundation
 
-public class Entry: Codable {
-    public var id: Int
-    public var type: EntryType
-    public var categoryID: Int
-    public var startedAt: Date
-    public var startedAtTimezone: String?
-    public var endedAt: Date?
-    public var endedAtTimezone: String?
+public class Entry: ObservableObject, Codable, Identifiable {
+    @Published public var id: Int
+    @Published public var type: EntryType
+    @Published public var categoryID: Int
+    @Published public var startedAt: Date
+    @Published public var startedAtTimezone: String?
+    @Published public var endedAt: Date?
+    @Published public var endedAtTimezone: String?
     internal var deleted: Bool?
     
     enum CodingKeys: String, CodingKey

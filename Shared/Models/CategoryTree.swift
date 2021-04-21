@@ -7,15 +7,28 @@
 //
 
 import Foundation
+import Combine
 
-public class CategoryTree: Equatable {
+public class CategoryTree: ObservableObject, Equatable, Identifiable {
     
     // MARK: - Tree Properties
     
     public var id: Int { return self.node.id }
-    public var node: Category
-    public var children: [CategoryTree]
-    public var parent: CategoryTree?
+    @Published public var node: Category
+    @Published public var children: [CategoryTree] {
+        didSet {
+            self.children.forEach { (child) in
+                child.parent?.cancellables.removeValue(forKey: child.id)
+                
+                child.parent = self
+                let cancellable = child.objectWillChange.sink { self.objectWillChange.send() }
+                self.cancellables[child.id] = cancellable
+            }
+        }
+    }
+    @Published public var parent: CategoryTree?
+
+    var cancellables: [Int: AnyCancellable] = [:]
     
     public var depth: Int {
         return self.parent == nil ? 0 : self.parent!.depth + 1
@@ -28,8 +41,15 @@ public class CategoryTree: Equatable {
     init(_ node: Category, _ children: [CategoryTree] = []) {
         self.node = node
         self.children = children
-        self.children.forEach({ $0.parent = self })
+        self.children.forEach({ (child) in
+            child.parent = self
+            let cancellable = child.objectWillChange.sink { self.objectWillChange.send() }
+            self.cancellables[child.id] = cancellable
+        })
         self.parent = nil
+        
+        // Listen to actual node changes
+        self.cancellables[-1] = node.objectWillChange.sink { self.objectWillChange.send() }
     }
     
     // MARK: - Tree Modification and Query
@@ -135,13 +155,29 @@ public class CategoryTree: Equatable {
     
     func insert(item: Category) {
         let newTree = CategoryTree(item)
-        newTree.parent = self
-        self.children.append(newTree)
+        
+        self.insert(tree: newTree)
     }
     
-    func listCategories() -> [Category] {
+    func insert(tree: CategoryTree) {
+        tree.parent?.cancellables.removeValue(forKey: tree.id)
+        
+        tree.parent = self
+        self.children.append(tree)
+        
+        let cancellable = tree.objectWillChange.sink { self.objectWillChange.send() }
+        self.cancellables[tree.id] = cancellable
+    }
+    
+    public func listCategories() -> [Category] {
         var list = [self.node]
         self.children.forEach({ list.append(contentsOf: $0.listCategories()) })
+        return list
+    }
+    
+    public func listCategoryTrees() -> [CategoryTree] {
+        var list = [self]
+        self.children.forEach({ list.append(contentsOf: $0.listCategoryTrees()) })
         return list
     }
     
