@@ -53,8 +53,7 @@ struct AddCategory_Previews: PreviewProvider {
         let categoryBinding = Binding<TimeSDK.Category?> { () -> TimeSDK.Category? in
             return category
         } set: { (_) in }
-        
-        
+
         return AddCategory(category: categoryBinding, show: $show)
             .environmentObject(warehouse)
             .environment(\.colorScheme, .dark)

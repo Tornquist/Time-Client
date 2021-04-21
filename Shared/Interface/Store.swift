@@ -361,8 +361,7 @@ public class Store: ObservableObject {
                 self.accountTreeCancellables.append(c)
             }
         }
-        
-        print("Set account trees")
+
         self.accountTrees = sortedAccountTrees
     }
 
@@ -695,8 +694,7 @@ public class Store: ObservableObject {
         trees.forEach { (tree) in
             treeMapping[tree.node.accountID] = tree
         }
-        
-        print("regenerateTrees")
+
         self.set(categoryTrees: treeMapping)
         self.staleTrees = false
     }
