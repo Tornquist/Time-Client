@@ -28,15 +28,10 @@ struct CategoryMenu: View {
     var body: some View {
         Menu {
             Menu {
-                Button(action: {
-                    self.selected?(category, .addChild)
+                Button(role: .destructive, action: {
+                    self.selected?(category, .delete)
                 }, label: {
-                    Label("Add Child", systemImage: "plus")
-                })
-                Button(action: {
-                    self.selected?(category, .move)
-                }, label: {
-                    Label("Move", systemImage: "arrow.up.and.down")
+                    Label("Delete", systemImage: "trash")
                 })
                 Button(action: {
                     self.selected?(category, .rename)
@@ -44,22 +39,27 @@ struct CategoryMenu: View {
                     Label("Rename", systemImage: "text.cursor")
                 })
                 Button(action: {
-                    self.selected?(category, .delete)
+                    self.selected?(category, .move)
                 }, label: {
-                    Label("Delete", systemImage: "trash")
+                    Label("Move", systemImage: "arrow.up.and.down")
+                })
+                Button(action: {
+                    self.selected?(category, .addChild)
+                }, label: {
+                    Label("Add Child", systemImage: "plus")
                 })
             } label: {
                 Label("Modify", systemImage: "gear")
             }
             Button(action: {
-                self.selected?(category, .toggleState)
-            }, label: {
-                Label(isRunning ? "Stop" : "Start", systemImage: isRunning ? "pause.circle" : "play.circle")
-            })
-            Button(action: {
                 self.selected?(category, .recordEvent)
             }, label: {
                 Label("Record", systemImage: "smallcircle.fill.circle")
+            })
+            Button(action: {
+                self.selected?(category, .toggleState)
+            }, label: {
+                Label(isRunning ? "Stop" : "Start", systemImage: isRunning ? "pause.circle" : "play.circle")
             })
         } label: {
             Image(systemName: "ellipsis")
