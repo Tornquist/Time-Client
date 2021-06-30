@@ -43,7 +43,7 @@ struct Entries: View {
                 }
             }
         )
-        
+                
         return List(self.warehouse.entries) { (entry) in
             let active = entry.endedAt == nil && entry.type == .range
             TitleSubtitleActionView(
@@ -67,6 +67,7 @@ struct Entries: View {
                 self.selectedEntry = entry
             }
         }
+        .listStyle(.inset)
         .sheet(
             isPresented: showEdit, content: {
                 EditEntry(
