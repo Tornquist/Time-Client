@@ -770,7 +770,7 @@ public class Store: ObservableObject {
     
     // MARK: - Remote Syncing
     
-    public func fetchRemoteChanges(completion: (() -> ())? = nil) {
+    public func fetchRemoteChanges() async {
         guard self.api.token != nil else { return }
 
         // Will only update data previously synced. Full fetch must be handled
@@ -792,34 +792,30 @@ public class Store: ObservableObject {
             updateParams["categories"] = DateHelper.isoStringFrom(date: lastSyncCategories!, includeMilliseconds: true)
         }
         
-        // Sync using update params
-        var entriesDone: Bool = false
-        var categoriesDone: Bool = false
-        
-        let callComplete: () -> () = {
-            guard entriesDone && categoriesDone else { return }
-            completion?()
-        }
-        
-        if (shouldUpdateEntries) {
+        async let entriesDone: Void = withCheckedContinuation { continuation in
+            guard shouldUpdateEntries else {
+                continuation.resume()
+                return
+            }
+            
             self.getEntries(.fetchChanges) { (_, _) in
-                entriesDone = true
-                callComplete()
+                continuation.resume()
             }
-        } else {
-            entriesDone = true
-            callComplete()
         }
         
-        if (shouldUpdateCategories) {
-            self.getCategories(.fetchChanges) { (_, _) in
-                categoriesDone = true
-                callComplete()
+        async let categoriesDone: Void = withCheckedContinuation { (continuation) in
+            guard shouldUpdateCategories else {
+                continuation.resume()
+                return
             }
-        } else {
-            categoriesDone = true
-            callComplete()
+            
+            self.getCategories(.fetchChanges) { (_, _) in
+                continuation.resume()
+            }
         }
+        
+        await entriesDone
+        await categoriesDone
     }
     
     private func getEntriesSync() -> Date? {

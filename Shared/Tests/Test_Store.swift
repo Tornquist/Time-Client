@@ -983,13 +983,9 @@ class Test_Store: XCTestCase {
     
     // MARK: - Shared Operations
     
-    func test_26_fetchingRemoteChanges() {
+    func test_26_fetchingRemoteChanges() async {
         // Setup test
-        let forceCleanSlate = self.expectation(description: "forceCleanSlate")
-        self.store.fetchRemoteChanges() {
-            forceCleanSlate.fulfill()
-        }
-        waitForExpectations(timeout: 5, handler: nil)
+        await self.store.fetchRemoteChanges()
         
         _ = XCTWaiter.wait(for: [XCTestExpectation(description: "Avoid timestamp collision")], timeout: 1.0)
         
@@ -1003,32 +999,29 @@ class Test_Store: XCTestCase {
             return
         }
         
-        let createEntry = self.expectation(description: "createEntry")
-        let deleteEntry = self.expectation(description: "deleteEntry")
-     
-        self.api.recordEvent(for: startingCategories[0]) { (entry, error) in
-            XCTAssert(entry != nil)
-            XCTAssert(error == nil)
-            if entry != nil {
-                endingEntries.append(entry!.id)
+        let _: Void = await withCheckedContinuation { continuation in
+            self.api.recordEvent(for: startingCategories[0]) { (entry, error) in
+                XCTAssert(entry != nil)
+                XCTAssert(error == nil)
+                if entry != nil {
+                    endingEntries.append(entry!.id)
+                }
+                continuation.resume()
             }
-            createEntry.fulfill()
         }
         
-        let deleteID = startingEntries[0]
-        self.api.deleteEntry(withID: deleteID) { (error) in
-            XCTAssert(error == nil)
-            endingEntries = endingEntries.filter({ $0 != deleteID})
-            deleteEntry.fulfill()
+        let _: Void = await withCheckedContinuation { continuation in
+            let deleteID = startingEntries[0]
+            self.api.deleteEntry(withID: deleteID) { (error) in
+                XCTAssert(error == nil)
+                endingEntries = endingEntries.filter({ $0 != deleteID})
+                
+                continuation.resume()
+            }
         }
-        waitForExpectations(timeout: 5, handler: nil)
         
         // Fetch updates
-        let forceUpdate = self.expectation(description: "forceUpdate")
-        self.store.fetchRemoteChanges() {
-            forceUpdate.fulfill()
-        }
-        waitForExpectations(timeout: 5, handler: nil)
+        await self.store.fetchRemoteChanges()
         
         // Verify Update
         endingEntries = endingEntries.sorted()
