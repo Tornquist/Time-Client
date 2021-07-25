@@ -669,19 +669,22 @@ public class Store: ObservableObject {
             completion?(requests, nil)
         }
     }
-
-    public func importData(from importer: FileImporter, completion: ((FileImporter.Request?, Error?) -> ())? = nil) {
-        self.api.importData(from: importer) { (request, error) in
-            if request != nil && error == nil {
-                self.importRequests.insert(request!, at: 0)
+    
+    public func importData(from importer: FileImporter) async throws -> FileImporter.Request {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.api.importData(from: importer) { request, error in
+                guard let request = request, error == nil else {
+                    continuation.resume(throwing: error ?? TimeError.unableToDecodeResponse)
+                    return
+                }
+                
+                self.importRequests.insert(request, at: 0)
                 // Do not set _hasFetchedImportRequests.
                 //   -> If already true, it is still true.
                 //   -> If it was false, there can still be items missing that need fetched.
-                
                 NotificationCenter.default.post(name: .TimeImportRequestCreated, object: self)
+                continuation.resume(returning: request)
             }
-            
-            completion?(request, nil)
         }
     }
     
@@ -814,8 +817,7 @@ public class Store: ObservableObject {
             }
         }
         
-        await entriesDone
-        await categoriesDone
+        _ = await (entriesDone, categoriesDone)
     }
     
     private func getEntriesSync() -> Date? {

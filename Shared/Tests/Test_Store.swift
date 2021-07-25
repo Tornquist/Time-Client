@@ -1083,7 +1083,7 @@ class Test_Store: XCTestCase {
         waitForExpectations(timeout: 5, handler: nil)
     }
 
-    func test_29_importingANewRequest() {
+    func test_29_importingANewRequest() async {
         // Setup
         let inputFileName = "import-example.csv"
         let fileParts = inputFileName.split(separator: ".").map({ String($0) })
@@ -1100,17 +1100,15 @@ class Test_Store: XCTestCase {
         
         // Create request from importer
         // --> Expect new import request to send notification
-        _ = self.expectation(forNotification: .TimeImportRequestCreated, object: nil, handler: nil)
+        _ = self.expectation(forNotification: .TimeImportRequestCreated, object: self.store, handler: nil)
         
-        let submitImportRequest = self.expectation(description: "submitImportRequest")
-        self.store.importData(from: importer) { (newRequest, error) in
-            XCTAssertNotNil(newRequest)
-            XCTAssertNil(error)
-            
-            submitImportRequest.fulfill()
+        do {
+            _ = try await self.store.importData(from: importer)
+        } catch {
+            XCTFail("Should not have thrown")
         }
         
-        waitForExpectations(timeout: 5, handler: nil)
+        await waitForExpectations(timeout: 5, handler: nil)
     }
     
     func test_30_softFetchReturnsImportRequest() {
