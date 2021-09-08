@@ -1,0 +1,53 @@
+name: CI
+on: [push]
+jobs:
+  test:
+    runs-on: macos-11
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_12.5.app/Contents/Developer
+      DB_USER: root
+      DB_NAME: timetest
+    strategy:
+      matrix:
+        run-config:
+          - { scheme: 'Shared-Tests-macOS', destination: 'platform=macOS,arch=x86_64' }
+          - { scheme: 'Shared-Tests-iOS', destination: 'platform=iOS Simulator,name=iPhone 11 Pro,OS=14.5' }
+    steps:
+    - name: Checkout Project
+      uses: actions/checkout@v2
+
+    - name: Available Xcode versions
+      run: ls -n /Applications/ | grep Xcode*
+    - name: Show macOS version
+      run: sw_vers
+    - name: Show Xcode version
+      run: /usr/bin/xcodebuild -version
+
+    - name: Configure MySQL
+      run: |
+        brew install mysql@5.7
+        /usr/local/opt/mysql@5.7/bin/mysql.server start
+        brew link mysql@5.7 --force
+
+    - name: Install API
+      run: |
+        git clone --depth 1 git://github.com/Tornquist/Time-API.git api
+        cp -a api/. Time-API/
+        rm -rf api
+        (cd Time-API && npm install)
+        (cd Time-API && scripts/setup-travis.sh)
+        (cd Time-API && npm start &) && sleep 2
+
+    - name: Test Client
+      run: |
+        set -o pipefail &&
+        xcodebuild test \
+          -workspace Time.xcworkspace \
+          -scheme "${{ matrix.run-config.scheme }}" \
+          -destination "${{ matrix.run-config.destination }}" \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          | xcpretty
+
+    - name: Report Coverage
+      run: bash <(curl -s https://codecov.io/bash)

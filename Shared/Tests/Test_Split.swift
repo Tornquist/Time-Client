@@ -409,15 +409,16 @@ class Test_Split: XCTestCase {
             endedAt: nil,
             endedAtTimezone: nil
         )
-        
+
         let splits = Split.identify(for: entry)
 
         guard splits.count == 2 else {
             XCTFail("Unexpected number of splits generated")
             return
         }
-        
-        let firstDayDuration = TimeInterval((60 - 25) + (60 - 31 - 1) * 60 + (24 - 18 - 1) * 60 * 60)
+
+        // let firstDayDuration = TimeInterval((60 - 25) + (60 - 31 - 1) * 60 + (24 - 18 - 1) * 60 * 60)
+        let firstDayDuration = TimeInterval(19715)
         let firstDay = splits[0]
         XCTAssertEqual(firstDay.year, components.year ?? 0)
         XCTAssertEqual(firstDay.month, components.month ?? 0) // Not stable on April 1st, 2021 in CDT
