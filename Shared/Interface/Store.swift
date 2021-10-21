@@ -615,76 +615,81 @@ public class Store: ObservableObject {
     
     // MARK: - Import Interface
     
-    public func getImportRequests(_ network: NetworkMode = .asNeeded, completion: (([FileImporter.Request]?, Error?) -> ())? = nil) {
+    public func getImportRequests(_ network: NetworkMode = .asNeeded) async throws -> [FileImporter.Request] {
         guard !self._hasFetchedImportRequests || network != .asNeeded else {
-            completion?(self.importRequests, nil)
-            return
+            return self.importRequests
         }
         
-        self.api.getImportRequests { (requests, error) in
-            guard requests != nil && error == nil else {
-                completion?(nil, error)
-                return
+        let apiRequests: [FileImporter.Request] = try await withCheckedThrowingContinuation { continuation in
+            self.api.getImportRequests { (requests, error) in
+                guard error == nil, let requests = requests else {
+                    continuation.resume(throwing: error ?? TimeError.unableToDecodeResponse)
+                    return
+                }
+                continuation.resume(returning: requests)
             }
-            
-            if self.importRequests.count != 0 {
-                let requestCompleted = requests!.map({ (newRequest) in
-                    let newID = newRequest.id
-                    let oldRequest = self.importRequests.first(where: { $0.id == newID })
-                    
-                    let newAlreadyComplete = oldRequest == nil && newRequest.complete
-                    let newRecentlyComplete = oldRequest != nil && !oldRequest!.complete && newRequest.complete
-                    
-                    return newAlreadyComplete || newRecentlyComplete
-                }).reduce(false, { $0 || $1 })
+        }
+        
+        if self.importRequests.count != 0 {
+            let requestCompleted = apiRequests.map({ (newRequest) in
+                let newID = newRequest.id
+                let oldRequest = self.importRequests.first(where: { $0.id == newID })
+                
+                let newAlreadyComplete = oldRequest == nil && newRequest.complete
+                let newRecentlyComplete = oldRequest != nil && !oldRequest!.complete && newRequest.complete
+                
+                return newAlreadyComplete || newRecentlyComplete
+            }).reduce(false, { $0 || $1 })
 
-                if requestCompleted {
-                    NotificationCenter.default.post(name: .TimeImportRequestCompleted, object: self)
-                    
+            if requestCompleted {
+                NotificationCenter.default.post(name: .TimeImportRequestCompleted, object: self)
+
+                Task {
                     // Hard refresh data to display new entries
-                    var entriesUpdateDone = false
-                    var categoriesUpdateDone = false
- 
-                    let complete = {
-                        guard entriesUpdateDone && categoriesUpdateDone else { return }
-                        NotificationCenter.default.post(name: .TimeBackgroundStoreUpdate, object: self)
+                    async let entriesUpdateDone: Void = withCheckedContinuation { continuation in
+                        self.getEntries(.fetchChanges) { (_, _) in
+                            continuation.resume()
+                        }
                     }
                     
-                    self.getEntries(.fetchChanges) { (_, _) in
-                        entriesUpdateDone = true
-                        complete()
+                    async let categoriesUpdateDone: Void = withCheckedContinuation { continuation in
+                        self.getCategories(.fetchChanges) { (_, _) in
+                            continuation.resume()
+                        }
                     }
-                    self.getCategories(.fetchChanges) { (_, _) in
-                        categoriesUpdateDone = true
-                        complete()
-                    }
+                    
+                    _ = await (entriesUpdateDone, categoriesUpdateDone)
+                    NotificationCenter.default.post(name: .TimeBackgroundStoreUpdate, object: self)
                 }
             }
-            
-            self.importRequests = requests!.sorted(by: { (a, b) -> Bool in
-                return a.createdAt.compare(b.createdAt) == .orderedDescending
-            })
-            self._hasFetchedImportRequests = true
-            
-            completion?(requests, nil)
         }
+            
+        self.importRequests = apiRequests.sorted(by: { (a, b) -> Bool in
+            return a.createdAt.compare(b.createdAt) == .orderedDescending
+        })
+        self._hasFetchedImportRequests = true
+        
+        return apiRequests
     }
-
-    public func importData(from importer: FileImporter, completion: ((FileImporter.Request?, Error?) -> ())? = nil) {
-        self.api.importData(from: importer) { (request, error) in
-            if request != nil && error == nil {
-                self.importRequests.insert(request!, at: 0)
+    
+    public func importData(from importer: FileImporter) async throws -> FileImporter.Request {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.api.importData(from: importer) { request, error in
+                guard let request = request, error == nil else {
+                    continuation.resume(throwing: error ?? TimeError.unableToDecodeResponse)
+                    return
+                }
+                
+                self.importRequests.insert(request, at: 0)
                 // Do not set _hasFetchedImportRequests.
                 //   -> If already true, it is still true.
                 //   -> If it was false, there can still be items missing that need fetched.
-                
                 NotificationCenter.default.post(name: .TimeImportRequestCreated, object: self)
+                continuation.resume(returning: request)
             }
-            
-            completion?(request, nil)
         }
     }
-    
+
     // MARK: - Support/Lifecycle Methods
     
     private func regenerateTrees() {
@@ -770,7 +775,7 @@ public class Store: ObservableObject {
     
     // MARK: - Remote Syncing
     
-    public func fetchRemoteChanges(completion: (() -> ())? = nil) {
+    public func fetchRemoteChanges() async {
         guard self.api.token != nil else { return }
 
         // Will only update data previously synced. Full fetch must be handled
@@ -792,34 +797,29 @@ public class Store: ObservableObject {
             updateParams["categories"] = DateHelper.isoStringFrom(date: lastSyncCategories!, includeMilliseconds: true)
         }
         
-        // Sync using update params
-        var entriesDone: Bool = false
-        var categoriesDone: Bool = false
-        
-        let callComplete: () -> () = {
-            guard entriesDone && categoriesDone else { return }
-            completion?()
-        }
-        
-        if (shouldUpdateEntries) {
+        async let entriesDone: Void = withCheckedContinuation { continuation in
+            guard shouldUpdateEntries else {
+                continuation.resume()
+                return
+            }
+            
             self.getEntries(.fetchChanges) { (_, _) in
-                entriesDone = true
-                callComplete()
+                continuation.resume()
             }
-        } else {
-            entriesDone = true
-            callComplete()
         }
         
-        if (shouldUpdateCategories) {
-            self.getCategories(.fetchChanges) { (_, _) in
-                categoriesDone = true
-                callComplete()
+        async let categoriesDone: Void = withCheckedContinuation { (continuation) in
+            guard shouldUpdateCategories else {
+                continuation.resume()
+                return
             }
-        } else {
-            categoriesDone = true
-            callComplete()
+            
+            self.getCategories(.fetchChanges) { (_, _) in
+                continuation.resume()
+            }
         }
+        
+        _ = await (entriesDone, categoriesDone)
     }
     
     private func getEntriesSync() -> Date? {

@@ -983,13 +983,9 @@ class Test_Store: XCTestCase {
     
     // MARK: - Shared Operations
     
-    func test_26_fetchingRemoteChanges() {
+    func test_26_fetchingRemoteChanges() async {
         // Setup test
-        let forceCleanSlate = self.expectation(description: "forceCleanSlate")
-        self.store.fetchRemoteChanges() {
-            forceCleanSlate.fulfill()
-        }
-        waitForExpectations(timeout: 5, handler: nil)
+        await self.store.fetchRemoteChanges()
         
         _ = XCTWaiter.wait(for: [XCTestExpectation(description: "Avoid timestamp collision")], timeout: 1.0)
         
@@ -1003,32 +999,29 @@ class Test_Store: XCTestCase {
             return
         }
         
-        let createEntry = self.expectation(description: "createEntry")
-        let deleteEntry = self.expectation(description: "deleteEntry")
-     
-        self.api.recordEvent(for: startingCategories[0]) { (entry, error) in
-            XCTAssert(entry != nil)
-            XCTAssert(error == nil)
-            if entry != nil {
-                endingEntries.append(entry!.id)
+        let _: Void = await withCheckedContinuation { continuation in
+            self.api.recordEvent(for: startingCategories[0]) { (entry, error) in
+                XCTAssert(entry != nil)
+                XCTAssert(error == nil)
+                if entry != nil {
+                    endingEntries.append(entry!.id)
+                }
+                continuation.resume()
             }
-            createEntry.fulfill()
         }
         
-        let deleteID = startingEntries[0]
-        self.api.deleteEntry(withID: deleteID) { (error) in
-            XCTAssert(error == nil)
-            endingEntries = endingEntries.filter({ $0 != deleteID})
-            deleteEntry.fulfill()
+        let _: Void = await withCheckedContinuation { continuation in
+            let deleteID = startingEntries[0]
+            self.api.deleteEntry(withID: deleteID) { (error) in
+                XCTAssert(error == nil)
+                endingEntries = endingEntries.filter({ $0 != deleteID})
+                
+                continuation.resume()
+            }
         }
-        waitForExpectations(timeout: 5, handler: nil)
         
         // Fetch updates
-        let forceUpdate = self.expectation(description: "forceUpdate")
-        self.store.fetchRemoteChanges() {
-            forceUpdate.fulfill()
-        }
-        waitForExpectations(timeout: 5, handler: nil)
+        await self.store.fetchRemoteChanges()
         
         // Verify Update
         endingEntries = endingEntries.sorted()
@@ -1056,41 +1049,26 @@ class Test_Store: XCTestCase {
     
     // MARK: - Import Requests
     
-    func test_28_fetchingImportRequests() {
+    func test_28_fetchingImportRequests() async throws {
         // With network on 1st try
-        let importFetch = self.expectation(description: "importFetch")
         var startTime = CFAbsoluteTimeGetCurrent()
         var timeElapsed: CFAbsoluteTime! = nil
-        self.store.getImportRequests() { (requests, error) in
-            XCTAssertNotNil(requests)
-            XCTAssertEqual(requests?.count ?? -1, 0)
-            XCTAssertNil(error)
+        var requests = try await self.store.getImportRequests()
             
-            timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
-            XCTAssertGreaterThan(timeElapsed, 0.0001)
-            
-            importFetch.fulfill()
-        }
-        waitForExpectations(timeout: 5, handler: nil)
+        timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+        XCTAssertGreaterThan(timeElapsed, 0.0001)
         
         // Without network on 2nd try
-        let importReFetch = self.expectation(description: "importFetch")
         startTime = CFAbsoluteTimeGetCurrent()
         timeElapsed = nil
-        self.store.getImportRequests() { (requests, error) in
-            XCTAssertNotNil(requests)
-            XCTAssertEqual(requests?.count ?? -1, 0)
-            XCTAssertNil(error)
+        requests = try await self.store.getImportRequests()
+        XCTAssertEqual(requests.count, 0)
             
-            timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
-            XCTAssertEqual(timeElapsed, 0, accuracy: 0.0001)
-            
-            importReFetch.fulfill()
-        }
-        waitForExpectations(timeout: 5, handler: nil)
+        timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+        XCTAssertEqual(timeElapsed, 0, accuracy: 0.0001)
     }
 
-    func test_29_importingANewRequest() {
+    func test_29_importingANewRequest() async throws {
         // Setup
         let inputFileName = "import-example.csv"
         let fileParts = inputFileName.split(separator: ".").map({ String($0) })
@@ -1107,50 +1085,29 @@ class Test_Store: XCTestCase {
         
         // Create request from importer
         // --> Expect new import request to send notification
-        _ = self.expectation(forNotification: .TimeImportRequestCreated, object: nil, handler: nil)
-        
-        let submitImportRequest = self.expectation(description: "submitImportRequest")
-        self.store.importData(from: importer) { (newRequest, error) in
-            XCTAssertNotNil(newRequest)
-            XCTAssertNil(error)
-            
-            submitImportRequest.fulfill()
-        }
-        
-        waitForExpectations(timeout: 5, handler: nil)
+        _ = self.expectation(forNotification: .TimeImportRequestCreated, object: self.store, handler: nil)
+        _ = try await self.store.importData(from: importer)
+        await waitForExpectations(timeout: 5, handler: nil)
     }
     
-    func test_30_softFetchReturnsImportRequest() {
-        let importFetch = self.expectation(description: "importFetch")
-
-        self.store.getImportRequests(.asNeeded) { (requests, error) in
-            XCTAssertNotNil(requests)
-            XCTAssertEqual(requests?.count ?? 0, 1)
-            XCTAssertNil(error)
-            
-            importFetch.fulfill()
-        }
-        waitForExpectations(timeout: 5, handler: nil)
+    func test_30_softFetchReturnsImportRequest() async throws {
+        let requests = try await self.store.getImportRequests(.asNeeded)
+        XCTAssertEqual(requests.count, 1)
     }
     
-    func test_31_hardFetchReturnsUpdatedImportRequestAndTriggersNotifications() {
+    func test_31_hardFetchReturnsUpdatedImportRequestAndTriggersNotifications() async throws {
         sleep(1) // Allow server to complete import
         
         // Verify update triggers tracked completion
-        let importFetch = self.expectation(description: "importFetch")
-        _ = self.expectation(forNotification: .TimeImportRequestCompleted, object: nil, handler: nil)
-        self.store.getImportRequests(.fetchChanges) { (requests, error) in
-            XCTAssertNotNil(requests)
-            XCTAssertEqual(requests?.count ?? 0, 1)
-            XCTAssertNil(error)
-            
-            importFetch.fulfill()
-        }
-        waitForExpectations(timeout: 5, handler: nil)
+        _ = self.expectation(forNotification: .TimeImportRequestCompleted, object: self.store, handler: nil)
+        let requests = try await self.store.getImportRequests(.fetchChanges)
+        await waitForExpectations(timeout: 5, handler: nil)
+        
+        XCTAssertEqual(requests.count, 1)
         
         // Verify after import completion is received a background update is triggered
-        _ = self.expectation(forNotification: .TimeBackgroundStoreUpdate, object: nil, handler: nil)
-        waitForExpectations(timeout: 5, handler: nil)
+        _ = self.expectation(forNotification: .TimeBackgroundStoreUpdate, object: self.store, handler: nil)
+        await waitForExpectations(timeout: 5, handler: nil)
     }
     
     // MARK: - Get Entries (Date Manipulations)

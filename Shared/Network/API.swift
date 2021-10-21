@@ -385,14 +385,8 @@ class API: APIQueueDelegate {
                 completion(nil, TimeError.unableToDecodeResponse)
             }
         }
-        
-        if Thread.isMainThread {
-            performCompletion()
-        } else {
-            DispatchQueue.main.async {
-                performCompletion()
-            }
-        }
+
+        performCompletion()
     }
     
     // MARK: - URL Helper
