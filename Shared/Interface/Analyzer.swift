@@ -107,6 +107,20 @@ public class Analyzer {
         // 2. Perform query
         return self.evaluate(from: from, to: to, in: selectedCalendar, groupBy: groupBy, perform: operations)
     }
+    
+    public func evaluateAll(
+        in calendar: Calendar? = nil,
+        gropuBy: TimePeriod,
+        perform operations: [Operation]
+    ) -> [String: [Result]] {
+        // 1. Identify query range
+        let selectedCalendar = calendar ?? Calendar.current
+        let from = self.store?.entries.last?.startedAt ?? Date()
+        let to: Date? = nil // now
+        
+        // 2. Perfor query
+        return self.evaluate(from: from, to: to, in: selectedCalendar, groupBy: gropuBy, perform: operations)
+    }
         
     public func evaluate(
         from startDate: Date,

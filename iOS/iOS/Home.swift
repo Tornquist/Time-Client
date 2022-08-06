@@ -34,6 +34,7 @@ struct Home: View {
         case rename
         case delete
         case importList
+        case report
         
         static func from(_ selection: AccountMenu.Selection) -> HomeModal? {
             switch selection {
@@ -87,6 +88,9 @@ struct Home: View {
                 }
                 .listRowInsets(EdgeInsets())
                 .padding(EdgeInsets())
+                .onTapGesture {
+                    self.showModal = .report
+                }
                 
                 if self.warehouse.recentCategories.count > 0 {
                     Section(header: Text("Recents").titleStyle()) {
@@ -221,6 +225,15 @@ struct Home: View {
             return AnyView(
                 ImportList(model: ImportModel(for: self.warehouse), show: buildBinding(for: .importList))
                     .environmentObject(self.warehouse)
+            )
+        case .report:
+            return AnyView(
+                QuantityMetricReport(
+                    store: OtherAnalyticsStore(for: self.warehouse),
+                    show: buildBinding(for: .importList),
+                    showSeconds: showSeconds
+                )
+                .environmentObject(self.warehouse)
             )
         }
     }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D8258E43289F193D000E3EF5 /* OtherAnalyticsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8258E42289F193D000E3EF5 /* OtherAnalyticsStore.swift */; };
 		D852537624CD1D4000F724EC /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D852537524CD1D4000F724EC /* WidgetKit.framework */; };
 		D852537824CD1D4000F724EC /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D852537724CD1D4000F724EC /* SwiftUI.framework */; };
 		D852537B24CD1D4000F724EC /* Widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = D852537A24CD1D4000F724EC /* Widget.swift */; };
@@ -28,6 +29,7 @@
 		D86D427B260665DC00CC211E /* Binding+onChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86D427A260665DC00CC211E /* Binding+onChange.swift */; };
 		D8792D2525DB303300F4669D /* MetricSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8792D2425DB303300F4669D /* MetricSection.swift */; };
 		D8792D2725DB30FA00F4669D /* RecentSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8792D2625DB30FA00F4669D /* RecentSection.swift */; };
+		D87FCD7728282388009E9C7E /* QuantityMetricReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87FCD7628282388009E9C7E /* QuantityMetricReport.swift */; };
 		D8977DD525DB345A00870A9D /* AppEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8977DD425DB345A00870A9D /* AppEntry.swift */; };
 		D8977DD725DB3A9900870A9D /* Login.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8977DD625DB3A9900870A9D /* Login.swift */; };
 		D8977DD925DB440900870A9D /* View+NotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8977DD825DB440900870A9D /* View+NotificationCenter.swift */; };
@@ -102,6 +104,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D8258E42289F193D000E3EF5 /* OtherAnalyticsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OtherAnalyticsStore.swift; sourceTree = "<group>"; };
 		D852537324CD1D4000F724EC /* WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D852537524CD1D4000F724EC /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		D852537724CD1D4000F724EC /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -123,6 +126,7 @@
 		D86D427A260665DC00CC211E /* Binding+onChange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Binding+onChange.swift"; sourceTree = "<group>"; };
 		D8792D2425DB303300F4669D /* MetricSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricSection.swift; sourceTree = "<group>"; };
 		D8792D2625DB30FA00F4669D /* RecentSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentSection.swift; sourceTree = "<group>"; };
+		D87FCD7628282388009E9C7E /* QuantityMetricReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuantityMetricReport.swift; sourceTree = "<group>"; };
 		D8977DD425DB345A00870A9D /* AppEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEntry.swift; sourceTree = "<group>"; };
 		D8977DD625DB3A9900870A9D /* Login.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Login.swift; sourceTree = "<group>"; };
 		D8977DD825DB440900870A9D /* View+NotificationCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+NotificationCenter.swift"; sourceTree = "<group>"; };
@@ -269,6 +273,14 @@
 			name = "Category List";
 			sourceTree = "<group>";
 		};
+		D87FCD752828230A009E9C7E /* Reports */ = {
+			isa = PBXGroup;
+			children = (
+				D87FCD7628282388009E9C7E /* QuantityMetricReport.swift */,
+			);
+			name = Reports;
+			sourceTree = "<group>";
+		};
 		D8977DDC25DB61AF00870A9D /* Recents */ = {
 			isa = PBXGroup;
 			children = (
@@ -321,6 +333,7 @@
 				D8CB935C25D2C39B00C250E9 /* Home */,
 				D8CB935E25D2C3B200C250E9 /* Entries */,
 				D8977DE725DD4CF800870A9D /* Import */,
+				D87FCD752828230A009E9C7E /* Reports */,
 			);
 			name = Pages;
 			sourceTree = "<group>";
@@ -340,6 +353,7 @@
 			children = (
 				D8CB935025D03FA500C250E9 /* Warehouse.swift */,
 				D8977DE425DCB60E00870A9D /* AnalyticsStore.swift */,
+				D8258E42289F193D000E3EF5 /* OtherAnalyticsStore.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -496,6 +510,7 @@
 				D8792D2525DB303300F4669D /* MetricSection.swift in Sources */,
 				D8A1B50424CD223000580DCA /* Colors.swift in Sources */,
 				D8977DD925DB440900870A9D /* View+NotificationCenter.swift in Sources */,
+				D8258E43289F193D000E3EF5 /* OtherAnalyticsStore.swift in Sources */,
 				D8CB935525D06F5D00C250E9 /* MoveCategory.swift in Sources */,
 				D8CB930F25CEE79F00C250E9 /* Home.swift in Sources */,
 				D856E83824D6EFD0001E564A /* Constants.swift in Sources */,
@@ -510,6 +525,7 @@
 				D8CB935725D06F9300C250E9 /* CategoryList.swift in Sources */,
 				D8CB936425D41E3200C250E9 /* Mainify.swift in Sources */,
 				D8CB937525DAD79100C250E9 /* AddCategory.swift in Sources */,
+				D87FCD7728282388009E9C7E /* QuantityMetricReport.swift in Sources */,
 				D8977DD725DB3A9900870A9D /* Login.swift in Sources */,
 				D8CB936825D885B500C250E9 /* AccountMenu.swift in Sources */,
 				D856109025CBA44600A325B3 /* ListItem.swift in Sources */,
