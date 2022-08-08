@@ -88,6 +88,7 @@ struct Home: View {
                 }
                 .listRowInsets(EdgeInsets())
                 .padding(EdgeInsets())
+                .contentShape(Rectangle())
                 .onTapGesture {
                     self.showModal = .report
                 }

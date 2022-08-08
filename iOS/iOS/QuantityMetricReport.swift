@@ -16,8 +16,11 @@ struct QuantityMetricReport: View {
     var show: Binding<Bool>
     
     var showSeconds: Bool
+    var internalShowSeconds: Bool {
+        return self.showSeconds && ![TimePeriod.year, TimePeriod.month].contains(self.store.gropuBy)
+    }
     var emptyDuration: String {
-        return showSeconds ? "00:00:00" : "00:00"
+        return internalShowSeconds ? "00:00:00" : "00:00"
     }
     
     @State private var data: [String : [Analyzer.Result]] = Time.shared.analyzer.evaluateAll(
@@ -31,13 +34,13 @@ struct QuantityMetricReport: View {
             List {
                 ForEach(self.store.orderedKeys, id: \.self) { key in
                     QuantityMetric(
-                        total: (self.store.totalData[key]?.displayDuration(withSeconds: showSeconds) ?? emptyDuration),
-                        description: "Week of \(key)",
+                        total: (self.store.totalData[key]?.displayDuration(withSeconds: internalShowSeconds) ?? emptyDuration),
+                        description: self.store.title(for: key),
                         items: self.store.categoryData[key]?
                             .map({ (result) -> QuantityMetric.QuantityItem in
                                 QuantityMetric.QuantityItem(
                                     name: self.warehouse.getName(for: result.categoryID),
-                                    total: result.displayDuration(withSeconds: showSeconds),
+                                    total: result.displayDuration(withSeconds: internalShowSeconds),
                                     active: result.open
                                 )
                             }) ?? []
@@ -53,15 +56,30 @@ struct QuantityMetricReport: View {
                         self.show.wrappedValue = false
                     }
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu {
+                        Menu {
+                            ForEach(TimePeriod.all()) { timePeriod in
+                                Button {
+                                    self.store.gropuBy = timePeriod
+                                } label: {
+                                    if timePeriod == self.store.gropuBy {
+                                        Label(timePeriod.display, systemImage: "checkmark")
+                                    } else {
+                                        Text(timePeriod.display)
+                                    }
+                                }
+                            }
+                        } label : {
+                            Text("Group By")
+                        }
+                    } label: {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                    }
+                }
             }
         }.onReceive(timer, perform: { _ in
             store.refreshAsNeeded()
         })
-    }
-    
-    func sortAnalyzerResults(a: Analyzer.Result, b: Analyzer.Result) -> Bool {
-        let aName = self.warehouse.getName(for: a.categoryID)
-        let bName = self.warehouse.getName(for: b.categoryID)
-        return aName < bName
     }
 }

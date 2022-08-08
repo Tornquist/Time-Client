@@ -8,11 +8,18 @@
 
 import Foundation
 
-public enum TimePeriod: String {
+public enum TimePeriod: String, Identifiable {
     case year
     case month
     case week
     case day
+    
+    public var display: String { self.rawValue.capitalized }
+    
+    public var id: Int { hashValue }
+    static public func all() -> [TimePeriod] {
+        return [.day, .week, .month, .year]
+    }
 }
 
 public struct TimeRange {

@@ -15,6 +15,20 @@ class OtherAnalyticsStore: ObservableObject {
 
     @Published var warehouse: Warehouse
     
+    @Published var gropuBy: TimePeriod = .week {
+        didSet {
+            Mainify {
+                self.calculateMetrics()
+            }
+        }
+    }
+    
+    var inDateFormatter: DateFormatter = DateFormatter()
+    var dayDateFormatter: DateFormatter = DateFormatter()
+    var weekDateFormatter: DateFormatter = DateFormatter()
+    var monthDateFormatter: DateFormatter = DateFormatter()
+    var yearDateFormatter: DateFormatter = DateFormatter()
+    
     @Published var orderedKeys: [String] = []
     @Published var totalData: [String : Analyzer.Result] = [:]
     @Published var categoryData: [String : [Analyzer.Result]] = [:]
@@ -23,9 +37,11 @@ class OtherAnalyticsStore: ObservableObject {
     
     init(for warehouse: Warehouse) {
         self.warehouse = warehouse
-        
+
         let c = warehouse.objectWillChange.sink { self.objectWillChange.send() }
         self.cancellables.append(c)
+        
+        self.configureDateFormatters()
         
         self.registerNotifications()
         self.calculateMetrics()
@@ -44,6 +60,46 @@ class OtherAnalyticsStore: ObservableObject {
         self.calculateMetrics()
     }
     
+    private func configureDateFormatters() {
+        self.inDateFormatter.dateFormat = "yyyy-MM-dd"
+        self.inDateFormatter.timeZone = TimeZone.current // Sync with analyzer
+        self.inDateFormatter.locale = Locale.current // Sync with analyzer
+        
+        self.dayDateFormatter.dateFormat = "MMMM d, yyyy"
+        self.dayDateFormatter.timeZone = TimeZone.current
+        self.dayDateFormatter.locale = Locale.current
+        
+        self.weekDateFormatter.dateFormat = "MMM d, yyyy"
+        self.weekDateFormatter.timeZone = TimeZone.current
+        self.weekDateFormatter.locale = Locale.current
+        
+        self.monthDateFormatter.dateFormat = "MMMM yyyy"
+        self.monthDateFormatter.timeZone = TimeZone.current
+        self.monthDateFormatter.locale = Locale.current
+        
+        self.yearDateFormatter.dateFormat = "yyyy"
+        self.yearDateFormatter.timeZone = TimeZone.current
+        self.yearDateFormatter.locale = Locale.current
+    }
+    
+    func title(for key: String) -> String {
+        guard let date = self.inDateFormatter.date(from: key) else {
+            return key
+        }
+        
+        switch self.gropuBy {
+        case .day:
+            return self.dayDateFormatter.string(from: date)
+        case .week:
+            return "Week of " + self.weekDateFormatter.string(from: date)
+        case .month:
+            return self.monthDateFormatter.string(from: date)
+        case .year:
+            return self.yearDateFormatter.string(from: date)
+        }
+        
+    }
+    
     // MARK: - Metrics
     
     func refreshAsNeeded() {
@@ -54,7 +110,7 @@ class OtherAnalyticsStore: ObservableObject {
     
     private func calculateMetrics() {
         let updatedData = Time.shared.analyzer.evaluateAll(
-            gropuBy: .week, perform: [.calculateTotal, .calculatePerCategory]
+            gropuBy: self.gropuBy, perform: [.calculateTotal, .calculatePerCategory]
         )
         
         let startingKeys = self.orderedKeys
