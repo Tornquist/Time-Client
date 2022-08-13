@@ -11,7 +11,7 @@ import TimeSDK
 
 struct QuantityMetricReport: View {
     @EnvironmentObject var warehouse: Warehouse
-    @ObservedObject var store: OtherAnalyticsStore
+    @StateObject var store: OtherAnalyticsStore
     
     var show: Binding<Bool>
     

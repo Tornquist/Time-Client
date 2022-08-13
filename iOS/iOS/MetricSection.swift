@@ -10,7 +10,7 @@ import SwiftUI
 
 struct MetricSection: View {
     @EnvironmentObject var warehouse: Warehouse
-    @ObservedObject var store: AnalyticsStore
+    @StateObject var store: AnalyticsStore
     
     var showSeconds: Bool
     var emptyDuration: String {
