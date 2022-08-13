@@ -15,10 +15,13 @@ class OtherAnalyticsStore: ObservableObject {
 
     @Published var warehouse: Warehouse
     
-    @Published var gropuBy: TimePeriod = .week {
+    private let storeGroupByKey = "other-analytics-store-group-by"
+    @Published var gropuBy: TimePeriod {
         didSet {
             Mainify {
                 self.calculateMetrics()
+                // Persist preference to store
+                UserDefaults().set(self.gropuBy.rawValue, forKey: self.storeGroupByKey)
             }
         }
     }
@@ -36,6 +39,11 @@ class OtherAnalyticsStore: ObservableObject {
     var cancellables = [AnyCancellable]()
     
     init(for warehouse: Warehouse) {
+        // Load group by first for single-pass analytics
+        self.gropuBy = TimePeriod(
+            rawValue: UserDefaults().string(forKey: self.storeGroupByKey) ?? ""
+        ) ?? .week
+        
         self.warehouse = warehouse
 
         let c = warehouse.objectWillChange.sink { self.objectWillChange.send() }
