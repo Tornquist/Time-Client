@@ -16,12 +16,22 @@ class OtherAnalyticsStore: ObservableObject {
     @Published var warehouse: Warehouse
     
     private let storeGroupByKey = "other-analytics-store-group-by"
+    private let storeIncludeEmptyKey = "other-analytics-store-include-empty"
     @Published var gropuBy: TimePeriod {
         didSet {
             Mainify {
                 self.calculateMetrics()
                 // Persist preference to store
                 UserDefaults().set(self.gropuBy.rawValue, forKey: self.storeGroupByKey)
+            }
+        }
+    }
+    @Published var includeEmpty: Bool {
+        didSet {
+            Mainify {
+                self.calculateMetrics()
+                // Persist preference to store
+                UserDefaults().set(self.includeEmpty, forKey: self.storeIncludeEmptyKey)
             }
         }
     }
@@ -39,10 +49,13 @@ class OtherAnalyticsStore: ObservableObject {
     var cancellables = [AnyCancellable]()
     
     init(for warehouse: Warehouse) {
-        // Load group by first for single-pass analytics
+        // Load groupBy first for single-pass analytics
         self.gropuBy = TimePeriod(
             rawValue: UserDefaults().string(forKey: self.storeGroupByKey) ?? ""
         ) ?? .week
+        
+        // Load includeEmpty first for single-pass analytics
+        self.includeEmpty = UserDefaults().bool(forKey: self.storeIncludeEmptyKey)
         
         self.warehouse = warehouse
 
@@ -118,7 +131,7 @@ class OtherAnalyticsStore: ObservableObject {
     
     private func calculateMetrics() {
         let updatedData = Time.shared.analyzer.evaluateAll(
-            gropuBy: self.gropuBy, perform: [.calculateTotal, .calculatePerCategory]
+            gropuBy: self.gropuBy, perform: [.calculateTotal, .calculatePerCategory], includeEmpty: self.includeEmpty
         )
         
         let startingKeys = self.orderedKeys

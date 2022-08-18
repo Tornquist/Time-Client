@@ -18,6 +18,7 @@ struct QuantityMetric: View {
     }
     
     struct QuantityItem {
+        var id: Int
         var name: String
         var total: String
         var active: Bool
@@ -41,7 +42,7 @@ struct QuantityMetric: View {
             }
             Spacer(minLength: 4)
             VStack {
-                ForEach(items, id: \.name) { (item) in
+                ForEach(items, id: \.id) { (item) in
                     HStack {
                         Text(item.name)
                             .font(Font.system(size: 12.0))
@@ -66,16 +67,19 @@ struct QuantityMetric_Previews: PreviewProvider {
                 description: "This Week",
                 items: [
                     QuantityMetric.QuantityItem(
+                        id: 1,
                         name: "Project 1",
                         total: "23:46:55",
                         active: false
                     ),
                     QuantityMetric.QuantityItem(
+                        id: 2,
                         name: "Project 2",
                         total: "00:19:27",
                         active: false
                     ),
                     QuantityMetric.QuantityItem(
+                        id: 3,
                         name: "Project 3",
                         total: "03:46:11",
                         active: true
@@ -91,31 +95,37 @@ struct QuantityMetric_Previews: PreviewProvider {
                 description: "This Week",
                 items: [
                     QuantityMetric.QuantityItem(
+                        id: 1,
                         name: "Project 1",
                         total: "23:46:55",
                         active: false
                     ),
                     QuantityMetric.QuantityItem(
+                        id: 2,
                         name: "Project 2",
                         total: "00:19:27",
                         active: false
                     ),
                     QuantityMetric.QuantityItem(
+                        id: 3,
                         name: "Project 3",
                         total: "03:46:11",
                         active: true
                     ),
                     QuantityMetric.QuantityItem(
+                        id: 4,
                         name: "Project 4",
                         total: "23:46:55",
                         active: false
                     ),
                     QuantityMetric.QuantityItem(
+                        id: 5,
                         name: "Project 5",
                         total: "00:19:27",
                         active: false
                     ),
                     QuantityMetric.QuantityItem(
+                        id: 6,
                         name: "Project 6",
                         total: "03:46:11",
                         active: false
@@ -132,16 +142,19 @@ struct QuantityMetric_Previews: PreviewProvider {
                 description: "This Week",
                 items: [
                     QuantityMetric.QuantityItem(
+                        id: 1,
                         name: "Normal 1",
                         total: "23:46:55",
                         active: false
                     ),
                     QuantityMetric.QuantityItem(
+                        id: 2,
                         name: "Really long project name",
                         total: "00:19:27",
                         active: false
                     ),
                     QuantityMetric.QuantityItem(
+                        id: 3,
                         name: "Normal 2",
                         total: "23:46:55",
                         active: false

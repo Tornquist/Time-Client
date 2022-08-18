@@ -97,7 +97,8 @@ public class Analyzer {
         _ timeRange: TimeRange,
         in calendar: Calendar? = nil,
         groupBy: TimePeriod,
-        perform operations: [Operation]
+        perform operations: [Operation],
+        includeEmpty: Bool = false
     ) -> [String: [Result]] {
         // 1. Identify query range
         let selectedCalendar = calendar ?? Calendar.current
@@ -105,13 +106,14 @@ public class Analyzer {
         let to: Date? = nil // now
 
         // 2. Perform query
-        return self.evaluate(from: from, to: to, in: selectedCalendar, groupBy: groupBy, perform: operations)
+        return self.evaluate(from: from, to: to, in: selectedCalendar, groupBy: groupBy, perform: operations, includeEmpty: includeEmpty)
     }
     
     public func evaluateAll(
         in calendar: Calendar? = nil,
         gropuBy: TimePeriod,
-        perform operations: [Operation]
+        perform operations: [Operation],
+        includeEmpty: Bool = false
     ) -> [String: [Result]] {
         // 1. Identify query range
         let selectedCalendar = calendar ?? Calendar.current
@@ -119,7 +121,7 @@ public class Analyzer {
         let to: Date? = nil // now
         
         // 2. Perfor query
-        return self.evaluate(from: from, to: to, in: selectedCalendar, groupBy: gropuBy, perform: operations)
+        return self.evaluate(from: from, to: to, in: selectedCalendar, groupBy: gropuBy, perform: operations, includeEmpty: includeEmpty)
     }
         
     public func evaluate(
@@ -127,7 +129,8 @@ public class Analyzer {
         to endDate: Date?,
         in calendar: Calendar,
         groupBy: TimePeriod,
-        perform operations: [Operation]
+        perform operations: [Operation],
+        includeEmpty: Bool = false
     ) -> [String: [Result]] {
         // 1. Get closed results (from cache if possible)
 
@@ -135,7 +138,8 @@ public class Analyzer {
             startDate.description.replacingOccurrences(of: " ", with: "_"),
             (endDate?.description ?? "now").replacingOccurrences(of: " ", with: "_"),
             groupBy.rawValue,
-            operations.map({ $0.rawValue }).joined(separator: "|")
+            operations.map({ $0.rawValue }).joined(separator: "|"),
+            includeEmpty.description
         ].joined(separator: "-")
 
         let closedResults: [String : [Result]] = {
@@ -147,7 +151,8 @@ public class Analyzer {
                 searchingFrom: startDate,
                 to: endDate,
                 groupingBy: groupBy,
-                with: calendar
+                with: calendar,
+                includeEmpty: includeEmpty
             ) ?? [:]
             
             let freshClosedResults = self.evaluate(data: closedData, operations: operations)

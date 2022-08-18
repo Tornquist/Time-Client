@@ -39,6 +39,7 @@ struct QuantityMetricReport: View {
                         items: self.store.categoryData[key]?
                             .map({ (result) -> QuantityMetric.QuantityItem in
                                 QuantityMetric.QuantityItem(
+                                    id: result.categoryID ?? self.warehouse.getName(for: result.categoryID).hashValue,
                                     name: self.warehouse.getName(for: result.categoryID),
                                     total: result.displayDuration(withSeconds: internalShowSeconds),
                                     active: result.open
@@ -72,6 +73,15 @@ struct QuantityMetricReport: View {
                             }
                         } label : {
                             Text("Group By")
+                        }
+                        Button {
+                            self.store.includeEmpty = !self.store.includeEmpty
+                        } label: {
+                            if self.store.includeEmpty {
+                                Label("Include Empty", systemImage: "checkmark")
+                            } else {
+                                Text("Include Empty")
+                            }
                         }
                     } label: {
                         Image(systemName: "line.3.horizontal.decrease.circle")
