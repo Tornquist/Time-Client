@@ -31,7 +31,7 @@ public class Analyzer {
         case calculatePerCategory
     }
     
-    public struct Result {
+    public struct Result: Equatable {
         public var operation: Operation
         public var categoryID: Int?
         public var duration: TimeInterval

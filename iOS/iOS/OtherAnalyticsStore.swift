@@ -19,20 +19,16 @@ class OtherAnalyticsStore: ObservableObject {
     private let storeIncludeEmptyKey = "other-analytics-store-include-empty"
     @Published var gropuBy: TimePeriod {
         didSet {
-            Mainify {
-                self.calculateMetrics()
-                // Persist preference to store
-                UserDefaults().set(self.gropuBy.rawValue, forKey: self.storeGroupByKey)
-            }
+            self.calculateMetrics()
+            // Persist preference to store
+            UserDefaults().set(self.gropuBy.rawValue, forKey: self.storeGroupByKey)
         }
     }
     @Published var includeEmpty: Bool {
         didSet {
-            Mainify {
-                self.calculateMetrics()
-                // Persist preference to store
-                UserDefaults().set(self.includeEmpty, forKey: self.storeIncludeEmptyKey)
-            }
+            self.calculateMetrics()
+            // Persist preference to store
+            UserDefaults().set(self.includeEmpty, forKey: self.storeIncludeEmptyKey)
         }
     }
     
@@ -125,8 +121,10 @@ class OtherAnalyticsStore: ObservableObject {
     
     func refreshAsNeeded() {
         guard self.warehouse.openCategoryIDs.count > 0 else { return }
-        
-        self.calculateMetrics()
+
+        DispatchQueue.global(qos: .background).async {
+            self.calculateMetrics()
+        }
     }
     
     private func calculateMetrics() {
@@ -145,19 +143,31 @@ class OtherAnalyticsStore: ObservableObject {
             let categories = data.filter({ $0.operation == .calculatePerCategory })
                 .sorted(by: sortAnalyzerResults)
             
-            Mainify {
-                self.totalData[key] = total
-                self.categoryData[key] = categories
-             }
+            if self.totalData[key] != total {
+                Mainify {
+                    self.totalData[key] = total
+                }
+            }
+            if self.categoryData[key] != categories {
+                Mainify {
+                    self.categoryData[key] = categories
+                }
+            }
         }
         
-        Mainify {
-            removedData.forEach { key in
+        
+        removedData.forEach { key in
+            Mainify {
                 self.totalData.removeValue(forKey: key)
                 self.categoryData.removeValue(forKey: key)
             }
+        }
             
-            self.orderedKeys = Array(orderedKeys)
+        let newArray: [String] = Array(orderedKeys)
+        if self.orderedKeys != newArray {
+            Mainify {
+                self.orderedKeys = newArray
+            }
         }
     }
     

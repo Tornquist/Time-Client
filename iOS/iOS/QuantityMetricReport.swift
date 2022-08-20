@@ -31,25 +31,24 @@ struct QuantityMetricReport: View {
     
     var body: some View {
         NavigationView {
-            List {
-                ForEach(self.store.orderedKeys, id: \.self) { key in
-                    QuantityMetric(
-                        total: (self.store.totalData[key]?.displayDuration(withSeconds: internalShowSeconds) ?? emptyDuration),
-                        description: self.store.title(for: key),
-                        items: self.store.categoryData[key]?
-                            .map({ (result) -> QuantityMetric.QuantityItem in
-                                QuantityMetric.QuantityItem(
-                                    id: result.categoryID ?? self.warehouse.getName(for: result.categoryID).hashValue,
-                                    name: self.warehouse.getName(for: result.categoryID),
-                                    total: result.displayDuration(withSeconds: internalShowSeconds),
-                                    active: result.open
-                                )
-                            }) ?? []
-                    )
-                }
+            List(self.store.orderedKeys, id: \.self) { key in
+                QuantityMetric(
+                    total: (self.store.totalData[key]?.displayDuration(withSeconds: internalShowSeconds) ?? emptyDuration),
+                    description: self.store.title(for: key),
+                    items: self.store.categoryData[key]?
+                        .map({ (result) -> QuantityMetric.QuantityItem in
+                            QuantityMetric.QuantityItem(
+                                id: result.categoryID ?? self.warehouse.getName(for: result.categoryID).hashValue,
+                                name: self.warehouse.getName(for: result.categoryID),
+                                total: result.displayDuration(withSeconds: internalShowSeconds),
+                                active: result.open
+                            )
+                        }) ?? []
+                )
                 .listRowInsets(EdgeInsets())
                 .padding(EdgeInsets())
             }
+     
             .navigationTitle("Metrics")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
