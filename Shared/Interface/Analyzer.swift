@@ -11,6 +11,7 @@ import Foundation
 public class Analyzer {
     
     private weak var store: Store?
+    private var lowMemoryMode: Bool
     
     // Internal Cache
     private var closedRanges: [Entry] = []
@@ -72,8 +73,9 @@ public class Analyzer {
     
     // MARK: - Init
     
-    init(store: Store) {
+    init(store: Store, lowMemoryMode: Bool = false) {
         self.store = store
+        self.lowMemoryMode = lowMemoryMode
 
         TimeNotificationGroup.entryDataChanged.notifications.forEach { (notificationType) in
             NotificationCenter.default.addObserver(
@@ -191,6 +193,9 @@ public class Analyzer {
             return
         }
         
+        // 0. Low memory configuration (only look at data for widget
+        let lowMemoryFilterStart = Calendar.current.date(byAdding: .day, value: -10, to: Date())!
+        
         // 1. Split open and closed ranges
         var closedRanges: [Entry] = []
         var openRanges: [Entry] = []
@@ -199,7 +204,10 @@ public class Analyzer {
             
             if entry.endedAt == nil {
                 openRanges.append(entry)
-            } else {
+            } else if (
+                !self.lowMemoryMode ||
+                (self.lowMemoryMode && entry.endedAt! > lowMemoryFilterStart)
+            ) {
                 closedRanges.append(entry)
             }
         }

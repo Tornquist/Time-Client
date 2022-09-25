@@ -59,7 +59,7 @@ struct TimeLoader {
             keychainGroup: Constants.keychainGroup
         )
         
-        Time.configureShared(config)
+        Time.configureShared(config, lowMemoryMode: true)
         Time.shared.initialize() { error in
             guard error == nil else {
                 completion(.failure(error!))
