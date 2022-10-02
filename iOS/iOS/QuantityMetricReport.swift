@@ -15,6 +15,9 @@ struct QuantityMetricReport: View {
     
     var show: Binding<Bool>
     
+    @State var exportLoading: Bool = false
+    @State var showExportDialog: Bool = false
+    
     var showSeconds: Bool
     var internalShowSeconds: Bool {
         return self.showSeconds && ![TimePeriod.year, TimePeriod.month].contains(self.store.groupBy)
@@ -22,8 +25,6 @@ struct QuantityMetricReport: View {
     var emptyDuration: String {
         return internalShowSeconds ? "00:00:00" : "00:00"
     }
-
-    @State private var isExporting: Bool = false
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -85,9 +86,13 @@ struct QuantityMetricReport: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        self.isExporting = true
+                        self.store.buildExport(
+                            doneLoading: self.$exportLoading,
+                            readyForUI: self.$showExportDialog
+                        )
+                        self.exportLoading = true
                     } label: {
-                        if self.isExporting {
+                        if self.exportLoading {
                             ProgressView()
                         } else {
                             Image(systemName: "square.and.arrow.up")
@@ -99,7 +104,7 @@ struct QuantityMetricReport: View {
             store.refreshAsNeeded()
         })
         .fileExporter(
-            isPresented: $isExporting,
+            isPresented: self.$showExportDialog,
             document: self.store.exportDocument,
             contentType: .plainText,
             defaultFilename: "\(self.store.inDateFormatter.string(from: Date()))_time_\(self.store.groupBy.rawValue)_export.csv"

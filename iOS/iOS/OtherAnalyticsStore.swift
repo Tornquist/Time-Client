@@ -33,7 +33,6 @@ class OtherAnalyticsStore: ObservableObject {
             UserDefaults().set(self.includeEmpty, forKey: self.storeIncludeEmptyKey)
         }
     }
-    @Published var exportDocument: MetricReportDocument? = nil
     
     var inDateFormatter: DateFormatter = DateFormatter()
     var dayDateFormatter: DateFormatter = DateFormatter()
@@ -44,6 +43,8 @@ class OtherAnalyticsStore: ObservableObject {
     @Published var orderedKeys: [String] = []
     @Published var totalData: [String : Analyzer.Result] = [:]
     @Published var categoryData: [String : [Analyzer.Result]] = [:]
+    
+    @Published var exportDocument: MetricReportDocument? = nil
     
     var cancellables = [AnyCancellable]()
     
@@ -172,8 +173,6 @@ class OtherAnalyticsStore: ObservableObject {
                 self.orderedKeys = newArray
             }
         }
-        
-        self.rebuildExport()
     }
     
     private func sortAnalyzerResults(a: Analyzer.Result, b: Analyzer.Result) -> Bool {
@@ -184,7 +183,11 @@ class OtherAnalyticsStore: ObservableObject {
     
     // MARK: - Export Results
     
-    func rebuildExport() {
+    func buildExport(
+        doneLoading: Binding<Bool>,
+        readyForUI: Binding<Bool>
+    ) {
+        // Rebuild File
         DispatchQueue.global(qos: .background).async {
             var rows = ["Date, Type, Name, Duration (s)"]
             self.orderedKeys.forEach { key in
@@ -202,6 +205,9 @@ class OtherAnalyticsStore: ObservableObject {
             
             DispatchQueue.main.async {
                 self.exportDocument = MetricReportDocument(message: file)
+                
+                doneLoading.wrappedValue = false
+                readyForUI.wrappedValue = true
             }
         }
     }
