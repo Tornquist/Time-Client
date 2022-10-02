@@ -10,7 +10,7 @@ import SwiftUI
 
 struct MetricSection: View {
     @EnvironmentObject var warehouse: Warehouse
-    @ObservedObject var store: AnalyticsStore
+    @StateObject var store: AnalyticsStore
     
     var showSeconds: Bool
     var emptyDuration: String {
@@ -26,6 +26,7 @@ struct MetricSection: View {
                 description: "Today",
                 items: store.dayCategories.map({ (result) -> QuantityMetric.QuantityItem in
                     QuantityMetric.QuantityItem(
+                        id: result.categoryID ?? self.warehouse.getName(for: result.categoryID).hashValue,
                         name: self.warehouse.getName(for: result.categoryID),
                         total: result.displayDuration(withSeconds: showSeconds),
                         active: result.open
@@ -37,6 +38,7 @@ struct MetricSection: View {
                 description: "This Week",
                 items: store.weekCategories.map({ (result) -> QuantityMetric.QuantityItem in
                     QuantityMetric.QuantityItem(
+                        id: result.categoryID ?? self.warehouse.getName(for: result.categoryID).hashValue,
                         name: self.warehouse.getName(for: result.categoryID),
                         total: result.displayDuration(withSeconds: showSeconds),
                         active: result.open

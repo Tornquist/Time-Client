@@ -31,16 +31,17 @@ class AnalysisCache {
         - calendar: The calendar to use when calculating dates
      
      */
-    func getGroupedSplits(searchingFrom from: Date, to: Date?, groupingBy groupBy: TimePeriod, with calendar: Calendar) -> [String: [Split]] {
+    func getGroupedSplits(searchingFrom from: Date, to: Date?, groupingBy groupBy: TimePeriod, with calendar: Calendar, includeEmpty: Bool = false) -> [String: [Split]] {
         let keyGroups = self.identifyKeyGroupsFor(
             stringDates: self.dayCache.keys,
             searchingFrom: from,
             to: to,
             groupingBy: groupBy,
-            with: calendar
+            with: calendar,
+            includeEmpty: includeEmpty
         )
         
-        let groupedRecords = self.getGroupedData(for: keyGroups, in: self.dayCache)
+        let groupedRecords = self.getGroupedData(for: keyGroups, in: self.dayCache, includeEmpty: includeEmpty)
         
         return groupedRecords
     }
@@ -80,7 +81,7 @@ class AnalysisCache {
         - calendar: The calendar to use when calculating dates
      
      */
-    private func identifyKeyGroupsFor(stringDates: Dictionary<String, [Split]>.Keys, searchingFrom from: Date, to: Date?, groupingBy groupBy: TimePeriod, with calendar: Calendar) -> [String: [String]] {
+    private func identifyKeyGroupsFor(stringDates: Dictionary<String, [Split]>.Keys, searchingFrom from: Date, to: Date?, groupingBy groupBy: TimePeriod, with calendar: Calendar, includeEmpty: Bool = false) -> [String: [String]] {
         
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd" // matches format set while seeing cache
@@ -132,7 +133,7 @@ class AnalysisCache {
         }
 
         // Build groups with start date as the key, and the related stringDates as the values
-        let keyGroups: [String: [String]] = zip(keyStartDates, filteredKeys).reduce(into: [:]) { (acc, next) in
+        var keyGroups: [String: [String]] = zip(keyStartDates, filteredKeys).reduce(into: [:]) { (acc, next) in
             guard let start = next.0 else { return }
             let value = next.1
             
@@ -140,16 +141,43 @@ class AnalysisCache {
             acc[start]!.append(value)
         }
         
+        // Fill in gaps if requested
+        if includeEmpty {
+            let fromDateComponents = calendar.dateComponents(dateComponentMap[groupBy]!, from: from)
+            var trackingDate = calendar.date(from: fromDateComponents)!
+            let endDate = to ?? Date()
+            
+            while (trackingDate < endDate) {
+                let key = formatter.string(from: trackingDate)
+                
+                keyGroups[key] = keyGroups[key] ?? []
+                
+                switch groupBy {
+                case .year:
+                    trackingDate = calendar.date(byAdding: .year, value: 1, to: trackingDate)!
+                case .month:
+                    trackingDate = calendar.date(byAdding: .month, value: 1, to: trackingDate)!
+                case .week:
+                    trackingDate = calendar.date(byAdding: .weekOfYear, value: 1, to: trackingDate)!
+                case .day:
+                    trackingDate = calendar.date(byAdding: .day, value: 1, to: trackingDate)!
+                }
+            }
+        }
+        
         return keyGroups
     }
     
     /// Apply the result of identifyKeyGroupsFor to the provided data to convert the keys to actual values
-    private func getGroupedData(for keyGroups: [String : [String]], in data: [String : [Split]]) -> [String: [Split]] {
+    private func getGroupedData(for keyGroups: [String : [String]], in data: [String : [Split]], includeEmpty: Bool = false) -> [String: [Split]] {
         var transformedGroups: [String: [Split]] = [:]
         let groupNames = keyGroups.keys.sorted()
         
         groupNames.forEach { (groupName) in
-            guard let groupKeys = keyGroups[groupName], groupKeys.count > 0 else { return }
+            guard
+                let groupKeys = keyGroups[groupName],
+                (includeEmpty ? true : groupKeys.count > 0)
+            else { return }
             
             let allValuesInGroup = groupKeys.flatMap({ data[$0] ?? [] })
             transformedGroups[groupName] = allValuesInGroup

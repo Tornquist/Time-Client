@@ -60,12 +60,12 @@ public class Time {
     // Control Flow
     var reauthenticating: Bool = false
     
-    init(config: TimeConfig, withAPI apiClient: API) {
+    init(config: TimeConfig, withAPI apiClient: API, lowMemoryMode: Bool = false) {
         self.api = apiClient
         self.config = config
         self.tokenStore = TokenStore(config: config)
         self.store = Store(config: config, api: self.api)
-        self.analyzer = Analyzer(store: store)
+        self.analyzer = Analyzer(store: store, lowMemoryMode: lowMemoryMode)
         
         if let url = config.serverURL {
             let updatedURL = self.api.set(url: url)
@@ -76,9 +76,9 @@ public class Time {
         NotificationCenter.default.addObserver(self, selector: #selector(autoRefreshFailed), name: .TimeAPIAutoRefreshFailed, object: self.api)
     }
     
-    public static func configureShared(_ config: TimeConfig) {
+    public static func configureShared(_ config: TimeConfig, lowMemoryMode: Bool = false) {
         API.configureShared(config)
-        Time._shared = Time(config: config, withAPI: API.shared)
+        Time._shared = Time(config: config, withAPI: API.shared, lowMemoryMode: lowMemoryMode)
     }
     
     /**
