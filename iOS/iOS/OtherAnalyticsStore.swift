@@ -188,15 +188,15 @@ class OtherAnalyticsStore: ObservableObject {
     ) {
         // Rebuild File
         DispatchQueue.global(qos: .background).async {
+            var nameCache: [Int: String] = [:]
+            var pathCache: [Int: String] = [:]
+            
             var rows = ["Date, Type, Path, Name, Duration (s), Duration (h)"]
             self.orderedKeys.forEach { key in
                 // Append total (without path or name)
                 let durationSeconds = self.totalData[key]?.duration ?? 0
                 let durationHours = durationSeconds / 60 / 60
                 rows.append("\(key), Total, , ,\(durationSeconds), \(durationHours)")
-                
-                var nameCache: [Int: String] = [:]
-                var pathCache: [Int: String] = [:]
                 
                 // Append categories
                 self.categoryData[key]?.forEach({ result in
