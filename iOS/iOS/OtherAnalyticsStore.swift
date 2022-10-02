@@ -10,6 +10,8 @@ import Foundation
 import Combine
 import TimeSDK
 import WidgetKit
+import UniformTypeIdentifiers
+import SwiftUI // For FileDocument
 
 class OtherAnalyticsStore: ObservableObject {
 
@@ -17,11 +19,11 @@ class OtherAnalyticsStore: ObservableObject {
     
     private let storeGroupByKey = "other-analytics-store-group-by"
     private let storeIncludeEmptyKey = "other-analytics-store-include-empty"
-    @Published var gropuBy: TimePeriod {
+    @Published var groupBy: TimePeriod {
         didSet {
             self.calculateMetrics()
             // Persist preference to store
-            UserDefaults().set(self.gropuBy.rawValue, forKey: self.storeGroupByKey)
+            UserDefaults().set(self.groupBy.rawValue, forKey: self.storeGroupByKey)
         }
     }
     @Published var includeEmpty: Bool {
@@ -31,6 +33,7 @@ class OtherAnalyticsStore: ObservableObject {
             UserDefaults().set(self.includeEmpty, forKey: self.storeIncludeEmptyKey)
         }
     }
+    @Published var exportDocument: MetricReportDocument? = nil
     
     var inDateFormatter: DateFormatter = DateFormatter()
     var dayDateFormatter: DateFormatter = DateFormatter()
@@ -46,7 +49,7 @@ class OtherAnalyticsStore: ObservableObject {
     
     init(for warehouse: Warehouse) {
         // Load groupBy first for single-pass analytics
-        self.gropuBy = TimePeriod(
+        self.groupBy = TimePeriod(
             rawValue: UserDefaults().string(forKey: self.storeGroupByKey) ?? ""
         ) ?? .week
         
@@ -104,7 +107,7 @@ class OtherAnalyticsStore: ObservableObject {
             return key
         }
         
-        switch self.gropuBy {
+        switch self.groupBy {
         case .day:
             return self.dayDateFormatter.string(from: date)
         case .week:
@@ -129,7 +132,7 @@ class OtherAnalyticsStore: ObservableObject {
     
     private func calculateMetrics() {
         let updatedData = Time.shared.analyzer.evaluateAll(
-            gropuBy: self.gropuBy, perform: [.calculateTotal, .calculatePerCategory], includeEmpty: self.includeEmpty
+            gropuBy: self.groupBy, perform: [.calculateTotal, .calculatePerCategory], includeEmpty: self.includeEmpty
         )
         
         let startingKeys = self.orderedKeys
@@ -169,11 +172,61 @@ class OtherAnalyticsStore: ObservableObject {
                 self.orderedKeys = newArray
             }
         }
+        
+        self.rebuildExport()
     }
     
     private func sortAnalyzerResults(a: Analyzer.Result, b: Analyzer.Result) -> Bool {
         let aName = self.warehouse.getName(for: a.categoryID)
         let bName = self.warehouse.getName(for: b.categoryID)
         return aName < bName
+    }
+    
+    // MARK: - Export Results
+    
+    func rebuildExport() {
+        DispatchQueue.global(qos: .background).async {
+            var rows = ["Date, Type, Name, Duration (s)"]
+            self.orderedKeys.forEach { key in
+                // Append total (without path or name)
+                rows.append("\(key), Total, ,\(self.totalData[key]?.duration ?? 0)")
+                
+                // Append categories
+                self.categoryData[key]?.forEach({ result in
+                    let name = self.warehouse.getName(for: result.categoryID)
+                    rows.append("\(key), Category, \(name), \(result.duration)")
+                })
+            }
+            
+            let file = rows.joined(separator: "\n")
+            
+            DispatchQueue.main.async {
+                self.exportDocument = MetricReportDocument(message: file)
+            }
+        }
+    }
+}
+
+struct MetricReportDocument: FileDocument {
+    
+    static var readableContentTypes: [UTType] { [.plainText] }
+
+    var message: String
+
+    init(message: String) {
+        self.message = message
+    }
+
+    init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents,
+              let string = String(data: data, encoding: .utf8)
+        else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        message = string
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        return FileWrapper(regularFileWithContents: message.data(using: .utf8)!)
     }
 }
