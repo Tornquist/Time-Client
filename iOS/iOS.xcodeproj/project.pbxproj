@@ -40,6 +40,7 @@
 		D8977DF525DEB2E400870A9D /* ImportWizard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8977DF425DEB2E400870A9D /* ImportWizard.swift */; };
 		D8A1B50424CD223000580DCA /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89CEA102482CB07002913AA /* Colors.swift */; };
 		D8A1B50524CD226900580DCA /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89CEA102482CB07002913AA /* Colors.swift */; };
+		D8C533A628EA4E1500F05A92 /* ReportDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C533A528EA4E1500F05A92 /* ReportDocument.swift */; };
 		D8CB930F25CEE79F00C250E9 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB930E25CEE79F00C250E9 /* Home.swift */; };
 		D8CB931225CEE95C00C250E9 /* Text+.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB931125CEE95C00C250E9 /* Text+.swift */; };
 		D8CB935125D03FA500C250E9 /* Warehouse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB935025D03FA500C250E9 /* Warehouse.swift */; };
@@ -136,6 +137,7 @@
 		D8977DF225DD508200870A9D /* ImportModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportModel.swift; sourceTree = "<group>"; };
 		D8977DF425DEB2E400870A9D /* ImportWizard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWizard.swift; sourceTree = "<group>"; };
 		D89CEA102482CB07002913AA /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		D8C533A528EA4E1500F05A92 /* ReportDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportDocument.swift; sourceTree = "<group>"; };
 		D8CB930E25CEE79F00C250E9 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		D8CB931125CEE95C00C250E9 /* Text+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Text+.swift"; sourceTree = "<group>"; };
 		D8CB935025D03FA500C250E9 /* Warehouse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Warehouse.swift; sourceTree = "<group>"; };
@@ -354,6 +356,7 @@
 				D8CB935025D03FA500C250E9 /* Warehouse.swift */,
 				D8977DE425DCB60E00870A9D /* AnalyticsStore.swift */,
 				D8258E42289F193D000E3EF5 /* OtherAnalyticsStore.swift */,
+				D8C533A528EA4E1500F05A92 /* ReportDocument.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -518,6 +521,7 @@
 				D8977DDB25DB616100870A9D /* Entries.swift in Sources */,
 				D8977DD525DB345A00870A9D /* AppEntry.swift in Sources */,
 				D8CB937725DAE95300C250E9 /* DeleteCategory.swift in Sources */,
+				D8C533A628EA4E1500F05A92 /* ReportDocument.swift in Sources */,
 				D855812B21BDE9A200DCB577 /* Time_iOS.xcdatamodeld in Sources */,
 				D856108C25CB928B00A325B3 /* TitleSubtitleActionView.swift in Sources */,
 				D8CB937325DAD50600C250E9 /* RenameCategory.swift in Sources */,

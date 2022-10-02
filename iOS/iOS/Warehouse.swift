@@ -68,6 +68,18 @@ class Warehouse: ObservableObject {
         return name
     }
     
+    func getParentHierarchyName(for categoryID: Int?) -> String {
+        guard
+            let categoryID,
+            let categoryTree = self.time?.store.categoryTrees.map({ (key: Int, value: CategoryTree) in
+                return value.findItem(withID: categoryID)
+            }).filter({ $0 != nil }).first,
+            let categoryTree else {
+            return ""
+        }
+        return self.getParentHierarchyName(categoryTree)
+    }
+    
     func getParentHierarchyName(_ tree: CategoryTree) -> String {
         var parentNameParts: [String] = []
         var position = tree.parent

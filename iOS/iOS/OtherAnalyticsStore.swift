@@ -10,8 +10,7 @@ import Foundation
 import Combine
 import TimeSDK
 import WidgetKit
-import UniformTypeIdentifiers
-import SwiftUI // For FileDocument
+import SwiftUI // For Binding
 
 class OtherAnalyticsStore: ObservableObject {
 
@@ -44,7 +43,7 @@ class OtherAnalyticsStore: ObservableObject {
     @Published var totalData: [String : Analyzer.Result] = [:]
     @Published var categoryData: [String : [Analyzer.Result]] = [:]
     
-    @Published var exportDocument: MetricReportDocument? = nil
+    @Published var exportDocument: ReportDocument? = nil
     
     var cancellables = [AnyCancellable]()
     
@@ -189,50 +188,44 @@ class OtherAnalyticsStore: ObservableObject {
     ) {
         // Rebuild File
         DispatchQueue.global(qos: .background).async {
-            var rows = ["Date, Type, Name, Duration (s)"]
+            var rows = ["Date, Type, Path, Name, Duration (s), Duration (h)"]
             self.orderedKeys.forEach { key in
                 // Append total (without path or name)
-                rows.append("\(key), Total, ,\(self.totalData[key]?.duration ?? 0)")
+                let durationSeconds = self.totalData[key]?.duration ?? 0
+                let durationHours = durationSeconds / 60 / 60
+                rows.append("\(key), Total, , ,\(durationSeconds), \(durationHours)")
+                
+                var nameCache: [Int: String] = [:]
+                var pathCache: [Int: String] = [:]
                 
                 // Append categories
                 self.categoryData[key]?.forEach({ result in
-                    let name = self.warehouse.getName(for: result.categoryID)
-                    rows.append("\(key), Category, \(name), \(result.duration)")
+                    var name = nameCache[result.categoryID ?? -1]
+                    if name == nil && result.categoryID != nil {
+                        name = self.warehouse.getName(for: result.categoryID)
+                        nameCache[result.categoryID!] = name
+                    }
+                    var path = pathCache[result.categoryID ?? -1]
+                    if path == nil && result.categoryID != nil {
+                        path = self.warehouse.getParentHierarchyName(for: result.categoryID)
+                        pathCache[result.categoryID!] = path
+                    }
+                    
+                    let safeName = (name?.contains(",") ?? false) ? "\"\(name!)\"" : (name ?? "")
+                    let safePath = (path?.contains(",") ?? false) ? "\"\(path!)\"" : (path ?? "")
+                    
+                    rows.append("\(key), Category, \(safePath), \(safeName), \(result.duration), \(result.duration / 60 / 60)")
                 })
             }
             
             let file = rows.joined(separator: "\n")
             
             DispatchQueue.main.async {
-                self.exportDocument = MetricReportDocument(message: file)
+                self.exportDocument = ReportDocument(message: file)
                 
                 doneLoading.wrappedValue = false
                 readyForUI.wrappedValue = true
             }
         }
-    }
-}
-
-struct MetricReportDocument: FileDocument {
-    
-    static var readableContentTypes: [UTType] { [.plainText] }
-
-    var message: String
-
-    init(message: String) {
-        self.message = message
-    }
-
-    init(configuration: ReadConfiguration) throws {
-        guard let data = configuration.file.regularFileContents,
-              let string = String(data: data, encoding: .utf8)
-        else {
-            throw CocoaError(.fileReadCorruptFile)
-        }
-        message = string
-    }
-
-    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        return FileWrapper(regularFileWithContents: message.data(using: .utf8)!)
     }
 }
