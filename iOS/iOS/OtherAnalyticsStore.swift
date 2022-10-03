@@ -10,6 +10,7 @@ import Foundation
 import Combine
 import TimeSDK
 import WidgetKit
+import SwiftUI // For Binding
 
 class OtherAnalyticsStore: ObservableObject {
 
@@ -17,11 +18,11 @@ class OtherAnalyticsStore: ObservableObject {
     
     private let storeGroupByKey = "other-analytics-store-group-by"
     private let storeIncludeEmptyKey = "other-analytics-store-include-empty"
-    @Published var gropuBy: TimePeriod {
+    @Published var groupBy: TimePeriod {
         didSet {
             self.calculateMetrics()
             // Persist preference to store
-            UserDefaults().set(self.gropuBy.rawValue, forKey: self.storeGroupByKey)
+            UserDefaults().set(self.groupBy.rawValue, forKey: self.storeGroupByKey)
         }
     }
     @Published var includeEmpty: Bool {
@@ -42,11 +43,13 @@ class OtherAnalyticsStore: ObservableObject {
     @Published var totalData: [String : Analyzer.Result] = [:]
     @Published var categoryData: [String : [Analyzer.Result]] = [:]
     
+    @Published var exportDocument: ReportDocument? = nil
+    
     var cancellables = [AnyCancellable]()
     
     init(for warehouse: Warehouse) {
         // Load groupBy first for single-pass analytics
-        self.gropuBy = TimePeriod(
+        self.groupBy = TimePeriod(
             rawValue: UserDefaults().string(forKey: self.storeGroupByKey) ?? ""
         ) ?? .week
         
@@ -104,7 +107,7 @@ class OtherAnalyticsStore: ObservableObject {
             return key
         }
         
-        switch self.gropuBy {
+        switch self.groupBy {
         case .day:
             return self.dayDateFormatter.string(from: date)
         case .week:
@@ -129,7 +132,7 @@ class OtherAnalyticsStore: ObservableObject {
     
     private func calculateMetrics() {
         let updatedData = Time.shared.analyzer.evaluateAll(
-            gropuBy: self.gropuBy, perform: [.calculateTotal, .calculatePerCategory], includeEmpty: self.includeEmpty
+            gropuBy: self.groupBy, perform: [.calculateTotal, .calculatePerCategory], includeEmpty: self.includeEmpty
         )
         
         let startingKeys = self.orderedKeys
@@ -175,5 +178,54 @@ class OtherAnalyticsStore: ObservableObject {
         let aName = self.warehouse.getName(for: a.categoryID)
         let bName = self.warehouse.getName(for: b.categoryID)
         return aName < bName
+    }
+    
+    // MARK: - Export Results
+    
+    func buildExport(
+        doneLoading: Binding<Bool>,
+        readyForUI: Binding<Bool>
+    ) {
+        // Rebuild File
+        DispatchQueue.global(qos: .background).async {
+            var nameCache: [Int: String] = [:]
+            var pathCache: [Int: String] = [:]
+            
+            var rows = ["Date, Type, Path, Name, Duration (s), Duration (h)"]
+            self.orderedKeys.forEach { key in
+                // Append total (without path or name)
+                let durationSeconds = self.totalData[key]?.duration ?? 0
+                let durationHours = durationSeconds / 60 / 60
+                rows.append("\(key), Total, , ,\(durationSeconds), \(durationHours)")
+                
+                // Append categories
+                self.categoryData[key]?.forEach({ result in
+                    var name = nameCache[result.categoryID ?? -1]
+                    if name == nil && result.categoryID != nil {
+                        name = self.warehouse.getName(for: result.categoryID)
+                        nameCache[result.categoryID!] = name
+                    }
+                    var path = pathCache[result.categoryID ?? -1]
+                    if path == nil && result.categoryID != nil {
+                        path = self.warehouse.getParentHierarchyName(for: result.categoryID)
+                        pathCache[result.categoryID!] = path
+                    }
+                    
+                    let safeName = (name?.contains(",") ?? false) ? "\"\(name!)\"" : (name ?? "")
+                    let safePath = (path?.contains(",") ?? false) ? "\"\(path!)\"" : (path ?? "")
+                    
+                    rows.append("\(key), Category, \(safePath), \(safeName), \(result.duration), \(result.duration / 60 / 60)")
+                })
+            }
+            
+            let file = rows.joined(separator: "\n")
+            
+            DispatchQueue.main.async {
+                self.exportDocument = ReportDocument(message: file)
+                
+                doneLoading.wrappedValue = false
+                readyForUI.wrappedValue = true
+            }
+        }
     }
 }

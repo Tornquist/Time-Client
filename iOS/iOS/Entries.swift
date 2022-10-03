@@ -16,7 +16,13 @@ struct Entries: View {
     @State var selectedEntry: Entry? = nil
     @State var handlingId: [Int: Bool] = [:]
     
+    @State var exportLoading: Bool = false
+    @State var showExportDialog: Bool = false
+    @State var exportDocument: ReportDocument? = nil
+    
     var timezones: [(String, String)]
+   
+    var outputDateFormatter: DateFormatter = DateFormatter()
     
     // Shared between all cells
     static var dateFormatters: [String:DateFormatter] = [:]
@@ -30,6 +36,10 @@ struct Entries: View {
         })
         let timezoneValues = allTimezones
         self.timezones = Array(zip(timezoneLabels, timezoneValues))
+        
+        self.outputDateFormatter.dateFormat = "yyyy-MM-dd"
+        self.outputDateFormatter.timeZone = TimeZone.current // Sync with analyzer
+        self.outputDateFormatter.locale = Locale.current // Sync with analyzer
     }
     
     var body: some View {
@@ -81,6 +91,29 @@ struct Entries: View {
             }
         )
         .navigationTitle("Entries")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    self.buildExport(
+                        doneLoading: self.$exportLoading,
+                        readyForUI: self.$showExportDialog
+                    )
+                    self.exportLoading = true
+                } label: {
+                    if self.exportLoading {
+                        ProgressView()
+                    } else {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                }
+            }
+        }
+        .fileExporter(
+            isPresented: self.$showExportDialog,
+            document: self.exportDocument,
+            contentType: .plainText,
+            defaultFilename: "\(self.outputDateFormatter.string(from: Date()))_time_entries_export.csv"
+        ) { _ in }
     }
     
     func getName(_ entry: Entry) -> String {
@@ -207,5 +240,55 @@ struct Entries: View {
         self.warehouse.time?.store.delete(entry: entry, completion: { (success) in
             self.selectedEntry = nil
         })
+    }
+    
+    // MARK: - Export Data
+    
+    func buildExport(
+        doneLoading: Binding<Bool>,
+        readyForUI: Binding<Bool>
+    ) {
+        // Rebuild File
+        DispatchQueue.global(qos: .background).async {
+            var rows = ["Type, Path, Name, Started At, Started At Timezone, Ended At, Ended At Timezone"]
+            
+            var nameCache: [Int: String] = [:]
+            var pathCache: [Int: String] = [:]
+            
+            let formatter = ISO8601DateFormatter()
+            
+            self.warehouse.entries.forEach { entry in
+                let type = entry.type.rawValue
+                let startedAt = formatter.string(from: entry.startedAt)
+                let startedAtTimezone = entry.startedAtTimezone ?? ""
+                let endedAt = entry.endedAt != nil ? formatter.string(from: entry.endedAt!) : ""
+                let endedAtTimezone = entry.endedAtTimezone ?? ""
+                
+                var name = nameCache[entry.categoryID]
+                if name == nil {
+                    name = self.warehouse.getName(for: entry.categoryID)
+                    nameCache[entry.categoryID] = name
+                }
+                var path = pathCache[entry.categoryID]
+                if path == nil {
+                    path = self.warehouse.getParentHierarchyName(for: entry.categoryID)
+                    pathCache[entry.categoryID] = path
+                }
+
+                let safeName = (name?.contains(",") ?? false) ? "\"\(name!)\"" : (name ?? "")
+                let safePath = (path?.contains(",") ?? false) ? "\"\(path!)\"" : (path ?? "")
+                
+                rows.append("\(type), \(safePath), \(safeName), \(startedAt), \(startedAtTimezone), \(endedAt), \(endedAtTimezone)")
+            }
+            
+            let file = rows.joined(separator: "\n")
+            
+            DispatchQueue.main.async {
+                self.exportDocument = ReportDocument(message: file)
+                
+                doneLoading.wrappedValue = false
+                readyForUI.wrappedValue = true
+            }
+        }
     }
 }

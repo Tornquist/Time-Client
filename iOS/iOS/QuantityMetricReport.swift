@@ -15,17 +15,16 @@ struct QuantityMetricReport: View {
     
     var show: Binding<Bool>
     
+    @State var exportLoading: Bool = false
+    @State var showExportDialog: Bool = false
+    
     var showSeconds: Bool
     var internalShowSeconds: Bool {
-        return self.showSeconds && ![TimePeriod.year, TimePeriod.month].contains(self.store.gropuBy)
+        return self.showSeconds && ![TimePeriod.year, TimePeriod.month].contains(self.store.groupBy)
     }
     var emptyDuration: String {
         return internalShowSeconds ? "00:00:00" : "00:00"
     }
-    
-    @State private var data: [String : [Analyzer.Result]] = Time.shared.analyzer.evaluateAll(
-        gropuBy: .week, perform: [.calculateTotal, .calculatePerCategory]
-    )
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -48,7 +47,6 @@ struct QuantityMetricReport: View {
                 .listRowInsets(EdgeInsets())
                 .padding(EdgeInsets())
             }
-     
             .navigationTitle("Metrics")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -61,9 +59,9 @@ struct QuantityMetricReport: View {
                         Menu {
                             ForEach(TimePeriod.all()) { timePeriod in
                                 Button {
-                                    self.store.gropuBy = timePeriod
+                                    self.store.groupBy = timePeriod
                                 } label: {
-                                    if timePeriod == self.store.gropuBy {
+                                    if timePeriod == self.store.groupBy {
                                         Label(timePeriod.display, systemImage: "checkmark")
                                     } else {
                                         Text(timePeriod.display)
@@ -86,9 +84,30 @@ struct QuantityMetricReport: View {
                         Image(systemName: "line.3.horizontal.decrease.circle")
                     }
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        self.store.buildExport(
+                            doneLoading: self.$exportLoading,
+                            readyForUI: self.$showExportDialog
+                        )
+                        self.exportLoading = true
+                    } label: {
+                        if self.exportLoading {
+                            ProgressView()
+                        } else {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                    }
+                }
             }
         }.onReceive(timer, perform: { _ in
             store.refreshAsNeeded()
         })
+        .fileExporter(
+            isPresented: self.$showExportDialog,
+            document: self.store.exportDocument,
+            contentType: .plainText,
+            defaultFilename: "\(self.store.inDateFormatter.string(from: Date()))_time_\(self.store.groupBy.rawValue)_export.csv"
+        ) { _ in }
     }
 }
