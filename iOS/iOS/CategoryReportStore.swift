@@ -29,6 +29,17 @@ class CategoryReportStore: ObservableObject {
     @Published var title: String = "Analytics"
     @Published var graphData: [CategoryReportGraphValue] = []
     
+    // TODO: Remove need to keep init in sync with view
+    var range: RangeOption = .month
+    var groupBy: TimePeriod = .day
+    
+    enum RangeOption: String {
+        case all = "all"
+        case year = "year"
+        case month = "month"
+        case week = "week"
+    }
+    
     init(for warehouse: Warehouse, category: Binding<TimeSDK.Category?>) {
         self.warehouse = warehouse
         self._rootCategory = category
@@ -37,6 +48,17 @@ class CategoryReportStore: ObservableObject {
         DispatchQueue.main.async {
             self.compute()
         }
+    }
+
+    func recompute(range: RangeOption, gropuBy: TimePeriod) {
+        guard self.range != range || self.groupBy != gropuBy else {
+            return // No change
+        }
+        
+        self.range = range
+        self.groupBy = gropuBy
+        
+        self.compute()
     }
     
     func reset() {
@@ -61,12 +83,33 @@ class CategoryReportStore: ObservableObject {
             let inScopeCategoryIDs = categoryTree.listCategoryTrees().map { $0.id }
             
             // Calculate General Metrics
-            let allResults = Time.shared.analyzer.evaluate(
-                TimeRange(rolling: .month),
-                groupBy: .day,
-                perform: [.calculatePerCategory],
-                includeEmpty: true
-            )
+            var allResults: [String: [Analyzer.Result]] = [:]
+            if self.range == .all {
+                allResults = Time.shared.analyzer.evaluateAll(
+                    gropuBy: self.groupBy,
+                    perform: [.calculatePerCategory],
+                    includeEmpty: true
+                )
+            } else {
+                var range: TimeRange = TimeRange(rolling: .year)
+                switch self.range {
+                case .year:
+                    range = TimeRange(rolling: .year)
+                case .month:
+                    range = TimeRange(rolling: .month)
+                case .week:
+                    range = TimeRange(rolling: .week)
+                default:
+                    break
+                }
+                allResults = Time.shared.analyzer.evaluate(
+                    range,
+                    groupBy: self.groupBy,
+                    perform: [.calculatePerCategory],
+                    includeEmpty: true
+                )
+            }
+            
             var inScopeResults: [String: [Analyzer.Result]] = [:]
             allResults.keys.forEach { key in
                 inScopeResults[key] = allResults[key]!.filter({ result in
