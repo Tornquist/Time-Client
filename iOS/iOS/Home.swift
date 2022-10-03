@@ -34,7 +34,8 @@ struct Home: View {
         case rename
         case delete
         case importList
-        case report
+        case metricReport
+        case categoryReport
         
         static func from(_ selection: AccountMenu.Selection) -> HomeModal? {
             switch selection {
@@ -55,6 +56,8 @@ struct Home: View {
                 return HomeModal.rename
             case .delete:
                 return HomeModal.delete
+            case .analytics:
+                return HomeModal.categoryReport
             default:
                 return nil
             }
@@ -90,7 +93,7 @@ struct Home: View {
                 .padding(EdgeInsets())
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    self.showModal = .report
+                    self.showModal = .metricReport
                 }
                 
                 if self.warehouse.recentCategories.count > 0 {
@@ -174,7 +177,7 @@ struct Home: View {
     
     func handleCategoryAction(category: TimeSDK.Category, categoryAction: CategoryMenu.Selection) {
         switch categoryAction {
-        case .addChild, .move, .rename, .delete:
+        case .addChild, .move, .rename, .delete, .analytics:
             self.showModal = HomeModal.from(categoryAction)
             self.selectedCategory = category
         case .toggleState:
@@ -227,7 +230,7 @@ struct Home: View {
                 ImportList(model: ImportModel(for: self.warehouse), show: buildBinding(for: .importList))
                     .environmentObject(self.warehouse)
             )
-        case .report:
+        case .metricReport:
             return AnyView(
                 QuantityMetricReport(
                     store: OtherAnalyticsStore(for: self.warehouse),
@@ -236,6 +239,16 @@ struct Home: View {
                 )
                 .environmentObject(self.warehouse)
             )
+        case .categoryReport:
+            return AnyView(
+                CategoryReport(
+                    store: CategoryReportStore(
+                        for: self.warehouse,
+                        category: $selectedCategory),
+                    show: buildBinding(for: .categoryReport)
+                )
+                    .environmentObject(self.warehouse)
+           )
         }
     }
 }

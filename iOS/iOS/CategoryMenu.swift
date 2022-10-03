@@ -21,6 +21,7 @@ struct CategoryMenu: View {
         case delete
         case toggleState
         case recordEvent
+        case analytics
 
         var id: Int { hashValue }
     }
@@ -51,6 +52,11 @@ struct CategoryMenu: View {
             } label: {
                 Label("Modify", systemImage: "gear")
             }
+            Button(action: {
+                self.selected?(category, .analytics)
+            }, label: {
+                Label("Analytics", systemImage: "chart.xyaxis.line")
+            })
             Button(action: {
                 self.selected?(category, .recordEvent)
             }, label: {
