@@ -71,6 +71,7 @@ struct CategoryReport: View {
                                 }
                             }
                         }
+                        .chartXScale(domain: self.store.startRange...self.store.endRange)
                         .chartXAxis {
                             if rangeSelection == .all {
                                 AxisMarks(values: .stride(by: .year))

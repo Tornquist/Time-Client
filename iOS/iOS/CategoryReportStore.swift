@@ -35,6 +35,9 @@ class CategoryReportStore: ObservableObject {
     
     @Published var loading: Bool = false
     
+    @Published var startRange: Date = Date()
+    @Published var endRange: Date = Date()
+    
     enum RangeOption: String {
         case all = "all"
         case year = "year"
@@ -133,7 +136,8 @@ class CategoryReportStore: ObservableObject {
             dateFormatter.timeZone = TimeZone.current // Sync with analyzer
             dateFormatter.locale = Locale.current // Sync with analyzer
             
-            let graphData = inScopeResults.keys.sorted().flatMap { key -> [CategoryReportGraphValue] in
+            let orderedKeys = inScopeResults.keys.sorted()
+            let graphData = orderedKeys.flatMap { key -> [CategoryReportGraphValue] in
                 guard let data = inScopeResults[key],
                       let date = dateFormatter.date(from: key) else {
                     return []
@@ -154,10 +158,17 @@ class CategoryReportStore: ObservableObject {
                 
                 return sortedGraphData
             }
-                        
-            DispatchQueue.main.async {
-                self.title = self.rootCategory?.name ?? "Analytics"
+
+            // Should always safely resolve
+            let first = (orderedKeys.first != nil ? dateFormatter.date(from: orderedKeys.first!) : nil) ?? Date()
+            let last = (orderedKeys.last != nil ? dateFormatter.date(from: orderedKeys.last!) : nil) ?? Date()
+            
+            DispatchQueue.main.async {  
+                self.title = (self.rootCategory?.parentID != nil ? self.rootCategory?.name : nil) ?? "Analytics"
                 self.graphData = graphData
+                self.startRange = first
+                self.endRange = last
+                
                 self.loading = false
             }
         }

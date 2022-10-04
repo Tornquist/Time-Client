@@ -172,6 +172,9 @@ struct Home: View {
             self.selectedCategory = category
         case .rename:
             break // No actions yet
+        case .analytics:
+            self.showModal = .categoryReport
+            self.selectedCategory = category
         }
     }
     

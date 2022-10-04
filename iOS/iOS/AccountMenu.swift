@@ -16,12 +16,18 @@ struct AccountMenu: View {
     enum Selection: Identifiable {
         case addChild
         case rename
+        case analytics
 
         var id: Int { hashValue }
     }
     
     var body: some View {
         Menu {
+            Button(action: {
+                self.selected?(root, .analytics)
+            }, label: {
+                Label("Analytics", systemImage: "chart.xyaxis.line")
+            })
             Button(action: {
                 self.selected?(root, .addChild)
             }, label: {
