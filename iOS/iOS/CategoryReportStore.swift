@@ -162,12 +162,13 @@ class CategoryReportStore: ObservableObject {
             // Should always safely resolve
             let first = (orderedKeys.first != nil ? dateFormatter.date(from: orderedKeys.first!) : nil) ?? Date()
             let last = (orderedKeys.last != nil ? dateFormatter.date(from: orderedKeys.last!) : nil) ?? Date()
+            let lastInclusive = Calendar.current.date(byAdding: .day, value: 1, to: last)!
             
-            DispatchQueue.main.async {  
+            DispatchQueue.main.async {
                 self.title = (self.rootCategory?.parentID != nil ? self.rootCategory?.name : nil) ?? "Analytics"
                 self.graphData = graphData
                 self.startRange = first
-                self.endRange = last
+                self.endRange = lastInclusive
                 
                 self.loading = false
             }
