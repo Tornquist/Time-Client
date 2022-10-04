@@ -132,7 +132,7 @@ class OtherAnalyticsStore: ObservableObject {
     
     private func calculateMetrics() {
         let updatedData = Time.shared.analyzer.evaluateAll(
-            gropuBy: self.groupBy, perform: [.calculateTotal, .calculatePerCategory], includeEmpty: self.includeEmpty
+            groupBy: self.groupBy, perform: [.calculateTotal, .calculatePerCategory], includeEmpty: self.includeEmpty
         )
         
         let startingKeys = self.orderedKeys

@@ -113,7 +113,7 @@ public class Analyzer {
     
     public func evaluateAll(
         in calendar: Calendar? = nil,
-        gropuBy: TimePeriod,
+        groupBy: TimePeriod,
         perform operations: [Operation],
         includeEmpty: Bool = false
     ) -> [String: [Result]] {
@@ -123,7 +123,7 @@ public class Analyzer {
         let to: Date? = nil // now
         
         // 2. Perfor query
-        return self.evaluate(from: from, to: to, in: selectedCalendar, groupBy: gropuBy, perform: operations, includeEmpty: includeEmpty)
+        return self.evaluate(from: from, to: to, in: selectedCalendar, groupBy: groupBy, perform: operations, includeEmpty: includeEmpty)
     }
         
     public func evaluate(

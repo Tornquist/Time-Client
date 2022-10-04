@@ -19,13 +19,51 @@ struct CategoryReport: View {
     // TODO: Remove need to keep init in sync with store
     @State var rangeSelection: CategoryReportStore.RangeOption = .month
     @State var groupBySelection: TimePeriod = .day
-    
+        
     enum GraphStyle: String {
         case bar = "bar"
         case line = "line"
         case point = "point"
     }
     @State var graphStyle: GraphStyle = .bar
+    
+    var barWidth: MarkDimension {
+        switch rangeSelection {
+        case .week, .month:
+            return .automatic
+        case .threeMonths, .sixMonths:
+            switch groupBySelection {
+            case .year:
+                return .fixed(9.0)
+            case .month:
+                return .fixed(8.0)
+            case .week:
+                return .fixed(7.0)
+            case .day:
+                return .automatic
+            }
+        case .year:
+            switch groupBySelection {
+            case .year, .month:
+                return .fixed(9.0)
+            case .week:
+                return .fixed(3.0)
+            case .day:
+                return .automatic
+            }
+        case .all: // These values are based on ~5 years of data. Should be dynamic
+            switch groupBySelection {
+            case .year:
+                return .fixed(9.0)
+            case .month:
+                return .fixed(2.0)
+            case .week:
+                return .fixed(0.7)
+            case .day:
+                return .automatic
+            }
+        }
+    }
     
     let chartHeight: CGFloat = 300
     
@@ -49,7 +87,8 @@ struct CategoryReport: View {
                                 ForEach(self.store.graphData) { entry in
                                     BarMark(
                                         x: .value("Date", entry.date, unit: .day),
-                                        y: .value("Duration", entry.duration)
+                                        y: .value("Duration", entry.duration),
+                                        width: barWidth
                                     )
                                     .foregroundStyle(by: .value("Type", entry.category))
                                 }
@@ -75,7 +114,7 @@ struct CategoryReport: View {
                         .chartXAxis {
                             if rangeSelection == .all {
                                 AxisMarks(values: .stride(by: .year))
-                            } else if rangeSelection == .year {
+                            } else if rangeSelection == .year || rangeSelection == .threeMonths || rangeSelection == .sixMonths {
                                 AxisMarks(values: .stride(by: .month))
                             } else {
                                 AxisMarks(values: .stride(by: .weekOfYear))
@@ -116,6 +155,8 @@ struct CategoryReport: View {
                     Picker("Timeframe", selection: $rangeSelection) {
                         Text("All time").tag(CategoryReportStore.RangeOption.all)
                         Text("Last Year").tag(CategoryReportStore.RangeOption.year)
+                        Text("Last 6 Months").tag(CategoryReportStore.RangeOption.sixMonths)
+                        Text("Last 3 Months").tag(CategoryReportStore.RangeOption.threeMonths)
                         Text("Last Month").tag(CategoryReportStore.RangeOption.month)
                         Text("Last Week").tag(CategoryReportStore.RangeOption.week)
                     }

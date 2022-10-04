@@ -41,6 +41,8 @@ class CategoryReportStore: ObservableObject {
     enum RangeOption: String {
         case all = "all"
         case year = "year"
+        case sixMonths = "six_months"
+        case threeMonths = "three_months"
         case month = "month"
         case week = "week"
     }
@@ -93,7 +95,19 @@ class CategoryReportStore: ObservableObject {
             var allResults: [String: [Analyzer.Result]] = [:]
             if self.range == .all {
                 allResults = Time.shared.analyzer.evaluateAll(
-                    gropuBy: self.groupBy,
+                    groupBy: self.groupBy,
+                    perform: [.calculatePerCategory],
+                    includeEmpty: true
+                )
+            } else if self.range == .sixMonths || self.range == .threeMonths {
+                let shift = self.range == .sixMonths ? 6 : 3
+                let startRange = Calendar.current.date(byAdding: .month, value: -shift, to: Date())!
+                
+                allResults = Time.shared.analyzer.evaluate(
+                    from: startRange,
+                    to: nil,
+                    in: Calendar.current,
+                    groupBy: self.groupBy,
                     perform: [.calculatePerCategory],
                     includeEmpty: true
                 )
