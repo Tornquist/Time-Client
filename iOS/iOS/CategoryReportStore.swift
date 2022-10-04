@@ -33,6 +33,8 @@ class CategoryReportStore: ObservableObject {
     var range: RangeOption = .month
     var groupBy: TimePeriod = .day
     
+    @Published var loading: Bool = false
+    
     enum RangeOption: String {
         case all = "all"
         case year = "year"
@@ -45,6 +47,7 @@ class CategoryReportStore: ObservableObject {
         self._rootCategory = category
         
         // Bump to end of thread to let binding resolve -- Needs correct implementation.
+        self.loading = true
         DispatchQueue.main.async {
             self.compute()
         }
@@ -68,6 +71,7 @@ class CategoryReportStore: ObservableObject {
     }
     
     func compute() {
+        self.loading = true
         DispatchQueue.global(qos: .background).async {
             guard let categoryID = self.rootCategory?.id,
                   let categoryTree = Time.shared.store.categoryTrees.map({ (key: Int, value: CategoryTree) in
@@ -129,12 +133,13 @@ class CategoryReportStore: ObservableObject {
             dateFormatter.timeZone = TimeZone.current // Sync with analyzer
             dateFormatter.locale = Locale.current // Sync with analyzer
             
-            let graphData = inScopeResults.flatMap { (key: String, value: [Analyzer.Result]) -> [CategoryReportGraphValue] in
-                guard let date = dateFormatter.date(from: key) else {
+            let graphData = inScopeResults.keys.sorted().flatMap { key -> [CategoryReportGraphValue] in
+                guard let data = inScopeResults[key],
+                      let date = dateFormatter.date(from: key) else {
                     return []
                 }
                 
-                let unsortedGraphData = value.map({ result in
+                let unsortedGraphData = data.map({ result in
                     return CategoryReportGraphValue(
                         stringDate: key,
                         date: date,
@@ -153,6 +158,7 @@ class CategoryReportStore: ObservableObject {
             DispatchQueue.main.async {
                 self.title = self.rootCategory?.name ?? "Analytics"
                 self.graphData = graphData
+                self.loading = false
             }
         }
     }

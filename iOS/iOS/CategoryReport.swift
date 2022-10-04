@@ -20,18 +20,55 @@ struct CategoryReport: View {
     @State var rangeSelection: CategoryReportStore.RangeOption = .month
     @State var groupBySelection: TimePeriod = .day
     
+    enum GraphStyle: String {
+        case bar = "bar"
+        case line = "line"
+        case point = "point"
+    }
+    @State var graphStyle: GraphStyle = .bar
+    
+    let chartHeight: CGFloat = 300
+    
     var body: some View {
         NavigationView {
             List {
                 Section {
-                    if store.graphData.count > 0 {
+                    if store.loading {
+                        HStack {
+                            Spacer()
+                            Text("Loading")
+                                .italic()
+                                .foregroundColor(Color(UIColor.placeholderText))
+                            Spacer()
+                        }.frame(height: chartHeight)
+                    } else if store.graphData.count > 0 {
                         Chart {
-                            ForEach(self.store.graphData) { entry in
-                                BarMark(
-                                    x: .value("Date", entry.date, unit: .day),
-                                    y: .value("Duration", entry.duration)
-                                )
-                                .foregroundStyle(by: .value("Type", entry.category))
+                            // Changing point types inside the foreach prevented compilation
+                            switch graphStyle {
+                            case .bar:
+                                ForEach(self.store.graphData) { entry in
+                                    BarMark(
+                                        x: .value("Date", entry.date, unit: .day),
+                                        y: .value("Duration", entry.duration)
+                                    )
+                                    .foregroundStyle(by: .value("Type", entry.category))
+                                }
+                            case .line:
+                                ForEach(self.store.graphData) { entry in
+                                    LineMark(
+                                        x: .value("Date", entry.date, unit: .day),
+                                        y: .value("Duration", entry.duration)
+                                    )
+                                    .foregroundStyle(by: .value("Type", entry.category))
+                                }
+                            case .point:
+                                ForEach(self.store.graphData) { entry in
+                                    PointMark(
+                                        x: .value("Date", entry.date, unit: .day),
+                                        y: .value("Duration", entry.duration)
+                                    )
+                                    .foregroundStyle(by: .value("Type", entry.category))
+                                }
                             }
                         }
                         .chartXAxis {
@@ -59,7 +96,7 @@ struct CategoryReport: View {
                                 }
                             }
                         }
-                        .frame(height: 300)
+                        .frame(height: chartHeight)
                     } else {
                         HStack {
                             Spacer()
@@ -68,21 +105,23 @@ struct CategoryReport: View {
                                 .foregroundColor(Color(UIColor.placeholderText))
                             Spacer()
                         }
+                        .frame(height: chartHeight)
                     }
-                        
-                    Picker("Range", selection: $rangeSelection) {
-                        Text("All").tag(CategoryReportStore.RangeOption.all)
-                        Text("Year").tag(CategoryReportStore.RangeOption.year)
-                        Text("Month").tag(CategoryReportStore.RangeOption.month)
-                        Text("Week").tag(CategoryReportStore.RangeOption.week)
+                } header:  {
+                    Text("Recorded Data")
+                }
+                
+                Section {
+                    Picker("Timeframe", selection: $rangeSelection) {
+                        Text("All time").tag(CategoryReportStore.RangeOption.all)
+                        Text("Last Year").tag(CategoryReportStore.RangeOption.year)
+                        Text("Last Month").tag(CategoryReportStore.RangeOption.month)
+                        Text("Last Week").tag(CategoryReportStore.RangeOption.week)
                     }
                     .onChange(of: rangeSelection, perform: { newValue in
                         self.store.recompute(range: self.rangeSelection, gropuBy: self.groupBySelection)
                     })
-                    .pickerStyle(SegmentedPickerStyle())
-                    .listRowInsets(EdgeInsets())
-                    .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4))
-                    .listRowSeparator(.hidden)
+                    .pickerStyle(.menu)
                     
                     Picker("Group By", selection: $groupBySelection) {
                         Text("Year").tag(TimePeriod.year)
@@ -93,12 +132,16 @@ struct CategoryReport: View {
                     .onChange(of: groupBySelection, perform: { newValue in
                         self.store.recompute(range: self.rangeSelection, gropuBy: self.groupBySelection)
                     })
-                    .pickerStyle(SegmentedPickerStyle())
-                    .listRowInsets(EdgeInsets())
-                    .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4))
-                    .listRowSeparator(.hidden)
-                }  header: {
-                    Text("Historical Data")
+                    .pickerStyle(.menu)
+
+                    Picker("Style", selection: $graphStyle) {
+                        Text("Bar Graph").tag(GraphStyle.bar)
+                        Text("Line Graph").tag(GraphStyle.line)
+                        Text("Scatterplot").tag(GraphStyle.point)
+                    }
+                    .pickerStyle(.menu)
+                } header:  {
+                    Text("Controls")
                 }
             }
             .navigationTitle(self.store.title)
