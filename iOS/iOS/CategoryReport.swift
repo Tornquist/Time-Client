@@ -65,6 +65,24 @@ struct CategoryReport: View {
         }
     }
     
+    @State var showWorkRuler: Bool = false
+    var workRulerPlacement: TimeInterval {
+        switch groupBySelection {
+        case .day:
+            return 28800 // 8 hours
+        case .week:
+            return 144000 // 40 hours
+        default:
+            return 0
+        }
+    }
+    var enableWorkRuler: Bool {
+        return self.groupBySelection == .day || self.groupBySelection == .week
+    }
+    var workRulerTitle: String {
+        return self.groupBySelection == .day ? "8h" : "40h"
+    }
+    
     let chartHeight: CGFloat = 300
     
     var body: some View {
@@ -109,6 +127,20 @@ struct CategoryReport: View {
                                     .foregroundStyle(by: .value("Type", entry.category))
                                 }
                             }
+                            
+                            if self.showWorkRuler && self.enableWorkRuler {
+                                RuleMark(
+                                    /* TODO: Averages: by included day for work? */
+                                    y: .value("Average", self.workRulerPlacement)
+                                )
+                                .foregroundStyle(.green)
+                                .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [3, 5]))
+                                .annotation(position: .trailing, alignment: .leading) {
+                                    Text(self.workRulerTitle)
+                                        .font(.caption2)
+                                        .foregroundStyle(.green)
+                                }
+                            }
                         }
                         .chartXScale(domain: self.store.startRange...self.store.endRange)
                         .chartXAxis {
@@ -127,7 +159,7 @@ struct CategoryReport: View {
                                 let formatter: DateComponentsFormatter = {
                                     let formatter = DateComponentsFormatter()
                                     formatter.unitsStyle = .abbreviated
-                                    formatter.allowedUnits = [.hour]
+                                    formatter.allowedUnits = [.hour, .minute]
                                     return formatter
                                 }()
                                 
@@ -182,6 +214,13 @@ struct CategoryReport: View {
                         Text("Scatterplot").tag(GraphStyle.point)
                     }
                     .pickerStyle(.menu)
+                    
+                    HStack {
+                        Toggle(isOn: $showWorkRuler, label: {
+                            Text("Work Ruler")
+                        })
+                        .disabled(self.enableWorkRuler == false)
+                    }
                 } header:  {
                     Text("Controls")
                 }
