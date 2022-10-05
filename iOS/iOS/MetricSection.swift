@@ -31,7 +31,7 @@ struct MetricSection: View {
                     QuantityMetric.QuantityItem(
                         id: result.categoryID ?? self.warehouse.getName(for: result.categoryID).hashValue,
                         name: self.warehouse.getName(for: result.categoryID),
-                        total: result.displayDuration(withSeconds: showSeconds),
+                        total: result.displayDurationAndOrEvents(withSeconds: showSeconds),
                         active: result.open
                     )
                 })
@@ -47,7 +47,7 @@ struct MetricSection: View {
                     QuantityMetric.QuantityItem(
                         id: result.categoryID ?? self.warehouse.getName(for: result.categoryID).hashValue,
                         name: self.warehouse.getName(for: result.categoryID),
-                        total: result.displayDuration(withSeconds: showSeconds),
+                        total: result.displayDurationAndOrEvents(withSeconds: showSeconds),
                         active: result.open
                     )
                 })

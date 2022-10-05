@@ -52,6 +52,16 @@ public class Analyzer {
             return timeString
         }
         
+        public func displayDurationAndOrEvents(withSeconds showSeconds: Bool) -> String {
+            if duration != 0 && events != 0 {
+                return "(\(events)) \(self.displayDuration(withSeconds: showSeconds))"
+            } else if duration != 0 {
+                return self.displayDuration(withSeconds: showSeconds)
+            } else {
+                return self.events.description + " event" + (self.events != 1 ? "s" : "")
+            }
+        }
+        
         private init(operation: Operation, categoryID: Int?, duration: TimeInterval, events: Int, open: Bool) {
             self.operation = operation
             self.categoryID = categoryID
