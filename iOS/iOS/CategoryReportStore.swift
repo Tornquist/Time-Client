@@ -11,14 +11,14 @@ import Combine
 import SwiftUI
 import TimeSDK
 
-struct CategoryReportGraphValue: Equatable, Identifiable {
+struct CategoryReportValue: Equatable, Identifiable {
     var stringDate: String
     var date: Date
     var category: String
-    var duration: TimeInterval
+    var value: TimeInterval
     
     var id: String {
-        return "\(stringDate)-\(category)-\(duration)"
+        return "\(stringDate)-\(category)-\(value)"
     }
 }
 
@@ -27,7 +27,8 @@ class CategoryReportStore: ObservableObject {
     @Binding var rootCategory: TimeSDK.Category?
     
     @Published var title: String = "Analytics"
-    @Published var graphData: [CategoryReportGraphValue] = []
+    @Published var durationData: [CategoryReportValue] = []
+    @Published var quantityData: [CategoryReportValue] = []
     
     // TODO: Remove need to keep init in sync with view
     var range: RangeOption = .month
@@ -151,26 +152,55 @@ class CategoryReportStore: ObservableObject {
             dateFormatter.locale = Locale.current // Sync with analyzer
             
             let orderedKeys = inScopeResults.keys.sorted()
-            let graphData = orderedKeys.flatMap { key -> [CategoryReportGraphValue] in
+            let durationData = orderedKeys.flatMap { key -> [CategoryReportValue] in
                 guard let data = inScopeResults[key],
                       let date = dateFormatter.date(from: key) else {
                     return []
                 }
                 
-                let unsortedGraphData = data.map({ result in
-                    return CategoryReportGraphValue(
+                let unsortedDurationData = data.compactMap({ result -> CategoryReportValue? in
+                    guard result.duration != 0 else {
+                        return nil
+                    }
+                    return CategoryReportValue(
                         stringDate: key,
                         date: date,
                         category: nameCache[result.categoryID ?? -1] ?? "Unknwon",
-                        duration: result.duration
+                        value: result.duration
                     )
                 })
                     
-                let sortedGraphData = unsortedGraphData.sorted { a, b in
+                let sortedDurationData = unsortedDurationData.sorted { a, b in
                     return a.category.localizedCompare(b.category) == .orderedAscending
                 }
                 
-                return sortedGraphData
+                return sortedDurationData
+            }
+            
+            // TODO: Simplify code for a single pass
+            let quantityData = orderedKeys.flatMap { key -> [CategoryReportValue] in
+                guard let data = inScopeResults[key],
+                      let date = dateFormatter.date(from: key) else {
+                    return []
+                }
+                
+                let unsortedQuantityData = data.compactMap({ result -> CategoryReportValue? in
+                    guard result.events != 0 else {
+                        return nil
+                    }
+                    return CategoryReportValue(
+                        stringDate: key,
+                        date: date,
+                        category: nameCache[result.categoryID ?? -1] ?? "Unknwon",
+                        value: TimeInterval(result.events)
+                    )
+                })
+                    
+                let sortedQuantityData = unsortedQuantityData.sorted { a, b in
+                    return a.category.localizedCompare(b.category) == .orderedAscending
+                }
+                
+                return sortedQuantityData
             }
 
             // Should always safely resolve
@@ -180,7 +210,10 @@ class CategoryReportStore: ObservableObject {
             
             DispatchQueue.main.async {
                 self.title = (self.rootCategory?.parentID != nil ? self.rootCategory?.name : nil) ?? "Analytics"
-                self.graphData = graphData
+                
+                self.durationData = durationData
+                self.quantityData = quantityData
+                
                 self.startRange = first
                 self.endRange = lastInclusive
                 

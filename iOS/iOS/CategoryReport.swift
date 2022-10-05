@@ -19,7 +19,7 @@ struct CategoryReport: View {
     // TODO: Remove need to keep init in sync with store
     @State var rangeSelection: CategoryReportStore.RangeOption = .month
     @State var groupBySelection: TimePeriod = .day
-        
+    
     enum GraphStyle: String {
         case bar = "bar"
         case line = "line"
@@ -76,8 +76,48 @@ struct CategoryReport: View {
             return 0
         }
     }
+    
+    @State var desiredDisplayDataType: EntryType = .range
+    var displayDataType: EntryType {
+        guard !self.store.loading else {
+            return self.desiredDisplayDataType
+        }
+        
+        let hasRangeData = self.store.durationData.count > 0
+        let hasEventData = self.store.quantityData.count > 0
+        
+        if (self.desiredDisplayDataType == .range && hasRangeData) ||
+            (self.desiredDisplayDataType == .event && hasEventData) {
+            return self.desiredDisplayDataType
+        } else if hasRangeData {
+            return .range
+        } else if hasEventData {
+            return .event
+        } else {
+            return .range
+        }
+    }
+    var dataTypeLabel: String {
+        return self.displayDataType == .range ? "Duration" : "Quantity"
+    }
+    var showChart: Bool {
+        return self.store.durationData.count > 0 || self.store.quantityData.count > 0
+    }
+    var showDesiredDataPicker: Bool {
+        let hasRangeData = self.store.durationData.count > 0
+        let hasEventData = self.store.quantityData.count > 0
+        return hasRangeData && hasEventData
+    }
+    var chartData: [CategoryReportValue] {
+        if self.displayDataType == .range {
+            return self.store.durationData
+        } else {
+            return self.store.quantityData
+        }
+    }
+    
     var enableWorkRuler: Bool {
-        return self.groupBySelection == .day || self.groupBySelection == .week
+        return (self.groupBySelection == .day || self.groupBySelection == .week) && self.displayDataType == .range
     }
     var workRulerTitle: String {
         return self.groupBySelection == .day ? "8h" : "40h"
@@ -97,32 +137,32 @@ struct CategoryReport: View {
                                 .foregroundColor(Color(UIColor.placeholderText))
                             Spacer()
                         }.frame(height: chartHeight)
-                    } else if store.graphData.count > 0 {
+                    } else if self.showChart {
                         Chart {
                             // Changing point types inside the foreach prevented compilation
                             switch graphStyle {
                             case .bar:
-                                ForEach(self.store.graphData) { entry in
+                                ForEach(self.chartData) { entry in
                                     BarMark(
                                         x: .value("Date", entry.date, unit: .day),
-                                        y: .value("Duration", entry.duration),
+                                        y: .value(dataTypeLabel, entry.value),
                                         width: barWidth
                                     )
                                     .foregroundStyle(by: .value("Type", entry.category))
                                 }
                             case .line:
-                                ForEach(self.store.graphData) { entry in
+                                ForEach(self.chartData) { entry in
                                     LineMark(
                                         x: .value("Date", entry.date, unit: .day),
-                                        y: .value("Duration", entry.duration)
+                                        y: .value(dataTypeLabel, entry.value)
                                     )
                                     .foregroundStyle(by: .value("Type", entry.category))
                                 }
                             case .point:
-                                ForEach(self.store.graphData) { entry in
+                                ForEach(self.chartData) { entry in
                                     PointMark(
                                         x: .value("Date", entry.date, unit: .day),
-                                        y: .value("Duration", entry.duration)
+                                        y: .value(dataTypeLabel, entry.value)
                                     )
                                     .foregroundStyle(by: .value("Type", entry.category))
                                 }
@@ -153,19 +193,23 @@ struct CategoryReport: View {
                             }
                         }
                         .chartYAxis {
-                            AxisMarks(values: .automatic(desiredCount: 4)) { value in
-                                AxisGridLine()
-                                
-                                let formatter: DateComponentsFormatter = {
-                                    let formatter = DateComponentsFormatter()
-                                    formatter.unitsStyle = .abbreviated
-                                    formatter.allowedUnits = [.hour, .minute]
-                                    return formatter
-                                }()
-                                
-                                if let timeInterval = value.as(TimeInterval.self), let formatted = formatter.string(from: timeInterval) {
-                                    AxisValueLabel(formatted)
+                            if self.displayDataType == .range {
+                                AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                                    AxisGridLine()
+                                    
+                                    let formatter: DateComponentsFormatter = {
+                                        let formatter = DateComponentsFormatter()
+                                        formatter.unitsStyle = .abbreviated
+                                        formatter.allowedUnits = [.hour, .minute]
+                                        return formatter
+                                    }()
+                                    
+                                    if let timeInterval = value.as(TimeInterval.self), let formatted = formatter.string(from: timeInterval) {
+                                        AxisValueLabel(formatted)
+                                    }
                                 }
+                            } else {
+                                AxisMarks(values: .automatic(desiredCount: 4))
                             }
                         }
                         .frame(height: chartHeight)
@@ -181,6 +225,18 @@ struct CategoryReport: View {
                     }
                 } header:  {
                     Text("Recorded Data")
+                }
+                
+                if showDesiredDataPicker {
+                    Section {
+                        Picker("Data Type", selection: $desiredDisplayDataType) {
+                            Text("Duration").tag(EntryType.range)
+                            Text("Events").tag(EntryType.event)
+                        }
+                        .pickerStyle(.segmented)
+                    } header:  {
+                        Text("Data Type")
+                    }
                 }
                 
                 Section {
@@ -215,11 +271,13 @@ struct CategoryReport: View {
                     }
                     .pickerStyle(.menu)
                     
-                    HStack {
-                        Toggle(isOn: $showWorkRuler, label: {
-                            Text("Work Ruler")
-                        })
-                        .disabled(self.enableWorkRuler == false)
+                    if showDesiredDataPicker || self.displayDataType == .range {
+                        HStack {
+                            Toggle(isOn: $showWorkRuler, label: {
+                                Text("Work Ruler")
+                            })
+                            .disabled(self.enableWorkRuler == false)
+                        }
                     }
                 } header:  {
                     Text("Controls")
