@@ -16,7 +16,7 @@ struct Home: View {
     @State var showModal: HomeModal? = nil
     @State var showAlert: HomeAlert? = nil
     @State var selectedCategory: TimeSDK.Category? = nil
-    @State var metricShowDay: Bool? = nil
+    @State var metricDefaultGroupBy: TimePeriod? = nil
     var signOut: (() -> ())? = nil
     
     @EnvironmentObject var warehouse: Warehouse
@@ -88,8 +88,8 @@ struct Home: View {
                     MetricSection(
                         store: AnalyticsStore(for: self.warehouse),
                         showSeconds: showSeconds,
-                        dayAction: { handleMetricAction(tappedDay: true) },
-                        weekAction: { handleMetricAction(tappedDay: false) }
+                        dayAction: { handleMetricAction(groupBy: .day) },
+                        weekAction: { handleMetricAction(groupBy: .week) }
                     )
                 }
                 .listRowInsets(EdgeInsets())
@@ -189,8 +189,8 @@ struct Home: View {
         }
     }
     
-    func handleMetricAction(tappedDay: Bool) {
-        self.metricShowDay = tappedDay
+    func handleMetricAction(groupBy: TimePeriod? = nil) {
+        self.metricDefaultGroupBy = groupBy
         self.showModal = .metricReport
     }
     
@@ -242,11 +242,7 @@ struct Home: View {
                 QuantityMetricReport(
                     store: OtherAnalyticsStore(
                         for: self.warehouse,
-                        groupBy: (
-                            self.metricShowDay == true
-                            ? TimePeriod.day
-                            : (self.metricShowDay == false ? TimePeriod.week : nil)
-                        )
+                        groupBy: self.metricDefaultGroupBy
                     ),
                     show: buildBinding(for: .importList),
                     showSeconds: showSeconds
@@ -258,11 +254,15 @@ struct Home: View {
                 CategoryReport(
                     store: CategoryReportStore(
                         for: self.warehouse,
-                        category: $selectedCategory),
-                    show: buildBinding(for: .categoryReport)
+                        category: $selectedCategory,
+                        defaultRange: .month, // Pair with below for init data loading
+                        defaultGroupBy: .day
+                    ),
+                    show: buildBinding(for: .categoryReport),
+                    rangeSelection: .month,
+                    groupBySelection: .day
                 )
-                    .environmentObject(self.warehouse)
-           )
+            )
         }
     }
 }

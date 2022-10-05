@@ -42,6 +42,8 @@ struct RecentSection: View {
                     categoryAction?(categoryTree.node, .analytics)
                 },
                 onTapButton: {
+                    // This is in-line instead of using categoryAction so that
+                    // the loading states can be tightly coupled.
                     Mainify {
                         handlingId[categoryTree.id] = true
                     }

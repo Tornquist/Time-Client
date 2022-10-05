@@ -11,21 +11,27 @@ import TimeSDK
 import Charts
 
 struct CategoryReport: View {
-    @EnvironmentObject var warehouse: Warehouse
-    @StateObject var store: CategoryReportStore
     
+    @StateObject var store: CategoryReportStore
     @Binding var show: Bool
     
-    // TODO: Remove need to keep init in sync with store
-    @State var rangeSelection: CategoryReportStore.RangeOption = .month
-    @State var groupBySelection: TimePeriod = .day
+    let chartHeight: CGFloat = 300
+    
+    // MARK: - User Preferences
     
     enum GraphStyle: String {
         case bar = "bar"
         case line = "line"
         case point = "point"
     }
+    
     @State var graphStyle: GraphStyle = .bar
+    @State var rangeSelection: CategoryReportStore.RangeOption
+    @State var groupBySelection: TimePeriod
+    
+    // MARK: - Graph UI
+    
+    // MARK: Bar Dimensions
     
     var barWidth: MarkDimension {
         switch rangeSelection {
@@ -65,6 +71,8 @@ struct CategoryReport: View {
         }
     }
     
+    // MARK: Ruler
+    
     @State var showWorkRuler: Bool = false
     var workRulerPlacement: TimeInterval {
         switch groupBySelection {
@@ -77,7 +85,17 @@ struct CategoryReport: View {
         }
     }
     
+    var enableWorkRuler: Bool {
+        return (self.groupBySelection == .day || self.groupBySelection == .week) && self.displayDataType == .range
+    }
+    var workRulerTitle: String {
+        return self.groupBySelection == .day ? "8h" : "40h"
+    }
+    
+    // MARK: - Displayed Graph
+    
     @State var desiredDisplayDataType: EntryType = .range
+    
     var displayDataType: EntryType {
         guard !self.store.loading else {
             return self.desiredDisplayDataType
@@ -97,12 +115,15 @@ struct CategoryReport: View {
             return .range
         }
     }
+
     var dataTypeLabel: String {
         return self.displayDataType == .range ? "Duration" : "Quantity"
     }
+
     var showChart: Bool {
         return self.store.durationData.count > 0 || self.store.quantityData.count > 0
     }
+
     var showDesiredDataPicker: Bool {
         let hasRangeData = self.store.durationData.count > 0
         let hasEventData = self.store.quantityData.count > 0
@@ -116,18 +137,14 @@ struct CategoryReport: View {
         }
     }
     
-    var enableWorkRuler: Bool {
-        return (self.groupBySelection == .day || self.groupBySelection == .week) && self.displayDataType == .range
-    }
-    var workRulerTitle: String {
-        return self.groupBySelection == .day ? "8h" : "40h"
-    }
-    
-    let chartHeight: CGFloat = 300
+    // MARK: - Rendering
     
     var body: some View {
         NavigationView {
             List {
+                
+                // MARK: Chart
+                
                 Section {
                     if store.loading {
                         HStack {
@@ -170,7 +187,6 @@ struct CategoryReport: View {
                             
                             if self.showWorkRuler && self.enableWorkRuler {
                                 RuleMark(
-                                    /* TODO: Averages: by included day for work? */
                                     y: .value("Average", self.workRulerPlacement)
                                 )
                                 .foregroundStyle(.green)
@@ -227,6 +243,8 @@ struct CategoryReport: View {
                     Text("Recorded Data")
                 }
                 
+                // MARK: Data Picker
+
                 if showDesiredDataPicker {
                     Section {
                         Picker("Data Type", selection: $desiredDisplayDataType) {
@@ -239,6 +257,8 @@ struct CategoryReport: View {
                     }
                 }
                 
+                // MARK: Controls
+
                 Section {
                     Picker("Timeframe", selection: $rangeSelection) {
                         Text("All time").tag(CategoryReportStore.RangeOption.all)

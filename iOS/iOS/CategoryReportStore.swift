@@ -30,9 +30,8 @@ class CategoryReportStore: ObservableObject {
     @Published var durationData: [CategoryReportValue] = []
     @Published var quantityData: [CategoryReportValue] = []
     
-    // TODO: Remove need to keep init in sync with view
-    var range: RangeOption = .month
-    var groupBy: TimePeriod = .day
+    var range: RangeOption
+    var groupBy: TimePeriod
     
     @Published var loading: Bool = false
     
@@ -48,9 +47,12 @@ class CategoryReportStore: ObservableObject {
         case week = "week"
     }
     
-    init(for warehouse: Warehouse, category: Binding<TimeSDK.Category?>) {
+    init(for warehouse: Warehouse, category: Binding<TimeSDK.Category?>, defaultRange range: RangeOption, defaultGroupBy groupBy: TimePeriod) {
         self.warehouse = warehouse
         self._rootCategory = category
+        
+        self.range = range
+        self.groupBy = groupBy
         
         // Bump to end of thread to let binding resolve -- Needs correct implementation.
         self.loading = true
@@ -152,55 +154,47 @@ class CategoryReportStore: ObservableObject {
             dateFormatter.locale = Locale.current // Sync with analyzer
             
             let orderedKeys = inScopeResults.keys.sorted()
-            let durationData = orderedKeys.flatMap { key -> [CategoryReportValue] in
-                guard let data = inScopeResults[key],
-                      let date = dateFormatter.date(from: key) else {
-                    return []
-                }
-                
-                let unsortedDurationData = data.compactMap({ result -> CategoryReportValue? in
-                    guard result.duration != 0 else {
-                        return nil
-                    }
-                    return CategoryReportValue(
-                        stringDate: key,
-                        date: date,
-                        category: nameCache[result.categoryID ?? -1] ?? "Unknwon",
-                        value: result.duration
-                    )
-                })
-                    
-                let sortedDurationData = unsortedDurationData.sorted { a, b in
-                    return a.category.localizedCompare(b.category) == .orderedAscending
-                }
-                
-                return sortedDurationData
-            }
             
-            // TODO: Simplify code for a single pass
-            let quantityData = orderedKeys.flatMap { key -> [CategoryReportValue] in
+            var durationData: [CategoryReportValue] = []
+            var quantityData: [CategoryReportValue] = []
+            orderedKeys.forEach { key in
                 guard let data = inScopeResults[key],
                       let date = dateFormatter.date(from: key) else {
-                    return []
+                    return
                 }
                 
-                let unsortedQuantityData = data.compactMap({ result -> CategoryReportValue? in
-                    guard result.events != 0 else {
-                        return nil
+                var durationEntries: [CategoryReportValue] = []
+                var quantityEntries: [CategoryReportValue] = []
+                
+                data.forEach({ result in
+                    if result.duration != 0 {
+                        durationEntries.append(CategoryReportValue(
+                            stringDate: key,
+                            date: date,
+                            category: nameCache[result.categoryID ?? -1] ?? "Unknwon",
+                            value: result.duration
+                        ))
                     }
-                    return CategoryReportValue(
-                        stringDate: key,
-                        date: date,
-                        category: nameCache[result.categoryID ?? -1] ?? "Unknwon",
-                        value: TimeInterval(result.events)
-                    )
-                })
                     
-                let sortedQuantityData = unsortedQuantityData.sorted { a, b in
-                    return a.category.localizedCompare(b.category) == .orderedAscending
-                }
+                    if result.events != 0 {
+                        quantityEntries.append(CategoryReportValue(
+                            stringDate: key,
+                            date: date,
+                            category: nameCache[result.categoryID ?? -1] ?? "Unknwon",
+                            value: TimeInterval(result.events)
+                        ))
+                    }
+                })
                 
-                return sortedQuantityData
+                durationEntries.sort(by: { a, b in
+                    return a.category.localizedCompare(b.category) == .orderedAscending
+                })
+                quantityEntries.sort(by: { a, b in
+                    return a.category.localizedCompare(b.category) == .orderedAscending
+                })
+                
+                durationData.append(contentsOf: durationEntries)
+                quantityData.append(contentsOf: quantityEntries)
             }
 
             // Should always safely resolve
