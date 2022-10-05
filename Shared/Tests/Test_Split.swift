@@ -19,6 +19,7 @@ class Test_Split: XCTestCase {
             month: 1,
             day: 2,
             duration: 10,
+            events: 5,
             categoryID: 3,
             entryID: 4,
             open: true
@@ -28,6 +29,7 @@ class Test_Split: XCTestCase {
         XCTAssertEqual(split.month, 1)
         XCTAssertEqual(split.day, 2)
         XCTAssertEqual(split.duration, 10)
+        XCTAssertEqual(split.events, 5)
         XCTAssertEqual(split.categoryID, 3)
         XCTAssertEqual(split.entryID, 4)
         XCTAssertEqual(split.open, true)
@@ -48,6 +50,7 @@ class Test_Split: XCTestCase {
             month: 1,
             day: 2,
             duration: 10,
+            events: 5,
             open: false
         )
         
@@ -55,6 +58,7 @@ class Test_Split: XCTestCase {
         XCTAssertEqual(split.month, 1)
         XCTAssertEqual(split.day, 2)
         XCTAssertEqual(split.duration, 10)
+        XCTAssertEqual(split.events, 5)
         XCTAssertEqual(split.categoryID, 3)
         XCTAssertEqual(split.entryID, 4)
         XCTAssertEqual(split.open, false)
@@ -66,6 +70,7 @@ class Test_Split: XCTestCase {
             month: 1,
             day: 2,
             duration: 10,
+            events: 5,
             categoryID: 3,
             entryID: 4,
             open: true
@@ -74,6 +79,7 @@ class Test_Split: XCTestCase {
         let newSplit = Split(
             from: split,
             duration: 20,
+            events: 10,
             categoryID: 30,
             entryID: 40,
             open: false
@@ -83,6 +89,7 @@ class Test_Split: XCTestCase {
         XCTAssertEqual(newSplit.month, 1)
         XCTAssertEqual(newSplit.day, 2)
         XCTAssertEqual(newSplit.duration, 20)
+        XCTAssertEqual(newSplit.events, 10)
         XCTAssertEqual(newSplit.categoryID, 30)
         XCTAssertEqual(newSplit.entryID, 40)
         XCTAssertEqual(newSplit.open, false)
@@ -94,6 +101,7 @@ class Test_Split: XCTestCase {
             month: 1,
             day: 2,
             duration: 10,
+            events: 5,
             categoryID: 3,
             entryID: 4,
             open: true
@@ -105,6 +113,7 @@ class Test_Split: XCTestCase {
         XCTAssertEqual(newSplit.month, 1)
         XCTAssertEqual(newSplit.day, 2)
         XCTAssertEqual(newSplit.duration, 10)
+        XCTAssertEqual(newSplit.events, 5)
         XCTAssertEqual(newSplit.categoryID, 3)
         XCTAssertEqual(newSplit.entryID, 4)
         XCTAssertEqual(newSplit.open, true)

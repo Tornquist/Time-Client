@@ -71,7 +71,7 @@ class Test_AnalysisCache: XCTestCase {
         // requires a search of the start, and exclusion of tomorrow
         
         XCTAssertEqual(sameDay.count, 0)
-        XCTAssertEqual(noEnd.count, 23) // All data in cache
+        XCTAssertEqual(noEnd.count, 25) // All data in cache
         
         XCTAssertEqual(endNextDay.count, 1)
         XCTAssertEqual(endNextDay.keys.first ?? "--", "2020-11-03")
@@ -106,7 +106,7 @@ class Test_AnalysisCache: XCTestCase {
             groupingBy: .day,
             with: calendar)
         
-        XCTAssertEqual(dataByDay.count, 24) // Data exists for 24 days
+        XCTAssertEqual(dataByDay.count, 26) // Data exists for 26 days
     }
     
     func test_wholeRangeByWeek() {
@@ -143,12 +143,12 @@ class Test_AnalysisCache: XCTestCase {
             return
         }
         
-        XCTAssertEqual(finalWeek.count, 3)
+        XCTAssertEqual(finalWeek.count, 5)
         
-        let expectedIDs = [3126, 3127, 3128]
+        let expectedIDs = [3127, 3128, 3130, 3126, 3131]
         XCTAssertEqual(Set(finalWeek.map({ $0.entryID })), Set(expectedIDs))
         
-        let expectedDurations: [TimeInterval] = [1980.0, 18022.0, 35129.0]
+        let expectedDurations: [TimeInterval] = [0.0, 1980.0, 18022.0, 35129.0]
         XCTAssertEqual(Set(finalWeek.map({ $0.duration })), Set(expectedDurations))
     }
     
