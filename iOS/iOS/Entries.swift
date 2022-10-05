@@ -62,7 +62,7 @@ struct Entries: View {
                 action: active ? .stop : .none,
                 active: active,
                 loading: handlingId[entry.id] ?? false,
-                onTap: {
+                onTapButton: {
                     if active {
                         Mainify {
                             handlingId[entry.id] = true

@@ -7,11 +7,14 @@
 //
 
 import SwiftUI
+import TimeSDK
 
 struct RecentSection: View {
     @EnvironmentObject var warehouse: Warehouse
     
     @State var handlingId: [Int: Bool] = [:]
+    
+    var categoryAction: ((TimeSDK.Category, CategoryMenu.Selection) -> Void)? = nil
     
     var body: some View {
         ForEach(self.warehouse.recentCategories) { (categoryTree) in
@@ -29,20 +32,30 @@ struct RecentSection: View {
                         : TitleSubtitleActionView.Action.record
                 )
             
-            TitleSubtitleActionView(title: name, subtitle: parentName, action: action, active: isActive, loading: handlingId[categoryTree.id] ?? false) {
-                Mainify {
-                    handlingId[categoryTree.id] = true
+            TitleSubtitleActionView(
+                title: name,
+                subtitle: parentName,
+                action: action,
+                active: isActive,
+                loading: handlingId[categoryTree.id] ?? false,
+                onTapText: {
+                    categoryAction?(categoryTree.node, .analytics)
+                },
+                onTapButton: {
+                    Mainify {
+                        handlingId[categoryTree.id] = true
+                    }
+                    if action == TitleSubtitleActionView.Action.record {
+                        self.warehouse.time?.store.recordEvent(for: categoryTree.node, completion: { _ in
+                            Mainify { handlingId[categoryTree.id] = false }
+                        })
+                    } else {
+                        self.warehouse.time?.store.toggleRange(for: categoryTree.node, completion: { _ in
+                            Mainify { handlingId[categoryTree.id] = false }
+                        })
+                    }
                 }
-                if action == TitleSubtitleActionView.Action.record {
-                    self.warehouse.time?.store.recordEvent(for: categoryTree.node, completion: { _ in
-                        Mainify { handlingId[categoryTree.id] = false }
-                    })
-                } else {
-                    self.warehouse.time?.store.toggleRange(for: categoryTree.node, completion: { _ in
-                        Mainify { handlingId[categoryTree.id] = false }
-                    })
-                }
-            }.padding(.all, 16)
+            ).padding(.all, 16)
         }
     }
 }

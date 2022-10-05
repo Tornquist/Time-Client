@@ -98,7 +98,7 @@ struct Home: View {
                 
                 if self.warehouse.recentCategories.count > 0 {
                     Section(header: Text("Recents").titleStyle()) {
-                        RecentSection()
+                        RecentSection(categoryAction: handleCategoryAction)
                     }
                     .listRowInsets(EdgeInsets())
                 }

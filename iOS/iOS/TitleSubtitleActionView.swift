@@ -14,7 +14,8 @@ struct TitleSubtitleActionView: View {
     var action: Action
     var active: Bool
     var loading: Bool
-    var onTap: (() -> ())? = nil
+    var onTapText: (() -> ())? = nil
+    var onTapButton: (() -> ())? = nil
     
     enum Action {
         case play
@@ -36,20 +37,20 @@ struct TitleSubtitleActionView: View {
     
     var body: some View {
         HStack {
-            VStack(alignment: .center, spacing: 8, content: {
-                HStack {
+            HStack {
+                VStack(alignment: .leading, spacing: 8, content: {
                     Text(title)
                         .font(Font.system(size: 17.0))
                         .foregroundColor(self.active ? Color(Colors.active) : Color(.label))
-                    Spacer()
-                }
-                HStack {
                     Text(subtitle)
                         .font(Font.system(size: 12.0))
                         .foregroundColor(Color(.label))
-                    Spacer()
-                }
-            })
+                })
+                Spacer()
+            }
+            .onTapGesture {
+                onTapText?()
+            }
             Spacer()
             if loading {
                 VStack {
@@ -62,7 +63,7 @@ struct TitleSubtitleActionView: View {
                 VStack {
                     Spacer()
                     Button(action: {
-                        onTap?()
+                        onTapButton?()
                     }) {
                         Text(Image(systemName: self.action.icon ?? "questionmark"))
                             .imageScale(.large)
