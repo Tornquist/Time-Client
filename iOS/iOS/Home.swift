@@ -16,6 +16,7 @@ struct Home: View {
     @State var showModal: HomeModal? = nil
     @State var showAlert: HomeAlert? = nil
     @State var selectedCategory: TimeSDK.Category? = nil
+    @State var metricShowDay: Bool? = nil
     var signOut: (() -> ())? = nil
     
     @EnvironmentObject var warehouse: Warehouse
@@ -86,15 +87,13 @@ struct Home: View {
                 Section(header: Text("Metrics").titleStyle()) {
                     MetricSection(
                         store: AnalyticsStore(for: self.warehouse),
-                        showSeconds: showSeconds
+                        showSeconds: showSeconds,
+                        dayAction: { handleMetricAction(tappedDay: true) },
+                        weekAction: { handleMetricAction(tappedDay: false) }
                     )
                 }
                 .listRowInsets(EdgeInsets())
                 .padding(EdgeInsets())
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    self.showModal = .metricReport
-                }
                 
                 if self.warehouse.recentCategories.count > 0 {
                     Section(header: Text("Recents").titleStyle()) {
@@ -190,6 +189,11 @@ struct Home: View {
         }
     }
     
+    func handleMetricAction(tappedDay: Bool) {
+        self.metricShowDay = tappedDay
+        self.showModal = .metricReport
+    }
+    
     func buildAlert(_ option: HomeAlert) -> Alert {
         switch (option) {
         case .addAccount:
@@ -236,7 +240,14 @@ struct Home: View {
         case .metricReport:
             return AnyView(
                 QuantityMetricReport(
-                    store: OtherAnalyticsStore(for: self.warehouse),
+                    store: OtherAnalyticsStore(
+                        for: self.warehouse,
+                        groupBy: (
+                            self.metricShowDay == true
+                            ? TimePeriod.day
+                            : (self.metricShowDay == false ? TimePeriod.week : nil)
+                        )
+                    ),
                     show: buildBinding(for: .importList),
                     showSeconds: showSeconds
                 )
