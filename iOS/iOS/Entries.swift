@@ -62,7 +62,10 @@ struct Entries: View {
                 action: active ? .stop : .none,
                 active: active,
                 loading: handlingId[entry.id] ?? false,
-                onTap: {
+                onTapText: {
+                    self.selectedEntry = entry
+                },
+                onTapButton: {
                     if active {
                         Mainify {
                             handlingId[entry.id] = true
@@ -73,9 +76,6 @@ struct Entries: View {
                     }
                 }
             )
-            .onTapGesture {
-                self.selectedEntry = entry
-            }
         }
         .listStyle(.inset)
         .sheet(

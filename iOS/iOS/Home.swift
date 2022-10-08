@@ -16,6 +16,7 @@ struct Home: View {
     @State var showModal: HomeModal? = nil
     @State var showAlert: HomeAlert? = nil
     @State var selectedCategory: TimeSDK.Category? = nil
+    @State var metricDefaultGroupBy: TimePeriod? = nil
     var signOut: (() -> ())? = nil
     
     @EnvironmentObject var warehouse: Warehouse
@@ -34,7 +35,8 @@ struct Home: View {
         case rename
         case delete
         case importList
-        case report
+        case metricReport
+        case categoryReport
         
         static func from(_ selection: AccountMenu.Selection) -> HomeModal? {
             switch selection {
@@ -55,6 +57,8 @@ struct Home: View {
                 return HomeModal.rename
             case .delete:
                 return HomeModal.delete
+            case .analytics:
+                return HomeModal.categoryReport
             default:
                 return nil
             }
@@ -83,19 +87,17 @@ struct Home: View {
                 Section(header: Text("Metrics").titleStyle()) {
                     MetricSection(
                         store: AnalyticsStore(for: self.warehouse),
-                        showSeconds: showSeconds
+                        showSeconds: showSeconds,
+                        dayAction: { handleMetricAction(groupBy: .day) },
+                        weekAction: { handleMetricAction(groupBy: .week) }
                     )
                 }
                 .listRowInsets(EdgeInsets())
                 .padding(EdgeInsets())
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    self.showModal = .report
-                }
                 
                 if self.warehouse.recentCategories.count > 0 {
                     Section(header: Text("Recents").titleStyle()) {
-                        RecentSection()
+                        RecentSection(categoryAction: handleCategoryAction)
                     }
                     .listRowInsets(EdgeInsets())
                 }
@@ -169,12 +171,15 @@ struct Home: View {
             self.selectedCategory = category
         case .rename:
             break // No actions yet
+        case .analytics:
+            self.showModal = .categoryReport
+            self.selectedCategory = category
         }
     }
     
     func handleCategoryAction(category: TimeSDK.Category, categoryAction: CategoryMenu.Selection) {
         switch categoryAction {
-        case .addChild, .move, .rename, .delete:
+        case .addChild, .move, .rename, .delete, .analytics:
             self.showModal = HomeModal.from(categoryAction)
             self.selectedCategory = category
         case .toggleState:
@@ -182,6 +187,11 @@ struct Home: View {
         case .recordEvent:
             self.warehouse.time?.store.recordEvent(for: category, completion: nil)
         }
+    }
+    
+    func handleMetricAction(groupBy: TimePeriod? = nil) {
+        self.metricDefaultGroupBy = groupBy
+        self.showModal = .metricReport
     }
     
     func buildAlert(_ option: HomeAlert) -> Alert {
@@ -227,14 +237,31 @@ struct Home: View {
                 ImportList(model: ImportModel(for: self.warehouse), show: buildBinding(for: .importList))
                     .environmentObject(self.warehouse)
             )
-        case .report:
+        case .metricReport:
             return AnyView(
                 QuantityMetricReport(
-                    store: OtherAnalyticsStore(for: self.warehouse),
+                    store: OtherAnalyticsStore(
+                        for: self.warehouse,
+                        groupBy: self.metricDefaultGroupBy
+                    ),
                     show: buildBinding(for: .importList),
                     showSeconds: showSeconds
                 )
                 .environmentObject(self.warehouse)
+            )
+        case .categoryReport:
+            return AnyView(
+                CategoryReport(
+                    store: CategoryReportStore(
+                        for: self.warehouse,
+                        category: $selectedCategory,
+                        defaultRange: .month, // Pair with below for init data loading
+                        defaultGroupBy: .day
+                    ),
+                    show: buildBinding(for: .categoryReport),
+                    rangeSelection: .month,
+                    groupBySelection: .day
+                )
             )
         }
     }

@@ -75,6 +75,7 @@ class Test_Analyzer: XCTestCase {
         
         XCTAssertEqual(firstOperation.operation, .calculateTotal)
         XCTAssertEqual(firstOperation.duration, 675927)
+        XCTAssertEqual(firstOperation.events, 6)
         XCTAssertEqual(firstOperation.categoryID, nil)
         XCTAssertEqual(firstOperation.open, false)
     }
@@ -119,14 +120,19 @@ class Test_Analyzer: XCTestCase {
             switch result.categoryID {
             case 5:
                 XCTAssertEqual(result.duration, 2195)
+                XCTAssertEqual(result.events, 0)
             case 14:
                 XCTAssertEqual(result.duration, 593)
+                XCTAssertEqual(result.events, 0)
             case 28:
                 XCTAssertEqual(result.duration, 2757)
+                XCTAssertEqual(result.events, 0)
             case 37:
                 XCTAssertEqual(result.duration, 3772)
+                XCTAssertEqual(result.events, 2)
             case 38:
                 XCTAssertEqual(result.duration, 666610)
+                XCTAssertEqual(result.events, 4)
             default:
                 XCTFail("Unknown category id")
             }
@@ -179,14 +185,19 @@ class Test_Analyzer: XCTestCase {
             switch result.categoryID {
             case 5:
                 XCTAssertEqual(result.duration, 2195)
+                XCTAssertEqual(result.events, 0)
             case 14:
                 XCTAssertEqual(result.duration, 593)
+                XCTAssertEqual(result.events, 0)
             case 28:
                 XCTAssertEqual(result.duration, 2757)
+                XCTAssertEqual(result.events, 0)
             case 37:
                 XCTAssertEqual(result.duration, 3772)
+                XCTAssertEqual(result.events, 2)
             case 38:
                 XCTAssertEqual(result.duration, 666610)
+                XCTAssertEqual(result.events, 4)
             default:
                 XCTFail("Unknown category id")
             }
@@ -235,14 +246,19 @@ class Test_Analyzer: XCTestCase {
             switch date {
             case "2020-11-01":
                 XCTAssertEqual(totalInWeek.duration, 154671) // ~42.96
+                XCTAssertEqual(totalInWeek.events, 2)
             case "2020-11-08":
                 XCTAssertEqual(totalInWeek.duration, 174440) // ~48.45
+                XCTAssertEqual(totalInWeek.events, 1)
             case "2020-11-15":
                 XCTAssertEqual(totalInWeek.duration, 173543) // ~48.20
+                XCTAssertEqual(totalInWeek.events, 1)
             case "2020-11-22":
                 XCTAssertEqual(totalInWeek.duration, 118142) // ~48.20
+                XCTAssertEqual(totalInWeek.events, 0)
             case "2020-11-29":
                 XCTAssertEqual(totalInWeek.duration, 55131) // ~ 32.82
+                XCTAssertEqual(totalInWeek.events, 2)
             default:
                 XCTFail("Unknown category id")
             }
@@ -341,18 +357,23 @@ class Test_Analyzer: XCTestCase {
         let day5Duration: TimeInterval = 60
         
         XCTAssertEqual(results[day1]?.first?.duration ?? 0, day1Duration, accuracy: 1.0)
+        XCTAssertEqual(results[day1]?.first?.events ?? 0, 0)
         XCTAssertEqual(results[day1]?.first?.open ?? false, true)
         
         XCTAssertEqual(results[day2]?.first?.duration ?? 0, day2Duration)
+        XCTAssertEqual(results[day2]?.first?.events ?? 0, 0)
         XCTAssertEqual(results[day2]?.first?.open ?? true, false)
         
         XCTAssertEqual(results[day3]?.first?.duration ?? 0, day3Duration)
+        XCTAssertEqual(results[day3]?.first?.events ?? 0, 0)
         XCTAssertEqual(results[day3]?.first?.open ?? true, false)
         
         XCTAssertEqual(results[day4]?.first?.duration ?? 0, day4Duration)
+        XCTAssertEqual(results[day4]?.first?.events ?? 0, 0)
         XCTAssertEqual(results[day4]?.first?.open ?? true, false)
         
         XCTAssertEqual(results[day5]?.first?.duration ?? 0, day5Duration)
+        XCTAssertEqual(results[day5]?.first?.events ?? 0, 0)
         XCTAssertEqual(results[day5]?.first?.open ?? true, false)
     }
 }

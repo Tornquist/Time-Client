@@ -41,6 +41,8 @@
 		D8A1B50424CD223000580DCA /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89CEA102482CB07002913AA /* Colors.swift */; };
 		D8A1B50524CD226900580DCA /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D89CEA102482CB07002913AA /* Colors.swift */; };
 		D8C533A628EA4E1500F05A92 /* ReportDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C533A528EA4E1500F05A92 /* ReportDocument.swift */; };
+		D8C533A828EA6DCF00F05A92 /* CategoryReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C533A728EA6DCF00F05A92 /* CategoryReport.swift */; };
+		D8C533AA28EA717200F05A92 /* CategoryReportStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C533A928EA717200F05A92 /* CategoryReportStore.swift */; };
 		D8CB930F25CEE79F00C250E9 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB930E25CEE79F00C250E9 /* Home.swift */; };
 		D8CB931225CEE95C00C250E9 /* Text+.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB931125CEE95C00C250E9 /* Text+.swift */; };
 		D8CB935125D03FA500C250E9 /* Warehouse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB935025D03FA500C250E9 /* Warehouse.swift */; };
@@ -138,6 +140,8 @@
 		D8977DF425DEB2E400870A9D /* ImportWizard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWizard.swift; sourceTree = "<group>"; };
 		D89CEA102482CB07002913AA /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		D8C533A528EA4E1500F05A92 /* ReportDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportDocument.swift; sourceTree = "<group>"; };
+		D8C533A728EA6DCF00F05A92 /* CategoryReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryReport.swift; sourceTree = "<group>"; };
+		D8C533A928EA717200F05A92 /* CategoryReportStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryReportStore.swift; sourceTree = "<group>"; };
 		D8CB930E25CEE79F00C250E9 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		D8CB931125CEE95C00C250E9 /* Text+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Text+.swift"; sourceTree = "<group>"; };
 		D8CB935025D03FA500C250E9 /* Warehouse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Warehouse.swift; sourceTree = "<group>"; };
@@ -279,6 +283,7 @@
 			isa = PBXGroup;
 			children = (
 				D87FCD7628282388009E9C7E /* QuantityMetricReport.swift */,
+				D8C533A728EA6DCF00F05A92 /* CategoryReport.swift */,
 			);
 			name = Reports;
 			sourceTree = "<group>";
@@ -356,6 +361,7 @@
 				D8CB935025D03FA500C250E9 /* Warehouse.swift */,
 				D8977DE425DCB60E00870A9D /* AnalyticsStore.swift */,
 				D8258E42289F193D000E3EF5 /* OtherAnalyticsStore.swift */,
+				D8C533A928EA717200F05A92 /* CategoryReportStore.swift */,
 				D8C533A528EA4E1500F05A92 /* ReportDocument.swift */,
 			);
 			name = Models;
@@ -514,6 +520,7 @@
 				D8A1B50424CD223000580DCA /* Colors.swift in Sources */,
 				D8977DD925DB440900870A9D /* View+NotificationCenter.swift in Sources */,
 				D8258E43289F193D000E3EF5 /* OtherAnalyticsStore.swift in Sources */,
+				D8C533AA28EA717200F05A92 /* CategoryReportStore.swift in Sources */,
 				D8CB935525D06F5D00C250E9 /* MoveCategory.swift in Sources */,
 				D8CB930F25CEE79F00C250E9 /* Home.swift in Sources */,
 				D856E83824D6EFD0001E564A /* Constants.swift in Sources */,
@@ -533,6 +540,7 @@
 				D8977DD725DB3A9900870A9D /* Login.swift in Sources */,
 				D8CB936825D885B500C250E9 /* AccountMenu.swift in Sources */,
 				D856109025CBA44600A325B3 /* ListItem.swift in Sources */,
+				D8C533A828EA6DCF00F05A92 /* CategoryReport.swift in Sources */,
 				D856108E25CB9BDC00A325B3 /* QuantityMetric.swift in Sources */,
 				D8CB936625D8842000C250E9 /* CategoryMenu.swift in Sources */,
 				D8977DF525DEB2E400870A9D /* ImportWizard.swift in Sources */,
@@ -741,7 +749,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 99AECXNBFU;
 				INFOPLIST_FILE = "$(SRCROOT)/iOS/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -762,7 +770,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 99AECXNBFU;
 				INFOPLIST_FILE = "$(SRCROOT)/iOS/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

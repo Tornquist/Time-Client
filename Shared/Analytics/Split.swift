@@ -14,31 +14,34 @@ struct Split {
     var day: Int
     
     var duration: TimeInterval
+    var events: Int
     var categoryID: Int
     var entryID: Int
     var open: Bool
     
-    init(year: Int, month: Int, day: Int, duration: TimeInterval, categoryID: Int, entryID: Int, open: Bool) {
+    init(year: Int, month: Int, day: Int, duration: TimeInterval, events: Int, categoryID: Int, entryID: Int, open: Bool) {
         self.year = year
         self.month = month
         self.day = day
         
         self.duration = duration
+        self.events = events
         self.categoryID = categoryID
         self.entryID = entryID
         self.open = open
     }
     
-    init(for entry: Entry, year: Int, month: Int, day: Int, duration: TimeInterval, open: Bool) {
-        self.init(year: year, month: month, day: day, duration: duration, categoryID: entry.categoryID, entryID: entry.id, open: open)
+    init(for entry: Entry, year: Int, month: Int, day: Int, duration: TimeInterval, events: Int, open: Bool) {
+        self.init(year: year, month: month, day: day, duration: duration, events: events, categoryID: entry.categoryID, entryID: entry.id, open: open)
     }
     
-    init(from base: Split, duration: TimeInterval? = nil, categoryID: Int? = nil, entryID: Int? = nil, open: Bool? = nil) {
+    init(from base: Split, duration: TimeInterval? = nil, events: Int? = nil, categoryID: Int? = nil, entryID: Int? = nil, open: Bool? = nil) {
         self.init(
             year: base.year,
             month: base.month,
             day: base.day,
             duration: duration ?? base.duration,
+            events: events ?? base.events,
             categoryID: categoryID ?? base.categoryID,
             entryID: entryID ?? base.entryID,
             open: open ?? base.open
@@ -74,6 +77,22 @@ struct Split {
         var calendar = Calendar.current
         calendar.timeZone = timezone
         
+        guard entry.type == .range else {
+            let startOfDay = calendar.startOfDay(for: entry.startedAt)
+            let components = calendar.dateComponents([.year, .month, .day], from: startOfDay)
+            return [
+                Split(
+                    for: entry,
+                    year: components.year!,
+                    month: components.month!,
+                    day: components.day!,
+                    duration: 0,
+                    events: 1,
+                    open: false
+                )
+            ]
+        }
+        
         typealias EvaluatedRange = (split: Split, next: Date?)
         let evaluateRange = { (start: Date, end: Date) -> (EvaluatedRange?) in
             let startOfDay = calendar.startOfDay(for: start)
@@ -94,6 +113,7 @@ struct Split {
                 month: components.month!,
                 day: components.day!,
                 duration: duration,
+                events: 0,
                 open: false
             )
             
@@ -105,7 +125,7 @@ struct Split {
         let endTime = entry.endedAt ?? Date()
         let endsOpen = entry.endedAt == nil
         
-        let fakeStartSplit = Split(year: 0, month: 0, day: 0, duration: 0, categoryID: -1, entryID: -1, open: false)
+        let fakeStartSplit = Split(year: 0, month: 0, day: 0, duration: 0, events: 0, categoryID: -1, entryID: -1, open: false)
         var testRange: EvaluatedRange = (fakeStartSplit, startTime)
 
         var splits: [Split] = []

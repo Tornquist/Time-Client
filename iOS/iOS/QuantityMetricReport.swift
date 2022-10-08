@@ -39,7 +39,7 @@ struct QuantityMetricReport: View {
                             QuantityMetric.QuantityItem(
                                 id: result.categoryID ?? self.warehouse.getName(for: result.categoryID).hashValue,
                                 name: self.warehouse.getName(for: result.categoryID),
-                                total: result.displayDuration(withSeconds: internalShowSeconds),
+                                total: result.displayDurationAndOrEvents(withSeconds: internalShowSeconds),
                                 active: result.open
                             )
                         }) ?? []

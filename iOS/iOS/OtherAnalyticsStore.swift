@@ -47,9 +47,9 @@ class OtherAnalyticsStore: ObservableObject {
     
     var cancellables = [AnyCancellable]()
     
-    init(for warehouse: Warehouse) {
+    init(for warehouse: Warehouse, groupBy: TimePeriod? = nil) {
         // Load groupBy first for single-pass analytics
-        self.groupBy = TimePeriod(
+        self.groupBy = groupBy ?? TimePeriod(
             rawValue: UserDefaults().string(forKey: self.storeGroupByKey) ?? ""
         ) ?? .week
         
@@ -132,7 +132,7 @@ class OtherAnalyticsStore: ObservableObject {
     
     private func calculateMetrics() {
         let updatedData = Time.shared.analyzer.evaluateAll(
-            gropuBy: self.groupBy, perform: [.calculateTotal, .calculatePerCategory], includeEmpty: self.includeEmpty
+            groupBy: self.groupBy, perform: [.calculateTotal, .calculatePerCategory], includeEmpty: self.includeEmpty
         )
         
         let startingKeys = self.orderedKeys

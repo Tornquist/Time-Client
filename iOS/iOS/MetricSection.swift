@@ -18,6 +18,9 @@ struct MetricSection: View {
     }
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
+    var dayAction: (() -> Void)? = nil
+    var weekAction: (() -> Void)? = nil
         
     var body: some View {
         Group {
@@ -28,11 +31,15 @@ struct MetricSection: View {
                     QuantityMetric.QuantityItem(
                         id: result.categoryID ?? self.warehouse.getName(for: result.categoryID).hashValue,
                         name: self.warehouse.getName(for: result.categoryID),
-                        total: result.displayDuration(withSeconds: showSeconds),
+                        total: result.displayDurationAndOrEvents(withSeconds: showSeconds),
                         active: result.open
                     )
                 })
             )
+            .contentShape(Rectangle())
+            .onTapGesture {
+                dayAction?()
+            }
             QuantityMetric(
                 total: store.weekTotal?.displayDuration(withSeconds: showSeconds) ?? emptyDuration,
                 description: "This Week",
@@ -40,11 +47,15 @@ struct MetricSection: View {
                     QuantityMetric.QuantityItem(
                         id: result.categoryID ?? self.warehouse.getName(for: result.categoryID).hashValue,
                         name: self.warehouse.getName(for: result.categoryID),
-                        total: result.displayDuration(withSeconds: showSeconds),
+                        total: result.displayDurationAndOrEvents(withSeconds: showSeconds),
                         active: result.open
                     )
                 })
             )
+            .contentShape(Rectangle())
+            .onTapGesture {
+                weekAction?()
+            }
         }.onReceive(timer, perform: { _ in
             store.refreshAsNeeded()
         })

@@ -14,7 +14,7 @@ public class Analyzer {
     private var lowMemoryMode: Bool
     
     // Internal Cache
-    private var closedRanges: [Entry] = []
+    private var closedEntries: [Entry] = []
     private var openRanges: [Entry] = []
     
     private var closedAnalysis: AnalysisCache? = nil {
@@ -36,6 +36,7 @@ public class Analyzer {
         public var operation: Operation
         public var categoryID: Int?
         public var duration: TimeInterval
+        public var events: Int
         public var open: Bool
         
         public func displayDuration(withSeconds showSeconds: Bool) -> String {
@@ -51,23 +52,34 @@ public class Analyzer {
             return timeString
         }
         
-        private init(operation: Operation, categoryID: Int?, duration: TimeInterval, open: Bool) {
+        public func displayDurationAndOrEvents(withSeconds showSeconds: Bool) -> String {
+            if duration != 0 && events != 0 {
+                return "(\(events)) \(self.displayDuration(withSeconds: showSeconds))"
+            } else if duration != 0 {
+                return self.displayDuration(withSeconds: showSeconds)
+            } else {
+                return self.events.description + " event" + (self.events != 1 ? "s" : "")
+            }
+        }
+        
+        private init(operation: Operation, categoryID: Int?, duration: TimeInterval, events: Int, open: Bool) {
             self.operation = operation
             self.categoryID = categoryID
             self.duration = duration
+            self.events = events
             self.open = open
         }
         
         public init() {
-            self.init(operation: .none, categoryID: nil, duration: 0, open: false)
+            self.init(operation: .none, categoryID: nil, duration: 0, events: 0, open: false)
         }
         
-        fileprivate init(overallTotal duration: TimeInterval, open: Bool) {
-            self.init(operation: .calculateTotal, categoryID: nil, duration: duration, open: open)
+        fileprivate init(overallTotal duration: TimeInterval, events: Int, open: Bool) {
+            self.init(operation: .calculateTotal, categoryID: nil, duration: duration, events: events, open: open)
         }
         
-        fileprivate init(categoryTotal duration: TimeInterval, forID categoryID: Int, open: Bool) {
-            self.init(operation: .calculatePerCategory, categoryID: categoryID, duration: duration, open: open)
+        fileprivate init(categoryTotal duration: TimeInterval, events: Int, forID categoryID: Int, open: Bool) {
+            self.init(operation: .calculatePerCategory, categoryID: categoryID, duration: duration, events: events, open: open)
         }
     }
     
@@ -113,7 +125,7 @@ public class Analyzer {
     
     public func evaluateAll(
         in calendar: Calendar? = nil,
-        gropuBy: TimePeriod,
+        groupBy: TimePeriod,
         perform operations: [Operation],
         includeEmpty: Bool = false
     ) -> [String: [Result]] {
@@ -123,7 +135,7 @@ public class Analyzer {
         let to: Date? = nil // now
         
         // 2. Perfor query
-        return self.evaluate(from: from, to: to, in: selectedCalendar, groupBy: gropuBy, perform: operations, includeEmpty: includeEmpty)
+        return self.evaluate(from: from, to: to, in: selectedCalendar, groupBy: groupBy, perform: operations, includeEmpty: includeEmpty)
     }
         
     public func evaluate(
@@ -197,10 +209,13 @@ public class Analyzer {
         let lowMemoryFilterStart = Calendar.current.date(byAdding: .day, value: -10, to: Date())!
         
         // 1. Split open and closed ranges
-        var closedRanges: [Entry] = []
+        var closedEntries: [Entry] = []
         var openRanges: [Entry] = []
         store.entries.forEach { (entry) in
-            guard entry.type == .range else { return }
+            guard entry.type == .range else {
+                closedEntries.append(entry)
+                return
+            }
             
             if entry.endedAt == nil {
                 openRanges.append(entry)
@@ -208,22 +223,22 @@ public class Analyzer {
                 !self.lowMemoryMode ||
                 (self.lowMemoryMode && entry.endedAt! > lowMemoryFilterStart)
             ) {
-                closedRanges.append(entry)
+                closedEntries.append(entry)
             }
         }
         
-        self.closedRanges = closedRanges
+        self.closedEntries = closedEntries
         self.openRanges = openRanges
         
         // 2. Analyze all closed entries
-        let closedAnalysis = self.closedRanges.map(EntryAnalysis.generate(for:))
+        let closedAnalysis = self.closedEntries.map(EntryAnalysis.generate(for:))
         
         // 3. Format and cache closed entries for date-based lookup
         self.closedAnalysis = AnalysisCache(from: closedAnalysis)
     }
     
     private func clearCache() {
-        self.closedRanges = []
+        self.closedEntries = []
         self.openRanges = []
         
         self.closedAnalysis = nil
@@ -236,21 +251,25 @@ public class Analyzer {
             var results: [Result] = []
             if operations.contains(.calculateTotal) {
                 let totalDuration = data.reduce(0, { $0 + $1.duration })
+                let totalEvents = data.reduce(0, { $0 + $1.events })
                 let totalOpen = data.reduce(false, { $0 || $1.open })
 
-                results.append(Result(overallTotal: totalDuration, open: totalOpen))
+                results.append(Result(overallTotal: totalDuration, events: totalEvents, open: totalOpen))
             }
             
             if operations.contains(.calculatePerCategory) {
                 let durationByCategory: [Int: TimeInterval] = data.reduce(into: [:]) { (object, record) in
                     object[record.categoryID] = (object[record.categoryID] ?? 0) + record.duration
                 }
+                let eventsByCategory: [Int: Int] = data.reduce(into: [:]) { (object, record) in
+                    object[record.categoryID] = (object[record.categoryID] ?? 0) + record.events
+                }
                 let openByCategory: [Int: Bool] = data.reduce(into: [:]) { (object, record) in
                     object[record.categoryID] = (object[record.categoryID] ?? false) || record.open
                 }
                 
                 let categoryResults = durationByCategory.keys.map { (key) -> Result in
-                    return Result(categoryTotal: durationByCategory[key]!, forID: key, open: openByCategory[key]!)
+                    return Result(categoryTotal: durationByCategory[key]!, events: eventsByCategory[key]!, forID: key, open: openByCategory[key]!)
                 }
                 
                 results.append(contentsOf: categoryResults)
@@ -267,26 +286,29 @@ public class Analyzer {
             let totalA = collideA.first(where: { $0.operation == .calculateTotal })
             let totalB = collideB.first(where: { $0.operation == .calculateTotal })
             
-            if let newTotal: TimeInterval = totalA == nil && totalB == nil ? nil : (totalA?.duration ?? 0) + (totalB?.duration ?? 0) {
+            if let newTotal: TimeInterval = totalA == nil && totalB == nil ? nil : (totalA?.duration ?? 0) + (totalB?.duration ?? 0),
+               let newEventsTotal: Int = totalA == nil && totalB == nil ? nil : (totalA?.events ?? 0) + (totalB?.events ?? 0) {
                 let totalOpen: Bool = (totalA?.open ?? false) || (totalB?.open ?? false)
-                merged.append(Result(overallTotal: newTotal, open: totalOpen))
+                merged.append(Result(overallTotal: newTotal, events: newEventsTotal, open: totalOpen))
             }
             
             var byCategory = collideA.filter({ $0.operation == .calculatePerCategory })
             byCategory.append(contentsOf: collideB.filter({ $0.operation == .calculatePerCategory }))
 
             var categoryTotals: [Int: TimeInterval] = [:]
+            var categoryEventTotals: [Int: Int] = [:]
             var categoriesOpen: [Int: Bool] = [:]
             byCategory.forEach { (record) in
                 // Error. Skip invalid category records
                 guard record.categoryID != nil else { return }
                 
                 categoryTotals[record.categoryID!] = (categoryTotals[record.categoryID!] ?? 0) + record.duration
+                categoryEventTotals[record.categoryID!] = (categoryEventTotals[record.categoryID!] ?? 0) + record.events
                 categoriesOpen[record.categoryID!] = (categoriesOpen[record.categoryID!] ?? false) || record.open
             }
             
             let newCategoryResults = categoryTotals.keys.map { (key) -> Result in
-                return Result(categoryTotal: categoryTotals[key]!, forID: key, open: categoriesOpen[key]!)
+                return Result(categoryTotal: categoryTotals[key]!, events: categoryEventTotals[key]!, forID: key, open: categoriesOpen[key]!)
             }
             
             merged.append(contentsOf: newCategoryResults)
