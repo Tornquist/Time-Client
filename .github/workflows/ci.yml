@@ -36,7 +36,7 @@ jobs:
         rm -rf api
         (cd Time-API && npm install)
         (cd Time-API && scripts/setup-travis.sh)
-        (cd Time-API && npm start &) && sleep 2
+        (cd Time-API && npm start &) && sleep 10
 
     - name: Test Client
       run: |
