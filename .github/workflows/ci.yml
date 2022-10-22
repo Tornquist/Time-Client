@@ -40,6 +40,8 @@ jobs:
 
     - name: Test Client
       run: |
+        curl localhost:8000
+
         set -o pipefail &&
         xcodebuild test \
           -workspace Time.xcworkspace \
