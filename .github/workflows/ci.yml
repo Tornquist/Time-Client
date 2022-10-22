@@ -31,7 +31,7 @@ jobs:
 
     - name: Install API
       run: |
-        git clone --depth 1 git://github.com/Tornquist/Time-API.git api
+        git clone --depth 1 https://github.com/Tornquist/Time-API.git api
         cp -a api/. Time-API/
         rm -rf api
         (cd Time-API && npm install)
