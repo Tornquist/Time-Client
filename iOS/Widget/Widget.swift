@@ -40,6 +40,7 @@ struct SummaryWidget: Widget {
         .configurationDisplayName("Summary")
         .description("Shows a summary of the elapsed time for the day and week.")
         .supportedFamilies([.systemSmall])
+        .contentMarginsDisabled() // Opt-out of iOS 17 padding
     }
 }
 
@@ -272,7 +273,9 @@ struct TimeWidgetView : View {
         }
         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .leading)
         .padding()
-        .background(Theme.background)
+        .containerBackground(for: .widget, content: { // Support iOS 17 background removal
+            Theme.background
+        })
     }
     
     func getBlock(forToday: Bool, andEntry value: TimeEntry) -> some View {
@@ -285,6 +288,7 @@ struct TimeWidgetView : View {
                     ? (Text(data.activePrefix) + Text(data.relativeDate(to: value.date), style: .timer))
                     : Text(data.frozenDisplayValue)
             )
+                .contentTransition(.identity) // Disable iOS 17 widget text animations
                 .font(Font.system(size: 24.0, weight: .regular, design: .default).monospacedDigit())
                 .foregroundColor(value.active ? Theme.active : Theme.label)
             Text(title)
