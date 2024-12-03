@@ -82,7 +82,7 @@ struct Home: View {
     }
         
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 Section(header: Text("Metrics").titleStyle()) {
                     MetricSection(
@@ -102,7 +102,7 @@ struct Home: View {
                     .listRowInsets(EdgeInsets())
                 }
                     
-                Section {
+                Section {                    
                     NavigationLink(
                         "Show All Entries",
                         destination: Entries()

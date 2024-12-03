@@ -140,7 +140,7 @@ struct CategoryReport: View {
     // MARK: - Rendering
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 
                 // MARK: Chart
@@ -268,9 +268,9 @@ struct CategoryReport: View {
                         Text("Last Month").tag(CategoryReportStore.RangeOption.month)
                         Text("Last Week").tag(CategoryReportStore.RangeOption.week)
                     }
-                    .onChange(of: rangeSelection, perform: { newValue in
+                    .onChange(of: rangeSelection) { _, newValue in
                         self.store.recompute(range: self.rangeSelection, gropuBy: self.groupBySelection)
-                    })
+                    }
                     .pickerStyle(.menu)
                     
                     Picker("Group By", selection: $groupBySelection) {
@@ -279,9 +279,9 @@ struct CategoryReport: View {
                         Text("Week").tag(TimePeriod.week)
                         Text("Day").tag(TimePeriod.day)
                     }
-                    .onChange(of: groupBySelection, perform: { newValue in
+                    .onChange(of: groupBySelection) { _, newValue in
                         self.store.recompute(range: self.rangeSelection, gropuBy: self.groupBySelection)
-                    })
+                    }
                     .pickerStyle(.menu)
 
                     Picker("Style", selection: $graphStyle) {

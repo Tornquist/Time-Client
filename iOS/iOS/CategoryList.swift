@@ -70,7 +70,7 @@ struct CategoryList_Previews: PreviewProvider {
     struct PreviewWrapper: View {
         var warehouse = Warehouse.getPreviewWarehouse()
         var body: some View {
-            NavigationView {
+            NavigationStack {
                 List {
                     CategoryList(root: warehouse.accountTrees[0])
                 }

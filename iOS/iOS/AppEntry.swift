@@ -71,7 +71,7 @@ struct AppEntry: App {
                 })
             }
         }
-        .onChange(of: scenePhase) { newScenePhase in
+        .onChange(of: scenePhase) { _, newScenePhase in
             switch newScenePhase {
             case .active:
                 // Back to foreground

@@ -29,7 +29,7 @@ struct QuantityMetricReport: View {
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List(self.store.orderedKeys, id: \.self) { key in
                 QuantityMetric(
                     total: (self.store.totalData[key]?.displayDuration(withSeconds: internalShowSeconds) ?? emptyDuration),

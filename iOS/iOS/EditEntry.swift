@@ -141,7 +141,7 @@ struct EditEntry: View {
                 ? $startedAtTimezone
                 : $endedAtTimezone
             let timezonePicker = Picker("", selection: binding) {
-                ForEach(0 ..< timezones.count) {
+                ForEach(0 ..< timezones.count, id: \.self) {
                     Text(self.timezones[$0].0).tag(self.timezones[$0].1 as String?)
                 }
             }.pickerStyle(InlinePickerStyle())
@@ -171,11 +171,11 @@ struct EditEntry: View {
         )
         
         return VStack {
-            NavigationView {
+            NavigationStack {
                 Form {
                     Section {
                         Picker("Category", selection: categoryBinding) {
-                            ForEach(0 ..< categories.count) {
+                            ForEach(0 ..< categories.count, id: \.self) {
                                 let name = self.categories[$0].0
                                 let offset = self.categories[$0].1
                                 let offsetString = String(repeating: "    ", count: offset)

@@ -82,7 +82,7 @@ struct MoveCategory: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 Section {
                     build(categories: self.warehouse.accountTrees)

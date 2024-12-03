@@ -33,7 +33,7 @@ struct ImportWizard: View {
     }
         
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 if step == .welcome {
                     WelcomeStep(step: $step)

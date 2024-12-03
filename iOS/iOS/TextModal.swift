@@ -20,7 +20,7 @@ struct TextModal<Content: View>: View {
     var onSave: ((String) -> ())? = nil
         
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: description, content: {
                     TextField(placeholder, text: $value)

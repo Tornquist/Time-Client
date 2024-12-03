@@ -23,7 +23,7 @@ struct Login: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section {
                     TextField("Email", text: $email)
@@ -37,7 +37,7 @@ struct Login: View {
                         .autocapitalization(.none)
                                                             
                     if errors.count > 0 {
-                        ForEach(errors.indices) { (i) -> Text in
+                        ForEach(errors.indices, id: \.self) { (i) -> Text in
                             (
                                 Text(Image(systemName: "exclamationmark.triangle")) + Text(" ") + Text(errors[i])
                             ).foregroundColor(Color(.systemRed))

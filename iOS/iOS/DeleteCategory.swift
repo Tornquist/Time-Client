@@ -127,7 +127,7 @@ struct DeleteCategory: View {
     // MARK: - Display
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 Section {
                     VStack(spacing: 14) {

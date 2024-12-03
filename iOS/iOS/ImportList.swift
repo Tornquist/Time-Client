@@ -26,7 +26,7 @@ struct ImportList: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List(model.requests, id: \.id) { request in
                 HStack {
                     HStack {

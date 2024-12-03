@@ -80,7 +80,7 @@ struct ListItem<Content : View>: View {
                         .foregroundColor(Color(Colors.button))
                         .frame(width: imageSize, height: imageSize, alignment: .center)
                         .rotationEffect(Angle.degrees(open ? 90 : 0))
-                        .animation(animation)
+                        .animation(animation, value: open)
                     Spacer(minLength: imageIconSpace)
                 }
                 Text(text)
