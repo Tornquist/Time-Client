@@ -256,6 +256,7 @@ struct EditEntry: View {
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button(action: {
+                            guard !self.saving else { return }
                             self.saving = true
                             self.save?(
                                 Entry(
@@ -275,7 +276,9 @@ struct EditEntry: View {
                                 Text("Save")
                             }
                         })
-                        .disabled(saving || deleting)
+                        .disabled(deleting)
+                        // in iOS 18 disabled updates with label updates introduce UI bugs
+//                        .disabled(saving || deleting)
                     }
                 })
             }
