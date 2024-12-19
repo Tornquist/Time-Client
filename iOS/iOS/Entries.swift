@@ -54,9 +54,11 @@ struct Entries: View {
             }
         )
                 
-        return List(self.warehouse.entries) { (entry) in
+        return List(self.warehouse.entries, id: \.id) { (entry) in
             let active = entry.endedAt == nil && entry.type == .range
             TitleSubtitleActionView(
+                // getName + getTimeString is slow to init in debug mode and adds lag
+                // in release mode this is not oticeable
                 title: getName(entry),
                 subtitle: getTimeString(for: entry),
                 action: active ? .stop : .none,
