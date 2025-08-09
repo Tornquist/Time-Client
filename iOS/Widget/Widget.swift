@@ -271,8 +271,9 @@ struct TimeWidgetView : View {
             getBlock(forToday: false, andEntry: entry)
         }
         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .leading)
-        .padding()
-        .background(Theme.background)
+        .containerBackground(for: .widget, content: {
+            Theme.background
+        })
     }
     
     func getBlock(forToday: Bool, andEntry value: TimeEntry) -> some View {
